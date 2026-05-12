@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nexxen — Deal Form</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .form-head {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 16px 20px;
+      margin-bottom: 14px;
+    }
+    .form-head .row1 { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+    .form-head h1 { margin:0; font-size:18px; font-weight:600; letter-spacing:-0.015em; }
+    .form-head .meta { font-size: 12px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 18px; padding-top: 10px; border-top: 1px solid var(--hairline); margin-top: 10px; }
+    .form-head .meta b { color: var(--text); font-weight: 500; margin-left: 4px; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      margin-bottom: 12px;
+    }
+    .panel-h {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--hairline);
+      cursor: pointer;
+    }
+    .panel-h h2 {
+      margin: 0;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text);
+    }
+    .panel-h svg { width: 14px; height: 14px; opacity: 0.7; }
+    .panel-h .chev { margin-left: auto; opacity: 0.5; }
+    .panel-b { padding: 18px; }
+
+    .sub-h {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-subtle);
+      margin: 18px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--line);
+    }
+    .sub-h:first-child { margin-top: 0; }
+
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 14px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+  </style>
+</head>
+<body data-route="form">
+  <div class="app">
+    <div id="nav-slot"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="crumbs">Deals <span style="color:var(--text-subtle)">/</span> <span>Paramount-CTV-CBS-Sports</span></div>
+        <div class="right">
+          <div class="page-tabs">
+            <a href="design-system.html">System</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="form.html" class="on">Deal Form</a>
+            <a href="table.html">Reports</a>
+          </div>
+          <span class="muted" style="font-size:11px">Deal Status</span>
+          <label class="toggle"><input type="checkbox" checked /><span class="track"></span><span style="font-weight:500">Active</span></label>
+          <button class="btn btn-secondary btn-sm">Cancel</button>
+          <button class="btn btn-primary btn-sm">Save deal</button>
+        </div>
+      </header>
+
+      <div class="content" style="max-width: 1200px; margin: 0 auto;">
+
+        <!-- header card -->
+        <div class="form-head">
+          <div class="row1">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <h1>Paramount-CTV-CBS-Sports</h1>
+            <span class="pill pill-success"><span class="dot dot-success"></span> Live</span>
+            <span class="pill pill-accent">Managed Demand</span>
+          </div>
+          <div class="muted" style="font-size:13px">1337 UGC GmbH</div>
+          <div class="meta">
+            <div>ID: <b class="mono">UMB-TD-FBC4-5A4F438</b></div>
+            <div>Description: <b>TTD, P&S, Enterprise Multi-Brand, CTV_BL Nexx, CTBlock-Reseo MAFI, Fixed-$10</b></div>
+            <div>Publisher Type: <b>Managed</b></div>
+            <div>Signup Step: <b>Payment Approved</b></div>
+          </div>
+        </div>
+
+        <!-- DETAILS -->
+        <section class="panel">
+          <header class="panel-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            <h2>Deal</h2>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 9 6 6 6-6"/></svg>
+          </header>
+          <div class="panel-b">
+            <div class="grid-4">
+              <div class="field"><label class="required">Internal Description</label><input class="input input-flat" value="Flowchecker"/></div>
+              <div class="field"><label>Internal Deal ID</label><input class="input input-flat" value="19-851-29840-202212055304101"/></div>
+              <div class="field"><label class="required">External Name</label><input class="input input-flat" value="Flowchecker"/></div>
+              <div class="field"><label>Deal Type</label><select class="select input-flat"><option>Managed Demand Strategy</option></select></div>
+
+              <div class="field"><label>Office</label><select class="select input-flat"><option>None</option></select></div>
+              <div class="field"><label>Sales</label><select class="select input-flat"><option>None</option></select></div>
+              <div class="field"><label>AdOps</label><select class="select input-flat"><option>None</option></select></div>
+              <div class="field"><label>Account Manager</label><select class="select input-flat"><option>None</option></select></div>
+
+              <div class="field"><label>Agency</label><select class="select input-flat"><option>Select</option></select></div>
+              <div class="field"><label>Brand</label><select class="select input-flat"><option>Select</option></select></div>
+              <div class="field"><label>Campaign</label><input class="input input-flat" placeholder="Add"/></div>
+            </div>
+
+            <div class="sub-h" style="margin-top:22px">Delivery</div>
+            <div class="grid-3">
+              <div class="field"><label>Start Date</label><input class="input input-flat" value="12/12/2022 01:00:00"/></div>
+              <div class="field"><label>End Date</label><input class="input input-flat" value="03/01/2023 01:00:00"/></div>
+              <div></div>
+              <div class="field"><label>Daily Request Limit</label><input class="input input-flat" value="205,109"/></div>
+              <div class="field"><label>Daily Impressions Limit</label><input class="input input-flat" value="200,850"/></div>
+              <div class="field"><label>Overall Impressions Limit</label><input class="input input-flat" placeholder="—"/></div>
+            </div>
+            <div class="row" style="gap: 22px; margin-top: 14px">
+              <label class="check"><input type="checkbox" checked/> Enable Request Pacing</label>
+              <label class="check"><input type="checkbox" checked/> DSP Precedence</label>
+            </div>
+
+            <div class="sub-h" style="margin-top:22px">Campaign Goals</div>
+            <div class="grid-4">
+              <div class="field"><label>Target Daily Rate</label><div class="suffix"><input class="input input-flat" value="14,612"/><span class="suffix-tag">$</span></div></div>
+              <div class="field"><label>Target Monthly Revenue</label><div class="suffix"><input class="input input-flat" placeholder="—"/><span class="suffix-tag">$</span></div></div>
+              <div class="field"><label>Target Viewability</label><div class="suffix"><input class="input input-flat" placeholder="—"/><span class="suffix-tag">%</span></div></div>
+              <div class="field"><label>Target VCR</label><div class="suffix"><input class="input input-flat" placeholder="—"/><span class="suffix-tag">%</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FILTERS -->
+        <section class="panel">
+          <header class="panel-h">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+            <h2>Filters</h2>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 9 6 6 6-6"/></svg>
+          </header>
+          <div class="panel-b">
+            <div class="sub-h">Pricing &amp; Buyer</div>
+            <div class="grid-3">
+              <div class="field"><label>DSP</label>
+                <div class="tag-input">
+                  <span class="tag">Amobee <span class="x">×</span></span>
+                  <span class="tag">Google DV360 <span class="x">×</span></span>
+                </div>
+              </div>
+              <div class="field"><label>Buyer's DSP Seat ID</label><div class="suffix"><input class="input input-flat" placeholder="Add"/><span class="suffix-tag">+</span></div></div>
+              <div class="field"><label>Priority</label><div class="suffix"><input class="input input-flat" placeholder="—"/><span class="suffix-tag">⌄</span></div></div>
+
+              <div class="field"><label>Auction Type</label><select class="select input-flat"><option>Dynamic</option></select></div>
+              <div class="field"><label>Email Floor</label><input class="input input-flat" placeholder="—"/></div>
+              <div class="field"><label>Data Fee</label><input class="input input-flat" placeholder="—"/></div>
+
+              <div class="field"><label>Demand Margin</label><input class="input input-flat" placeholder="—"/></div>
+              <div class="field"><label>Supply Floor Range</label>
+                <input type="range" min="0" max="100" value="40" style="accent-color: var(--accent-500); width:100%"/>
+              </div>
+              <div class="field" style="justify-content:flex-end"><label class="check"><input type="checkbox" checked/> Override Publisher Floor</label></div>
+
+              <div class="field" style="grid-column: span 1"><label>Guaranteed Verification Vendor</label><select class="select input-flat"><option>—</option></select></div>
+            </div>
+
+            <!-- KPI filters -->
+            <div class="sub-h" style="margin-top: 20px">KPI Filters</div>
+            <div style="border:1px solid var(--line);border-radius:var(--r-md);padding:14px;margin-bottom:14px">
+              <div class="label" style="margin-bottom:10px;color:var(--text-subtle);font-size:10px;letter-spacing:0.12em">PERFORMANCE FILTERS</div>
+              <div class="grid-4">
+                <div class="field"><label>CTR</label><div class="suffix"><input class="input input-flat" value="10"/><span class="suffix-tag">%</span></div></div>
+                <div class="field"><label>VCR</label><div class="suffix"><input class="input input-flat" value="32"/><span class="suffix-tag">%</span></div></div>
+              </div>
+            </div>
+            <div style="border:1px solid var(--line);border-radius:var(--r-md);padding:14px;margin-bottom:14px">
+              <div class="label" style="margin-bottom:10px;color:var(--text-subtle);font-size:10px;letter-spacing:0.12em">IVT FILTERS</div>
+              <div class="row" style="gap:14px;align-items:flex-end">
+                <div class="field" style="flex:1"><label>Vendor</label><select class="select input-flat"><option>DV</option></select></div>
+                <div class="field" style="flex:1"><label>&nbsp;</label><div class="suffix"><input class="input input-flat" value="<5"/><span class="suffix-tag">%</span></div></div>
+                <button class="btn btn-ghost btn-sm" style="color:var(--accent-700)">+ Add Vendor</button>
+              </div>
+            </div>
+            <div style="border:1px solid var(--line);border-radius:var(--r-md);padding:14px">
+              <div class="row" style="margin-bottom:10px">
+                <div class="label" style="color:var(--text-subtle);font-size:10px;letter-spacing:0.12em">VIEWABILITY FILTERS</div>
+                <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:var(--accent-700)">+ Add Vendor</button>
+              </div>
+              <div class="grid-4">
+                <div class="field"><label>Vendor</label><select class="select input-flat"><option>DV</option></select></div>
+                <div class="field"><label>&nbsp;</label><div class="suffix"><input class="input input-flat" value=">=60"/><span class="suffix-tag">%</span></div></div>
+                <div class="field"><label>Vendor</label><select class="select input-flat"><option>IAS</option></select></div>
+                <div class="field"><label>&nbsp;</label><div class="suffix"><input class="input input-flat" value=">=60"/><span class="suffix-tag">%</span></div></div>
+              </div>
+            </div>
+
+            <!-- Supply targeting -->
+            <div class="sub-h" style="margin-top: 22px">Supply Targeting</div>
+            <div class="grid-3">
+              <div class="field"><label>Supply Source</label>
+                <div class="tag-input">
+                  <span class="tag">Supply Source Name <span class="x">×</span></span>
+                  <span class="tag">Supply Source Na <span class="x">×</span></span>
+                </div>
+              </div>
+              <div class="field"><label>Inventory Type</label>
+                <div class="tag-input">
+                  <span class="tag">Unruly Bundled Deals <span class="x">×</span></span>
+                </div>
+              </div>
+              <div class="field"><label>SSP Deal Filter</label>
+                <div class="tag-input">
+                  <span class="tag">Supply Source Name <span class="x">×</span></span>
+                  <span class="tag">Supply Source Na <span class="x">×</span></span>
+                </div>
+              </div>
+              <div class="field"><label class="required">Impression Type</label>
+                <div class="tag-input"><span class="tag">Supply Source Name <span class="x">×</span></span></div>
+              </div>
+              <div class="field"><label>Video Ad Slot</label>
+                <div class="tag-input"><span class="tag">Supply Source Name <span class="x">×</span></span></div>
+              </div>
+              <div></div>
+              <div class="field"><label class="required">Device Type</label>
+                <div class="seg" style="align-self:flex-start">
+                  <button>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="4" width="20" height="14" rx="1"/><path d="M8 20h8M12 18v2"/></svg>
+                    Desktop
+                  </button>
+                  <button class="on">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+                    Mobile
+                  </button>
+                  <button>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="3" width="20" height="14" rx="1"/><path d="M7 21h10"/></svg>
+                    CTV
+                  </button>
+                </div>
+              </div>
+              <div class="field" style="grid-column: span 2"><label>Media Type</label>
+                <div class="row" style="gap:18px;padding-top:6px">
+                  <label class="check"><input type="checkbox" checked/> Site</label>
+                  <label class="check"><input type="checkbox" checked/> App</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Premium brand safety -->
+            <div class="sub-h" style="margin-top: 22px">Premium Brand Safety</div>
+            <div class="grid-4">
+              <div class="field"><label>Authentic.BS ID</label><input class="input input-flat" value="ID"/></div>
+              <div class="field" style="justify-content:flex-end"><label class="check"><input type="checkbox" checked/> Source Rating Target</label></div>
+              <div class="field" style="justify-content:flex-end"><label class="check"><input type="checkbox" checked/> Content Title Required</label></div>
+              <div></div>
+              <div class="field"><label>Set Up: Term From the Deal</label><input class="input input-flat" placeholder=""/></div>
+              <div class="field"><label>Content Length</label><div class="suffix"><input class="input input-flat" value="0:2"/><span class="suffix-tag">sec</span></div></div>
+              <div class="field"><label>Live Stream</label><select class="select input-flat"><option>Banner</option></select></div>
+              <div class="field"><label>Playback Method</label><select class="select input-flat"><option>Banner</option></select></div>
+            </div>
+
+            <!-- Video ad settings -->
+            <div class="sub-h" style="margin-top: 22px">Video Ad Settings</div>
+            <div class="grid-4">
+              <div class="field"><label>InArticle Options</label>
+                <div class="tag-input">
+                  <span class="tag">Playthrough <span class="x">×</span></span>
+                  <span class="tag">Vertical <span class="x">×</span></span>
+                </div>
+              </div>
+              <div class="field"><label>Skippability</label><select class="select input-flat"><option>Select Skippability</option></select></div>
+              <div class="field"><label>Slot Type</label>
+                <div class="tag-input">
+                  <span class="tag">Preroll <span class="x">×</span></span>
+                  <span class="tag">Mid-roll <span class="x">×</span></span>
+                </div>
+              </div>
+              <div class="field"><label>Video API</label><select class="select input-flat"><option>Select</option></select></div>
+              <div class="field"><label>Max Video Ad Duration (Min)</label><div class="suffix"><input class="input input-flat" value="1:2"/><span class="suffix-tag">sec</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- footer actions -->
+        <div class="row" style="margin-top:18px;justify-content:flex-end;gap:8px">
+          <button class="btn btn-ghost">Discard changes</button>
+          <button class="btn btn-secondary">Save as draft</button>
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            Save deal
+          </button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

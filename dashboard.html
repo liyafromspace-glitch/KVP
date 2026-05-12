@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nexxen — Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .chart-card { padding: 16px 18px 12px; }
+    .chart-card h3 { font-size: 13px; font-weight: 600; margin: 0; }
+    .chart-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .chart-row .right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .chart-legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .chart-legend .lg { display: flex; align-items: center; gap: 5px; }
+    .chart-legend .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .small-card { padding: 14px 16px; }
+    .small-card h3 { font-size: 12px; font-weight: 600; margin: 0 0 10px; color: var(--text); }
+
+    .donut-row { display: flex; align-items: center; gap: 14px; }
+    .donut-row .lbl { font-size: 11px; color: var(--text-muted); }
+    .donut-row .lbl b { display:block; color: var(--text); font-size: 13px; font-weight: 600; }
+
+    .bar-list { display: flex; flex-direction: column; gap: 6px; }
+    .bar-row { display: grid; grid-template-columns: 130px 1fr 36px; gap: 8px; align-items: center; font-size: 11px; }
+    .bar-row .nm { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 10px; }
+    .bar-row .vl { color: var(--text-muted); text-align: right; font-variant-numeric: tabular-nums; }
+    .bar-bg { background: var(--viz-track); height: 8px; border-radius: 2px; position: relative; overflow: hidden; }
+    .bar-fl { height: 100%; background: var(--accent-500); border-radius: 2px; }
+
+    .targeting-tile {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .targeting-tile .top { display: flex; align-items: center; gap: 10px; }
+    .targeting-tile .stat { font-size: 12px; }
+    .targeting-tile .stat b { display: block; font-weight: 600; font-size: 13px; }
+    .targeting-tile .total { font-size: 10px; color: var(--text-subtle); margin-top: auto; }
+  </style>
+</head>
+<body data-route="dashboard">
+  <div class="app">
+    <div id="nav-slot"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="crumbs">Ad Server <span style="color:var(--text-subtle)">/</span> <span>Dashboard</span></div>
+        <div class="right">
+          <div class="page-tabs">
+            <a href="design-system.html">System</a>
+            <a href="dashboard.html" class="on">Dashboard</a>
+            <a href="form.html">Deal Form</a>
+            <a href="table.html">Reports</a>
+          </div>
+          <label class="toggle"><input type="checkbox" /><span class="track"></span><span class="muted">Live</span></label>
+          <div class="seg">
+            <button>1 hour</button>
+            <button class="on">6 hours</button>
+            <button>24 hours</button>
+            <button>7 days</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- KPI strip -->
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="kpi-l">Est. Earnings (USD) <span class="delta delta-up">▲ 6.3%</span></div>
+            <div class="kpi-v">$32,472K</div>
+            <div class="kpi-s"><b>Last week (EST)</b> $31,701K</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-l">eCPM (USD) <span class="delta delta-down">▼ 1.7%</span></div>
+            <div class="kpi-v">$12.43</div>
+            <div class="kpi-s"><b>Yesterday</b> $12.43</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-l">Requests <span class="delta delta-down">▼ 0.3%</span></div>
+            <div class="kpi-v">52,967</div>
+            <div class="kpi-s"><b>Yesterday</b> 62,182</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-l">Impressions <span class="delta delta-down">▼ 0.3%</span></div>
+            <div class="kpi-v">62,459</div>
+            <div class="kpi-s"><b>Yesterday</b> 60,742</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-l">Fill Rate <span class="delta delta-up">▲ 2.4%</span></div>
+            <div class="kpi-v">92.4%</div>
+            <div class="kpi-s"><b>Yesterday</b> 92.4%</div>
+          </div>
+        </div>
+
+        <!-- Main chart -->
+        <div class="card chart-card" style="margin-bottom:14px">
+          <div class="chart-row">
+            <h3>Earnings (EST)</h3>
+            <div class="chart-legend">
+              <span class="lg"><span class="sw" style="background:#00E676"></span> Today</span>
+              <span class="lg"><span class="sw" style="background:var(--navy-200)"></span> Prev. Period</span>
+            </div>
+            <div class="right">
+              <button class="btn btn-ghost btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+              </button>
+              <button class="btn btn-ghost btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </div>
+          <svg viewBox="0 0 900 240" style="width:100%;height:240px;display:block">
+            <defs>
+              <linearGradient id="amberFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00E676" stop-opacity="0.50"/>
+                <stop offset="100%" stop-color="#00E676" stop-opacity="0.04"/>
+              </linearGradient>
+              <linearGradient id="grayFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#C5C7DD" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#C5C7DD" stop-opacity="0.04"/>
+              </linearGradient>
+            </defs>
+            <!-- gridlines -->
+            <g stroke="#EFF1F6" stroke-width="1" stroke-dasharray="3 4">
+              <line x1="0" y1="40"  x2="900" y2="40"/>
+              <line x1="0" y1="90"  x2="900" y2="90"/>
+              <line x1="0" y1="140" x2="900" y2="140"/>
+              <line x1="0" y1="190" x2="900" y2="190"/>
+            </g>
+            <!-- y labels -->
+            <g fill="#8B8FA8" font-size="9" font-family="JetBrains Mono">
+              <text x="6" y="24">$</text>
+              <text x="6" y="44">$2.5K</text>
+              <text x="6" y="94">$2K</text>
+              <text x="6" y="144">$1.5K</text>
+              <text x="6" y="194">$1K</text>
+              <text x="6" y="220">$0.5K</text>
+            </g>
+            <!-- prev period -->
+            <path d="M40,210 C90,180 130,160 170,170 S250,200 290,180 S370,140 410,150 S490,180 530,160 S610,170 650,150 S730,170 770,170 S850,180 880,200 L880,220 L40,220 Z" fill="url(#grayFill)" stroke="none"/>
+            <path d="M40,210 C90,180 130,160 170,170 S250,200 290,180 S370,140 410,150 S490,180 530,160 S610,170 650,150 S730,170 770,170 S850,180 880,200" fill="none" stroke="#9B9EC5" stroke-width="1.5"/>
+            <!-- today -->
+            <path d="M40,200 C70,180 100,140 140,130 S200,90 240,100 S320,160 360,130 S440,80 480,90 S550,60 600,80 S680,100 720,80 S800,60 840,90 L840,220 L40,220 Z" fill="url(#amberFill)" stroke="none"/>
+            <path d="M40,200 C70,180 100,140 140,130 S200,90 240,100 S320,160 360,130 S440,80 480,90 S550,60 600,80 S680,100 720,80 S800,60 840,90" fill="none" stroke="#00E676" stroke-width="2"/>
+            <!-- x labels -->
+            <g fill="#8B8FA8" font-size="9" font-family="Inter">
+              <text x="35" y="234">12am</text>
+              <text x="100" y="234">2am</text>
+              <text x="170" y="234">4am</text>
+              <text x="240" y="234">6am</text>
+              <text x="310" y="234">8am</text>
+              <text x="380" y="234">10am</text>
+              <text x="450" y="234">12pm</text>
+              <text x="520" y="234">2pm</text>
+              <text x="590" y="234">4pm</text>
+              <text x="660" y="234">6pm</text>
+              <text x="730" y="234">8pm</text>
+              <text x="800" y="234">10pm</text>
+              <text x="860" y="234">12am</text>
+            </g>
+            <!-- now indicator -->
+            <line x1="600" y1="20" x2="600" y2="220" stroke="#00E676" stroke-width="1" stroke-dasharray="2 3" opacity="0.7"/>
+          </svg>
+        </div>
+
+        <!-- Sub tabs -->
+        <div class="row" style="margin-bottom: 14px;">
+          <div class="tabs" style="border:0;flex:1">
+            <div class="tab">Supply</div>
+            <div class="tab">Demand</div>
+            <div class="tab on">Content Targeting</div>
+            <div class="tab">Audience Targeting</div>
+          </div>
+          <div class="seg"><button class="on">All Inventory</button><button>Deals</button></div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:14px">
+          <!-- Inventory donut -->
+          <div class="card small-card">
+            <h3>Inventory</h3>
+            <div class="donut-row">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#EEF0F6" stroke-width="14"/>
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#00E676" stroke-width="14" stroke-dasharray="86 289" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+              </svg>
+              <div class="col" style="gap:10px">
+                <div class="lbl"><b style="color:var(--accent-700)">30%</b>Targeted Inventories</div>
+                <div class="lbl"><b style="color:var(--text-muted)">70%</b>Not Targeted Inv.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category targeting tiles -->
+          <div class="card small-card">
+            <h3>Category</h3>
+            <div class="grid-3">
+              <div class="targeting-tile">
+                <div class="top">
+                  <svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#EEF0F6" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="#00E676" stroke-width="5" stroke-dasharray="29 107" transform="rotate(-90 21 21)"/></svg>
+                  <div class="stat"><b>27%</b><span class="muted" style="font-size:10px">Genres Targeted</span></div>
+                </div>
+                <div class="total">Total <b style="color:var(--text)">12</b></div>
+              </div>
+              <div class="targeting-tile">
+                <div class="top">
+                  <svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#EEF0F6" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="#00E676" stroke-width="5" stroke-dasharray="46 107" transform="rotate(-90 21 21)"/></svg>
+                  <div class="stat"><b>42.7%</b><span class="muted" style="font-size:10px">Rating Targeted</span></div>
+                </div>
+                <div class="total">Total <b style="color:var(--text)">12</b></div>
+              </div>
+              <div class="targeting-tile">
+                <div class="top">
+                  <svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#EEF0F6" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="#00E676" stroke-width="5" stroke-dasharray="81 107" transform="rotate(-90 21 21)"/></svg>
+                  <div class="stat"><b>75.4%</b><span class="muted" style="font-size:10px">Language Targeted</span></div>
+                </div>
+                <div class="total">Total <b style="color:var(--text)">12</b></div>
+              </div>
+              <div class="targeting-tile">
+                <div class="top">
+                  <svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#EEF0F6" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="#00E676" stroke-width="5" stroke-dasharray="24 107" transform="rotate(-90 21 21)"/></svg>
+                  <div class="stat"><b>22.4%</b><span class="muted" style="font-size:10px">Channel Targeted</span></div>
+                </div>
+                <div class="total">Total <b style="color:var(--text)">12</b></div>
+              </div>
+              <div class="targeting-tile">
+                <div class="top">
+                  <svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#EEF0F6" stroke-width="5"/></svg>
+                  <div class="stat"><b>0</b><span class="muted" style="font-size:10px">Network</span></div>
+                </div>
+                <div class="total">No data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <!-- Top placements -->
+          <div class="card small-card">
+            <h3>Top Placements</h3>
+            <div class="bar-list">
+              <div class="bar-row"><span class="nm">CanalaTV_AndroidTVFire_$10</span><div class="bar-bg"><div class="bar-fl" style="width:96%"></div></div><span class="vl">$2.4K</span></div>
+              <div class="bar-row"><span class="nm">CanalaTV_Roku_$10</span><div class="bar-bg"><div class="bar-fl" style="width:74%"></div></div><span class="vl">$1.9K</span></div>
+              <div class="bar-row"><span class="nm">CanalaTV_Desktop_$6</span><div class="bar-bg"><div class="bar-fl" style="width:60%"></div></div><span class="vl">$1.5K</span></div>
+              <div class="bar-row"><span class="nm">CanalaTV_MobileWeb_$6</span><div class="bar-bg"><div class="bar-fl" style="width:48%"></div></div><span class="vl">$1.2K</span></div>
+              <div class="bar-row"><span class="nm">CanalaTV_Tablet_$4</span><div class="bar-bg"><div class="bar-fl" style="width:38%"></div></div><span class="vl">$0.9K</span></div>
+              <div class="bar-row"><span class="nm">CanalaTV_AndroidTVFire_$10</span><div class="bar-bg"><div class="bar-fl" style="width:30%"></div></div><span class="vl">$0.7K</span></div>
+              <div class="bar-row"><span class="nm">CanalaTV_Tablet_$0</span><div class="bar-bg"><div class="bar-fl" style="width:18%"></div></div><span class="vl">$0.4K</span></div>
+            </div>
+          </div>
+
+          <!-- DSP donut -->
+          <div class="card small-card">
+            <h3>DSP</h3>
+            <div style="display:flex;justify-content:center;padding:12px 0">
+              <svg width="180" height="180" viewBox="0 0 180 180">
+                <!-- ring -->
+                <circle cx="90" cy="90" r="62" fill="none" stroke="#EEF0F6" stroke-width="20"/>
+                <!-- The Trade Desk 38% -->
+                <circle cx="90" cy="90" r="62" fill="none" stroke="#00E676" stroke-width="20" stroke-dasharray="148 389" transform="rotate(-90 90 90)"/>
+                <!-- Amobee 24% -->
+                <circle cx="90" cy="90" r="62" fill="none" stroke="#8FF6B7" stroke-width="20" stroke-dasharray="93 389" stroke-dashoffset="-148" transform="rotate(-90 90 90)"/>
+                <!-- Tremor 18% -->
+                <circle cx="90" cy="90" r="62" fill="none" stroke="#25E373" stroke-width="20" stroke-dasharray="70 389" stroke-dashoffset="-241" transform="rotate(-90 90 90)"/>
+                <!-- With The Forest 12% -->
+                <circle cx="90" cy="90" r="62" fill="none" stroke="#9B9EC5" stroke-width="20" stroke-dasharray="47 389" stroke-dashoffset="-311" transform="rotate(-90 90 90)"/>
+                <!-- DV360 8% -->
+                <circle cx="90" cy="90" r="62" fill="none" stroke="#C5C7DD" stroke-width="20" stroke-dasharray="31 389" stroke-dashoffset="-358" transform="rotate(-90 90 90)"/>
+                <text x="90" y="86" text-anchor="middle" fill="#15172A" font-size="18" font-weight="600" font-family="Inter" letter-spacing="-0.5">$8.2K</text>
+                <text x="90" y="102" text-anchor="middle" fill="#8B8FA8" font-size="9" font-family="Inter">5 partners</text>
+              </svg>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:var(--text-muted)">
+              <div class="row" style="gap:6px"><span class="dot" style="background:#00E676"></span>Trade Desk <span style="margin-left:auto;color:var(--text)">38%</span></div>
+              <div class="row" style="gap:6px"><span class="dot" style="background:#8FF6B7"></span>Amobee <span style="margin-left:auto;color:var(--text)">24%</span></div>
+              <div class="row" style="gap:6px"><span class="dot" style="background:#25E373"></span>Tremor <span style="margin-left:auto;color:var(--text)">18%</span></div>
+              <div class="row" style="gap:6px"><span class="dot" style="background:#9B9EC5"></span>With Forest <span style="margin-left:auto;color:var(--text)">12%</span></div>
+              <div class="row" style="gap:6px;grid-column:1/-1"><span class="dot" style="background:#C5C7DD"></span>Google DV360 <span style="margin-left:auto;color:var(--text)">8%</span></div>
+            </div>
+            <div class="muted" style="font-size:10px;margin-top:10px;text-align:center">Top Advertisers 97.85% of Total</div>
+          </div>
+
+          <!-- Buying Channels -->
+          <div class="card small-card">
+            <h3>Buying Channels</h3>
+            <svg viewBox="0 0 320 160" style="width:100%;height:160px">
+              <g fill="#00E676">
+                <rect x="20"  y="40"  width="36" height="100" rx="2"/>
+                <rect x="80"  y="60"  width="36" height="80"  rx="2" fill="#25E373"/>
+                <rect x="140" y="74"  width="36" height="66"  rx="2" fill="#54EE91"/>
+                <rect x="200" y="86"  width="36" height="54"  rx="2" fill="#8FF6B7"/>
+                <rect x="260" y="100" width="36" height="40"  rx="2" fill="#C5FCDB"/>
+              </g>
+              <g stroke="#EFF1F6" stroke-width="1">
+                <line x1="0" y1="140" x2="320" y2="140"/>
+              </g>
+              <g fill="#8B8FA8" font-size="9" font-family="Inter">
+                <text x="20"  y="154">PMPs Curate</text>
+                <text x="80"  y="154">Open Market</text>
+                <text x="140" y="154">Direct Demand</text>
+                <text x="200" y="154">Publisher</text>
+                <text x="260" y="154">Unruly Initi…</text>
+              </g>
+            </svg>
+            <div class="muted" style="font-size:10px;text-align:center;margin-top:6px">Top Advertisers 97.85% of Total</div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

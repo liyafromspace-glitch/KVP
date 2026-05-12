@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>nexxen — Propagation Replay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0A0C1C;
+    --bg-1: #0F1226;
+    --bg-2: #141733;
+    --bg-3: #1A1E40;
+    --bg-4: #232856;
+    --line: #232850;
+    --line-soft: #1A1E40;
+    --hairline: #181C38;
+
+    --text:        #E8EAF7;
+    --text-muted:  #8E92B5;
+    --text-subtle: #5A5E83;
+    --text-dim:    #3F4368;
+
+    --neon: #8CF585;
+    --neon-2: #6FE76A;
+    --neon-glow: rgba(140,245,133,0.20);
+    --neon-glow-soft: rgba(140,245,133,0.10);
+
+    --warn: #F5C518;
+    --warn-bg: rgba(245,197,24,0.12);
+    --danger: #FF6B6B;
+    --danger-bg: rgba(255,107,107,0.12);
+    --info: #6E8BFF;
+    --info-bg: rgba(110,139,255,0.12);
+
+    --font: 'Inter', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg-0);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    letter-spacing: -0.005em;
+    height: 100%;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(1200px 600px at 100% -10%, rgba(110,139,255,0.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(140,245,133,0.04), transparent 60%);
+  }
+
+  .frame {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  /* ============ HEADER ============ */
+  .head {
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-1);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .head .brand {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, var(--neon), var(--neon-2));
+    color: var(--bg-0);
+    display: grid; place-items: center;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: -0.04em;
+    box-shadow: 0 0 18px var(--neon-glow);
+  }
+  .head .crumbs {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .head .crumbs b { color: var(--text); font-weight: 500; }
+  .head .crumbs .sep { color: var(--text-dim); }
+  .head .crumbs .key {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--text);
+  }
+  .head .title-block {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .head h1 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .head h1 .replay {
+    margin-left: 8px;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--neon);
+    background: var(--neon-glow-soft);
+    padding: 2px 7px;
+    border-radius: 999px;
+    vertical-align: middle;
+  }
+  .head .pub-stamp {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .head .pub-stamp .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--neon);
+    box-shadow: 0 0 8px var(--neon);
+    animation: dotpulse 1.6s ease-in-out infinite;
+  }
+  @keyframes dotpulse { 50% { opacity: 0.35 } }
+
+  /* ============ STAGE ============ */
+  .stage {
+    position: relative;
+    overflow: hidden;
+  }
+  .stage canvas { display: block; }
+  #wires {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* legend strip */
+  .legend {
+    position: absolute;
+    top: 14px; left: 22px;
+    display: flex; gap: 18px;
+    background: rgba(15,18,38,0.72);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+    z-index: 5;
+  }
+  .legend .item {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .legend .item .sw {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--text-subtle);
+  }
+  .legend .item.healthy .sw { background: var(--neon); box-shadow: 0 0 6px var(--neon); }
+  .legend .item.warming .sw { background: var(--info); box-shadow: 0 0 6px var(--info); }
+  .legend .item.retry .sw { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+  .legend .item.delayed .sw { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+
+  /* counters */
+  .counters {
+    position: absolute;
+    top: 14px; right: 22px;
+    display: flex; gap: 12px;
+    z-index: 5;
+  }
+  .counter {
+    background: rgba(15,18,38,0.72);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+    min-width: 92px;
+  }
+  .counter .l {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .counter .v {
+    margin-top: 3px;
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .counter.ok .v { color: var(--neon); }
+  .counter.warn .v { color: var(--warn); }
+  .counter.fail .v { color: var(--danger); }
+  .counter .v .small {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  /* node tooltip */
+  .node-tip {
+    position: absolute;
+    background: var(--bg-3);
+    border: 1px solid var(--bg-4);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--text);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .12s;
+    z-index: 6;
+    width: 180px;
+  }
+  .node-tip b { display: block; margin-bottom: 3px; font-weight: 600; font-size: 12px; }
+  .node-tip .row { display: flex; justify-content: space-between; padding: 1px 0; color: var(--text-muted); }
+  .node-tip .row .v { color: var(--text); font-family: var(--mono); }
+
+  /* event ticker */
+  .ticker {
+    position: absolute;
+    bottom: 14px; left: 22px;
+    width: 360px;
+    background: rgba(15,18,38,0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    z-index: 5;
+    overflow: hidden;
+  }
+  .ticker .th {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ticker .th::before {
+    content: "";
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--neon);
+    box-shadow: 0 0 6px var(--neon);
+    animation: dotpulse 1.6s ease-in-out infinite;
+  }
+  .ticker .feed {
+    max-height: 168px;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 10.5px;
+  }
+  .ticker .feed .ev {
+    padding: 5px 12px;
+    display: flex; gap: 8px;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--text-muted);
+    animation: evIn .25s ease;
+  }
+  @keyframes evIn { from { opacity: 0; transform: translateY(-4px); } }
+  .ticker .feed .ev:last-child { border-bottom: 0; }
+  .ticker .feed .ev .t { color: var(--text-dim); flex-shrink: 0; }
+  .ticker .feed .ev .who { color: var(--info); flex-shrink: 0; }
+  .ticker .feed .ev.ok .who { color: var(--neon); }
+  .ticker .feed .ev.warn .who { color: var(--warn); }
+  .ticker .feed .ev.fail .who { color: var(--danger); }
+  .ticker .feed .ev .msg { color: var(--text-muted); flex: 1; min-width: 0; }
+  .ticker .feed .ev.ok .msg { color: var(--text); }
+
+  /* ============ TRANSPORT BAR ============ */
+  .transport {
+    border-top: 1px solid var(--line);
+    background: var(--bg-1);
+    padding: 12px 22px;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .transport .play {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--neon);
+    color: var(--bg-0);
+    border: 0;
+    cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 0 var(--neon-glow);
+    transition: box-shadow .15s, background .12s;
+  }
+  .transport .play:hover { background: #A2F89A; box-shadow: 0 0 22px var(--neon-glow); }
+  .transport .play svg { width: 16px; height: 16px; }
+
+  .transport .restart {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg-2);
+    color: var(--text-muted);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .transport .restart:hover { background: var(--bg-3); color: var(--text); }
+  .transport .restart svg { width: 13px; height: 13px; }
+
+  .scrubber {
+    position: relative;
+    height: 32px;
+    display: flex;
+    align-items: center;
+  }
+  .scrubber .track {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: var(--bg-3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .scrubber .fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--neon-2), var(--neon));
+    box-shadow: 0 0 12px var(--neon-glow);
+    width: 0%;
+  }
+  .scrubber .marks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .scrubber .mark {
+    position: absolute;
+    top: -10px; bottom: -10px;
+    width: 1px;
+    background: var(--bg-4);
+  }
+  .scrubber .mark .lab {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .scrubber .head {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--text);
+    border: 1.5px solid var(--neon);
+    box-shadow: 0 0 8px var(--neon-glow);
+    cursor: grab;
+    left: 0%;
+  }
+
+  .speed-bar {
+    display: flex; gap: 1px;
+    padding: 2px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .speed-bar button {
+    background: transparent;
+    border: 0;
+    padding: 4px 9px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .speed-bar button:hover { color: var(--text); background: var(--bg-3); }
+  .speed-bar button.on { background: var(--bg-4); color: var(--neon); box-shadow: inset 0 0 0 1px rgba(140,245,133,0.2); }
+
+  .clock {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-width: 96px;
+    text-align: center;
+  }
+  .clock .sub { font-size: 9.5px; color: var(--text-dim); margin-top: 1px; letter-spacing: 0.06em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="frame">
+
+  <!-- HEAD -->
+  <div class="head">
+    <div class="brand">N</div>
+    <div class="crumbs">
+      <span>Metadata</span>
+      <span class="sep">/</span>
+      <span>Slot Position</span>
+      <span class="sep">/</span>
+      <span class="key">slot_position = "header_l"</span>
+    </div>
+    <div class="title-block" style="margin-left:18px">
+      <h1>Propagation Replay <span class="replay">● live</span></h1>
+    </div>
+    <div class="pub-stamp">
+      <span class="dot"></span>
+      <span>Published 14:32:08 UTC · by EM</span>
+    </div>
+  </div>
+
+  <!-- STAGE -->
+  <div class="stage" id="stage">
+    <canvas id="wires"></canvas>
+
+    <div class="legend">
+      <div class="item healthy"><span class="sw"></span>Healthy</div>
+      <div class="item warming"><span class="sw"></span>Syncing</div>
+      <div class="item retry"><span class="sw"></span>Retrying</div>
+      <div class="item delayed"><span class="sw"></span>Delayed</div>
+    </div>
+
+    <div class="counters">
+      <div class="counter ok">
+        <div class="l">Synced</div>
+        <div class="v" id="cSynced">0<span class="small">/128</span></div>
+      </div>
+      <div class="counter warn">
+        <div class="l">Retrying</div>
+        <div class="v" id="cRetry">0</div>
+      </div>
+      <div class="counter fail">
+        <div class="l">Delayed</div>
+        <div class="v" id="cDelayed">0</div>
+      </div>
+    </div>
+
+    <div class="ticker">
+      <div class="th">Event Stream</div>
+      <div class="feed" id="feed"></div>
+    </div>
+
+    <div class="node-tip" id="tip"></div>
+  </div>
+
+  <!-- TRANSPORT -->
+  <div class="transport">
+    <button class="restart" id="restart" title="Restart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+    </button>
+    <button class="play" id="play">
+      <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+
+    <div class="scrubber">
+      <div class="track">
+        <div class="fill" id="fill"></div>
+      </div>
+      <div class="marks" id="marks"></div>
+      <div class="head" id="phead" style="width: 32px"></div>
+    </div>
+
+    <div class="speed-bar">
+      <button data-spd="0.5">0.5×</button>
+      <button class="on" data-spd="1">1×</button>
+      <button data-spd="2">2×</button>
+      <button data-spd="4">4×</button>
+    </div>
+
+    <div class="clock">
+      <div id="clk">+00.0s</div>
+      <div class="sub" id="phase">t = publish</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =============================================================
+   PROPAGATION REPLAY
+   The graph: 1 publish source → 4 fan-out hubs → 16 leaf systems.
+   Each leaf has a scheduled "arrival time", optional retry,
+   and a final state (healthy / delayed).
+   ============================================================= */
+
+const TOTAL = 30; // seconds
+const stage = document.getElementById('stage');
+const canvas = document.getElementById('wires');
+const ctx = canvas.getContext('2d');
+const tip = document.getElementById('tip');
+
+// Topology — positions are normalized [0..1] of the stage box.
+const SOURCE = { id:'pub', label:'Publish', sub:'slot_position', x:0.08, y:0.5, kind:'source' };
+
+const HUBS = [
+  { id:'rtb',     label:'Bid Request Enrichment', sub:'OpenRTB',   x:0.32, y:0.18, latency:1.8 },
+  { id:'cache',   label:'Edge Cache Layer',       sub:'Fastly',    x:0.32, y:0.40, latency:1.2 },
+  { id:'ssp',     label:'SSP Connectors',         sub:'12 partners', x:0.32, y:0.62, latency:2.4 },
+  { id:'audit',   label:'Audit / Indexing',       sub:'BigQuery',  x:0.32, y:0.84, latency:3.0 },
+];
+
+// 16 leaves grouped under the 4 hubs.
+const LEAVES = [
+  // RTB  — header bidding endpoints
+  { id:'l1',  hub:'rtb', label:'CTV Auction',   x:0.62, y:0.06, arrive:3.2 },
+  { id:'l2',  hub:'rtb', label:'Video Web',     x:0.62, y:0.13, arrive:3.5 },
+  { id:'l3',  hub:'rtb', label:'Display US-E',  x:0.62, y:0.20, arrive:4.0, retry:{at:5.5, count:2} },
+  { id:'l4',  hub:'rtb', label:'Display EU',    x:0.62, y:0.27, arrive:4.4 },
+
+  // CACHE
+  { id:'l5',  hub:'cache', label:'Edge · IAD',    x:0.62, y:0.36, arrive:2.6 },
+  { id:'l6',  hub:'cache', label:'Edge · LHR',    x:0.62, y:0.43, arrive:3.0 },
+  { id:'l7',  hub:'cache', label:'Edge · NRT',    x:0.62, y:0.50, arrive:3.4, retry:{at:5.0, count:1} },
+  { id:'l8',  hub:'cache', label:'Edge · GRU',    x:0.62, y:0.57, arrive:8.0, delayed:true },
+
+  // SSP partners
+  { id:'l9',  hub:'ssp', label:'Magnite',        x:0.86, y:0.10, arrive:5.4 },
+  { id:'l10', hub:'ssp', label:'PubMatic',       x:0.86, y:0.20, arrive:5.8, retry:{at:7.5, count:3} },
+  { id:'l11', hub:'ssp', label:'Index Exchange', x:0.86, y:0.30, arrive:6.2 },
+  { id:'l12', hub:'ssp', label:'OpenX',          x:0.86, y:0.40, arrive:14.5, delayed:true, retry:{at:10.0, count:4} },
+
+  // AUDIT
+  { id:'l13', hub:'audit', label:'Deal Inventory', x:0.86, y:0.55, arrive:6.8 },
+  { id:'l14', hub:'audit', label:'Reporting DB',  x:0.86, y:0.66, arrive:7.6 },
+  { id:'l15', hub:'audit', label:'Audit Log',     x:0.86, y:0.77, arrive:8.4 },
+  { id:'l16', hub:'audit', label:'BI Warehouse',  x:0.86, y:0.88, arrive:11.0 },
+];
+
+const NODES = [SOURCE, ...HUBS, ...LEAVES];
+
+// Build edges: source -> hub, hub -> leaves under it
+const EDGES = [];
+HUBS.forEach(h => EDGES.push({ from: SOURCE, to: h, type:'trunk' }));
+LEAVES.forEach(l => {
+  const h = HUBS.find(h => h.id === l.hub);
+  EDGES.push({ from: h, to: l, type:'leaf', leaf: l });
+});
+
+/* === Build event timeline === */
+const EVENTS = [];
+function ev(t, kind, who, msg) { EVENTS.push({ t, kind, who, msg }); }
+ev(0.0, 'ok',   'PUBLISH',  'slot_position → header_l (v42)');
+HUBS.forEach(h => ev(h.latency, 'ok', h.label.split(' ')[0].toUpperCase(), 'ack ' + h.sub));
+LEAVES.forEach(l => {
+  if (l.retry) {
+    for (let i=1; i<=l.retry.count; i++) {
+      ev(l.retry.at + (i-1)*0.4, 'warn', l.label, `retry ${i}/${l.retry.count} (5xx upstream)`);
+    }
+  }
+  if (l.delayed) {
+    ev(Math.min(l.arrive - 1, 6.5), 'fail', l.label, 'queue depth high · delayed');
+  }
+  ev(l.arrive, 'ok', l.label, `applied · cache invalidated`);
+});
+EVENTS.sort((a,b) => a.t - b.t);
+
+/* === Resize canvas === */
+function resize() {
+  const rect = stage.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+
+/* === Geometry helpers === */
+function nodePos(n) {
+  const rect = stage.getBoundingClientRect();
+  return { x: n.x * rect.width, y: n.y * rect.height };
+}
+
+/* === Node state at time t === */
+function nodeStateAt(node, t) {
+  if (node.kind === 'source') {
+    return t < 0.05 ? 'pulse' : 'healthy';
+  }
+  if (HUBS.includes(node)) {
+    if (t < 0) return 'idle';
+    if (t < node.latency) return 'warming';
+    return 'healthy';
+  }
+  // leaf
+  if (t < 0) return 'idle';
+  const inRetry = node.retry && t >= node.retry.at && t < node.retry.at + node.retry.count * 0.4 + 0.4 && t < node.arrive;
+  if (inRetry) return 'retry';
+  if (node.delayed && t < node.arrive && t > 4) return 'delayed';
+  if (t < node.arrive) return 'warming';
+  return 'healthy';
+}
+
+/* === Edge progress (0..1) at time t === */
+function edgeProgress(edge, t) {
+  if (edge.type === 'trunk') {
+    const dur = edge.to.latency;
+    if (t <= 0) return 0;
+    if (t >= dur) return 1;
+    return t / dur;
+  } else {
+    // leaf edge: starts when hub becomes healthy
+    const hub = edge.from;
+    const leaf = edge.to;
+    const start = hub.latency;
+    const end = leaf.arrive;
+    if (t <= start) return 0;
+    if (t >= end) return 1;
+    return (t - start) / (end - start);
+  }
+}
+
+/* === Drawing === */
+let now = 0;
+let tipNode = null;
+
+function drawScene() {
+  const rect = stage.getBoundingClientRect();
+  ctx.clearRect(0, 0, rect.width, rect.height);
+
+  // Subtle grid background
+  ctx.strokeStyle = 'rgba(35,40,80,0.35)';
+  ctx.lineWidth = 1;
+  const grid = 32;
+  for (let x = grid; x < rect.width; x += grid) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, rect.height); ctx.stroke();
+  }
+  for (let y = grid; y < rect.height; y += grid) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(rect.width, y); ctx.stroke();
+  }
+
+  // Edges first
+  EDGES.forEach(e => drawEdge(e));
+
+  // Nodes
+  NODES.forEach(n => drawNode(n));
+}
+
+function drawEdge(edge) {
+  const a = nodePos(edge.from);
+  const b = nodePos(edge.to);
+  const p = edgeProgress(edge, now);
+
+  // Path: gentle bezier
+  const mx = (a.x + b.x) / 2;
+  const my = a.y;
+  const my2 = b.y;
+  const cx1 = mx, cy1 = my;
+  const cx2 = mx, cy2 = my2;
+
+  // base wire
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = 'rgba(35,40,80,0.9)';
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.bezierCurveTo(cx1, cy1, cx2, cy2, b.x, b.y);
+  ctx.stroke();
+
+  // animated traveling glow if there's progress
+  if (p > 0 && p < 1) {
+    const leaf = edge.leaf;
+    const inRetry = leaf && leaf.retry && now >= leaf.retry.at && now < leaf.retry.at + leaf.retry.count * 0.4 + 0.4 && now < leaf.arrive;
+    const isDelayed = leaf && leaf.delayed;
+
+    let color = 'rgba(140,245,133,'; // neon
+    if (inRetry) color = 'rgba(245,197,24,';
+    else if (isDelayed) color = 'rgba(255,107,107,';
+
+    // gradient stroke from already-traveled portion
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = color + '0.22)';
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.bezierCurveTo(cx1, cy1, cx2, cy2, b.x, b.y);
+    ctx.stroke();
+
+    // glowing head — sample a few points along the bezier
+    const head = bezierPoint(a, {x:cx1,y:cy1}, {x:cx2,y:cy2}, b, p);
+    const tail = bezierPoint(a, {x:cx1,y:cy1}, {x:cx2,y:cy2}, b, Math.max(0, p - 0.18));
+
+    const grad = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+    grad.addColorStop(0, color + '0)');
+    grad.addColorStop(0.5, color + '0.6)');
+    grad.addColorStop(1, color + '1.0)');
+
+    ctx.save();
+    ctx.shadowColor = color + '0.9)';
+    ctx.shadowBlur = 14;
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(tail.x, tail.y);
+    ctx.lineTo(head.x, head.y);
+    ctx.stroke();
+    ctx.restore();
+
+    // little packet
+    ctx.save();
+    ctx.fillStyle = color + '1.0)';
+    ctx.shadowColor = color + '0.9)';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(head.x, head.y, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  } else if (p >= 1) {
+    // settled glow (subtle)
+    const leaf = edge.leaf;
+    const isDelayed = leaf && leaf.delayed;
+    const baseColor = isDelayed ? 'rgba(255,107,107,' : 'rgba(140,245,133,';
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = baseColor + '0.35)';
+    ctx.shadowColor = baseColor + '0.5)';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.bezierCurveTo(cx1, cy1, cx2, cy2, b.x, b.y);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+}
+
+function bezierPoint(p0, p1, p2, p3, t) {
+  const u = 1 - t;
+  return {
+    x: u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
+    y: u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y,
+  };
+}
+
+function drawNode(n) {
+  const p = nodePos(n);
+  const state = nodeStateAt(n, now);
+
+  let color = '#5A5E83';
+  if (state === 'healthy') color = '#8CF585';
+  else if (state === 'warming') color = '#6E8BFF';
+  else if (state === 'retry') color = '#F5C518';
+  else if (state === 'delayed') color = '#FF6B6B';
+  else if (state === 'pulse') color = '#8CF585';
+
+  const isSource = n.kind === 'source';
+  const isHub = HUBS.includes(n);
+  const r = isSource ? 22 : isHub ? 14 : 8;
+
+  // Pulse rings (when state changes, especially on healthy arrive)
+  if (n.arrive !== undefined) {
+    const dt = now - n.arrive;
+    if (dt > 0 && dt < 0.9) {
+      const ring = r + dt * 60;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, ring, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(140,245,133,${0.55 * (1 - dt/0.9)})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+  if (isHub && now > n.latency && now < n.latency + 0.9) {
+    const dt = now - n.latency;
+    const ring = r + dt * 50;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, ring, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(110,139,255,${0.5 * (1 - dt/0.9)})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  if (isSource && now < 0.6) {
+    const ring = r + now * 80;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, ring, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(140,245,133,${0.6 * (1 - now/0.6)})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Retry ring spin
+  if (state === 'retry') {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate((now * 4) % (Math.PI * 2));
+    ctx.beginPath();
+    ctx.arc(0, 0, r + 5, 0, Math.PI * 1.2);
+    ctx.strokeStyle = 'rgba(245,197,24,0.85)';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Delayed: dashed warning ring pulsing
+  if (state === 'delayed') {
+    ctx.save();
+    ctx.setLineDash([4, 3]);
+    ctx.strokeStyle = `rgba(255,107,107,${0.5 + 0.3 * Math.sin(now * 4)})`;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r + 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Glow halo
+  if (state === 'healthy' || state === 'pulse') {
+    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 2.4);
+    grd.addColorStop(0, 'rgba(140,245,133,0.35)');
+    grd.addColorStop(1, 'rgba(140,245,133,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(p.x - r*2.4, p.y - r*2.4, r*4.8, r*4.8);
+  }
+
+  // Node body
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  if (state === 'idle') {
+    ctx.fillStyle = '#141733';
+    ctx.fill();
+    ctx.strokeStyle = '#232856';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+  } else {
+    const grd = ctx.createRadialGradient(p.x - r*0.3, p.y - r*0.4, 0, p.x, p.y, r);
+    grd.addColorStop(0, lighten(color, 0.3));
+    grd.addColorStop(1, color);
+    ctx.fillStyle = grd;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = isSource ? 28 : isHub ? 16 : 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // inner highlight
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r * 0.55, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fill();
+  }
+
+  // Inner icon for source/hub
+  if (isSource) {
+    ctx.fillStyle = '#0A0C1C';
+    ctx.font = '700 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('▲', p.x, p.y + 1);
+  }
+
+  // Labels
+  ctx.fillStyle = state === 'idle' ? '#5A5E83' : '#E8EAF7';
+  ctx.font = isSource ? '600 12.5px Inter, sans-serif' : (isHub ? '600 11.5px Inter, sans-serif' : '500 11px Inter, sans-serif');
+  ctx.textAlign = isSource ? 'center' : (isHub ? 'left' : 'left');
+  ctx.textBaseline = 'middle';
+
+  if (isSource) {
+    ctx.fillText(n.label, p.x, p.y + r + 14);
+    ctx.fillStyle = '#8E92B5';
+    ctx.font = '500 10.5px JetBrains Mono, monospace';
+    ctx.fillText(n.sub, p.x, p.y + r + 28);
+  } else if (isHub) {
+    ctx.fillText(n.label, p.x + r + 8, p.y - 4);
+    ctx.fillStyle = '#5A5E83';
+    ctx.font = '500 10px JetBrains Mono, monospace';
+    ctx.fillText(n.sub, p.x + r + 8, p.y + 8);
+  } else {
+    ctx.fillText(n.label, p.x + r + 7, p.y);
+    // status micro-label
+    let sub = '';
+    let subColor = '#5A5E83';
+    if (state === 'healthy') { sub = '✓ synced'; subColor = '#8CF585'; }
+    else if (state === 'warming') { sub = '… in flight'; subColor = '#6E8BFF'; }
+    else if (state === 'retry') { sub = `↻ retry ${Math.min(n.retry.count, Math.floor((now - n.retry.at)/0.4) + 1)}/${n.retry.count}`; subColor = '#F5C518'; }
+    else if (state === 'delayed') { sub = '⚠ delayed'; subColor = '#FF6B6B'; }
+    if (sub) {
+      ctx.fillStyle = subColor;
+      ctx.font = '500 9.5px JetBrains Mono, monospace';
+      ctx.fillText(sub, p.x + r + 7, p.y + 11);
+    }
+  }
+}
+
+function lighten(hex, amt) {
+  // parse hex
+  const h = hex.replace('#','');
+  const r = parseInt(h.substr(0,2),16);
+  const g = parseInt(h.substr(2,2),16);
+  const b = parseInt(h.substr(4,2),16);
+  const lr = Math.min(255, r + (255-r)*amt) | 0;
+  const lg = Math.min(255, g + (255-g)*amt) | 0;
+  const lb = Math.min(255, b + (255-b)*amt) | 0;
+  return `rgb(${lr},${lg},${lb})`;
+}
+
+/* === Counters & ticker === */
+const cSynced = document.getElementById('cSynced');
+const cRetry = document.getElementById('cRetry');
+const cDelayed = document.getElementById('cDelayed');
+const fill = document.getElementById('fill');
+const phead = document.getElementById('phead');
+const clk = document.getElementById('clk');
+const phase = document.getElementById('phase');
+const feed = document.getElementById('feed');
+
+let lastEventIdx = -1;
+function updateUI() {
+  let synced = 0, retry = 0, delayed = 0;
+  // count per leaf at current time, scale to 128 deals
+  const total = LEAVES.length;
+  LEAVES.forEach(l => {
+    const s = nodeStateAt(l, now);
+    if (s === 'healthy') synced++;
+    if (s === 'retry') retry++;
+    if (s === 'delayed') delayed++;
+  });
+  // Map to deal counts (rough fan-out 8 deals/leaf)
+  const syncedDeals = Math.round(synced / total * 128);
+  cSynced.innerHTML = `${syncedDeals}<span class="small">/128</span>`;
+  cRetry.textContent = retry;
+  cDelayed.textContent = delayed;
+
+  const pct = Math.max(0, Math.min(1, now / TOTAL));
+  fill.style.width = (pct * 100) + '%';
+  phead.style.left = (pct * 100) + '%';
+
+  clk.textContent = (now >= 0 ? '+' : '') + now.toFixed(1) + 's';
+
+  if (now < 0.2) phase.textContent = 't = publish';
+  else if (now < 3.2) phase.textContent = 'fan-out · hubs';
+  else if (now < 7) phase.textContent = 'leaf propagation';
+  else if (now < 12) phase.textContent = 'retries · settling';
+  else phase.textContent = 'steady state';
+
+  // append events that just happened
+  while (lastEventIdx + 1 < EVENTS.length && EVENTS[lastEventIdx + 1].t <= now) {
+    lastEventIdx++;
+    const e = EVENTS[lastEventIdx];
+    appendEvent(e);
+  }
+}
+
+function appendEvent(e) {
+  const div = document.createElement('div');
+  div.className = 'ev ' + e.kind;
+  div.innerHTML = `<span class="t">+${e.t.toFixed(1).padStart(4,'0')}s</span><span class="who">${e.who}</span><span class="msg">${e.msg}</span>`;
+  feed.insertBefore(div, feed.firstChild);
+  // cap
+  while (feed.children.length > 8) feed.removeChild(feed.lastChild);
+}
+
+/* === Animation loop === */
+let playing = true;
+let speed = 1;
+let lastTime = performance.now();
+
+function loop(t) {
+  const dt = (t - lastTime) / 1000;
+  lastTime = t;
+  if (playing) {
+    now += dt * speed;
+    if (now >= TOTAL) { now = TOTAL; playing = false; updatePlayBtn(); }
+  }
+  drawScene();
+  updateUI();
+  requestAnimationFrame(loop);
+}
+
+/* === Scrubber marks === */
+function paintMarks() {
+  const marks = document.getElementById('marks');
+  marks.innerHTML = '';
+  const stops = [
+    { t: 0,    label: 'publish' },
+    { t: 3,    label: 'hubs ack' },
+    { t: 7,    label: 'retries' },
+    { t: 14,   label: 'fully synced' },
+    { t: 30,   label: '+30s' },
+  ];
+  stops.forEach(s => {
+    const m = document.createElement('div');
+    m.className = 'mark';
+    m.style.left = (s.t / TOTAL * 100) + '%';
+    m.innerHTML = `<span class="lab">${s.label}</span>`;
+    marks.appendChild(m);
+  });
+}
+
+/* === Controls === */
+const playBtn = document.getElementById('play');
+const playIcon = document.getElementById('playIcon');
+function updatePlayBtn() {
+  if (playing) {
+    playIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+  } else {
+    playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+  }
+}
+playBtn.addEventListener('click', () => {
+  if (now >= TOTAL) { now = 0; lastEventIdx = -1; feed.innerHTML = ''; }
+  playing = !playing;
+  updatePlayBtn();
+});
+document.getElementById('restart').addEventListener('click', () => {
+  now = 0; lastEventIdx = -1; feed.innerHTML = '';
+  playing = true; updatePlayBtn();
+});
+
+document.querySelectorAll('.speed-bar button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.speed-bar button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    speed = parseFloat(b.dataset.spd);
+  });
+});
+
+/* === Scrubber drag === */
+const scrubber = document.querySelector('.scrubber');
+let dragging = false;
+function scrubAt(e) {
+  const rect = scrubber.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  now = Math.max(0, Math.min(1, x)) * TOTAL;
+  // rebuild feed for the chosen time
+  feed.innerHTML = '';
+  lastEventIdx = -1;
+  while (lastEventIdx + 1 < EVENTS.length && EVENTS[lastEventIdx + 1].t <= now) {
+    lastEventIdx++;
+    appendEvent(EVENTS[lastEventIdx]);
+  }
+}
+scrubber.addEventListener('mousedown', e => { dragging = true; playing = false; updatePlayBtn(); scrubAt(e); });
+window.addEventListener('mousemove', e => { if (dragging) scrubAt(e); });
+window.addEventListener('mouseup', () => { dragging = false; });
+
+/* === Hover tip on nodes === */
+canvas.addEventListener('mousemove', e => {
+  const rect = stage.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  let hit = null;
+  for (const n of NODES) {
+    const p = nodePos(n);
+    const r = n.kind === 'source' ? 22 : HUBS.includes(n) ? 14 : 8;
+    const d = Math.hypot(p.x - mx, p.y - my);
+    if (d <= r + 4) { hit = n; break; }
+  }
+  if (hit) {
+    tipNode = hit;
+    const p = nodePos(hit);
+    const s = nodeStateAt(hit, now);
+    let stateText = s;
+    let stateColor = '#8E92B5';
+    if (s === 'healthy') { stateText = 'Healthy'; stateColor = '#8CF585'; }
+    else if (s === 'warming') { stateText = 'Syncing'; stateColor = '#6E8BFF'; }
+    else if (s === 'retry') { stateText = 'Retrying'; stateColor = '#F5C518'; }
+    else if (s === 'delayed') { stateText = 'Delayed'; stateColor = '#FF6B6B'; }
+    else if (s === 'idle') { stateText = 'Pending'; }
+
+    let extra = '';
+    if (hit.arrive !== undefined) {
+      extra += `<div class="row"><span>Arrival</span><span class="v">+${hit.arrive.toFixed(1)}s</span></div>`;
+    }
+    if (HUBS.includes(hit)) {
+      extra += `<div class="row"><span>Hub latency</span><span class="v">${hit.latency.toFixed(1)}s</span></div>`;
+    }
+    if (hit.retry) {
+      extra += `<div class="row"><span>Retries</span><span class="v">${hit.retry.count}× @ +${hit.retry.at.toFixed(1)}s</span></div>`;
+    }
+    if (hit.delayed) {
+      extra += `<div class="row"><span>SLA</span><span class="v" style="color:#FF6B6B">breach</span></div>`;
+    }
+
+    tip.innerHTML = `<b>${hit.label}</b>
+      <div class="row"><span>Status</span><span class="v" style="color:${stateColor}">${stateText}</span></div>
+      ${extra}`;
+    tip.style.left = (p.x + 16) + 'px';
+    tip.style.top = (p.y + 16) + 'px';
+    tip.style.opacity = 1;
+    canvas.style.cursor = 'pointer';
+  } else {
+    tipNode = null;
+    tip.style.opacity = 0;
+    canvas.style.cursor = 'default';
+  }
+});
+canvas.addEventListener('mouseleave', () => { tip.style.opacity = 0; });
+
+/* === init === */
+resize();
+paintMarks();
+updatePlayBtn();
+requestAnimationFrame(loop);
+</script>
+
+</body>
+</html>

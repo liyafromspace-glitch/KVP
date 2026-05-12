@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nexxen — Design System</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .ds-hero {
+      background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%);
+      color: #fff;
+      border-radius: var(--r-lg);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ds-hero::after {
+      content: "";
+      position: absolute;
+      right: -60px; top: -40px;
+      width: 240px; height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,230,118,0.20), transparent 70%);
+    }
+    .ds-hero h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      margin: 0 0 4px;
+    }
+    .ds-hero p {
+      margin: 0;
+      color: var(--navy-300);
+      font-size: 13px;
+      max-width: 480px;
+    }
+    .ds-hero .marker {
+      width: 64px; height: 64px;
+      border-radius: 14px;
+      background: var(--accent-500);
+      display: grid; place-items: center;
+      color: var(--navy-900);
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: -0.04em;
+      flex-shrink: 0;
+      box-shadow: 0 10px 30px rgba(0,230,118,0.35);
+    }
+    .ds-hero .meta {
+      margin-left: auto;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      z-index: 1;
+    }
+    .ds-hero .meta .item { font-size: 11px; color: var(--navy-300); display: flex; flex-direction: column; gap: 2px; }
+    .ds-hero .meta .item b { color: #fff; font-size: 14px; font-weight: 500; }
+
+    .ds-section { margin-bottom: 32px; }
+    .ds-section > h2 {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 0 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      display: flex; align-items: baseline; gap: 8px;
+    }
+    .ds-section > h2 .num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-subtle);
+      letter-spacing: 0.04em;
+      font-weight: 500;
+    }
+
+    /* Color swatches */
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      gap: 4px;
+      margin-bottom: 18px;
+    }
+    .swatch {
+      aspect-ratio: 1.1 / 1;
+      border-radius: var(--r-sm);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      position: relative;
+    }
+    .swatch b { font-weight: 500; }
+    .swatch span { opacity: 0.7; font-size: 9px; }
+    .swatch.lg { aspect-ratio: 1 / 1; }
+
+    .ramp-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .ramp-label .desc { text-transform: none; letter-spacing: 0; color: var(--text-subtle); font-weight: 400; }
+
+    /* Status colors */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .status-tile {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .status-tile .chip {
+      width: 36px; height: 36px;
+      border-radius: var(--r-md);
+      display: grid; place-items: center;
+    }
+    .status-tile .chip svg { width: 18px; height: 18px; }
+    .status-tile .l { font-size: 12px; font-weight: 500; }
+    .status-tile .v { font-size: 11px; font-family: var(--font-mono); color: var(--text-subtle); }
+
+    /* Type scale */
+    .type-row {
+      display: grid;
+      grid-template-columns: 90px 90px 1fr;
+      align-items: baseline;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--hairline);
+      gap: 18px;
+    }
+    .type-row:last-child { border-bottom: 0; }
+    .type-row .name { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+    .type-row .meta { font-size: 11px; color: var(--text-subtle); font-family: var(--font-mono); }
+    .type-row .sample { color: var(--text); }
+    .type-display { font-size: 44px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; }
+    .type-h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; }
+    .type-h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+    .type-h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.25; }
+    .type-h4 { font-size: 16px; font-weight: 600; letter-spacing: -0.005em; line-height: 1.3; }
+    .type-body { font-size: 13px; line-height: 1.5; }
+    .type-sm { font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+    .type-xs { font-size: 11px; color: var(--text-muted); letter-spacing: 0.02em; line-height: 1.4; }
+    .type-mono { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+
+    /* Buttons grid */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 100px repeat(5, 1fr);
+      gap: 12px 18px;
+      align-items: center;
+    }
+    .btn-grid .head {
+      font-size: 11px; color: var(--text-muted); font-weight: 500;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    .btn-grid .row-l {
+      font-size: 11px; color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .icons-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+    }
+    .icons-bar .ic {
+      width: 32px; height: 32px;
+      border-radius: var(--r-sm);
+      background: var(--bg-alt);
+      display: grid; place-items: center;
+      color: var(--text-muted);
+    }
+    .icons-bar .ic svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+    /* token table */
+    .tok-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .tok-tbl td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--hairline);
+      font-family: var(--font-mono);
+    }
+    .tok-tbl td:first-child { color: var(--text); }
+    .tok-tbl td:nth-child(2) { color: var(--text-subtle); }
+    .tok-tbl .preview {
+      width: 22px; height: 22px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .principle {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: 16px;
+    }
+    .principle .num { font-family: var(--font-mono); font-size: 10px; color: var(--accent-700); letter-spacing: 0.1em; }
+    .principle h4 { margin: 4px 0 6px; font-size: 14px; font-weight: 600; letter-spacing: -0.005em; }
+    .principle p { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+    }
+  </style>
+</head>
+<body data-route="design">
+  <div class="app">
+    <div id="nav-slot"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="crumbs">Brand <span style="color:var(--text-subtle)">/</span> <span>Design System</span></div>
+        <div class="right">
+          <div class="page-tabs">
+            <a href="design-system.html" class="on">System</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="form.html">Deal Form</a>
+            <a href="table.html">Reports</a>
+          </div>
+          <button class="btn btn-secondary btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+            Export tokens
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- HERO -->
+        <section class="ds-hero">
+          <div class="marker">n</div>
+          <div>
+            <h1>Nexxen Design System</h1>
+            <p>The visual language behind Nexxen's ad-server, DSP and exchange products. Built for data-dense interfaces — calm by default, decisive when it matters.</p>
+          </div>
+          <div class="meta">
+            <div class="item"><span>Version</span><b>2.4.0</b></div>
+            <div class="item"><span>Updated</span><b>May 2026</b></div>
+            <div class="item"><span>Maintained by</span><b>Brand Studio</b></div>
+          </div>
+        </section>
+
+        <!-- PRINCIPLES -->
+        <section class="ds-section">
+          <h2>Principles <span class="num">01</span></h2>
+          <div class="principles">
+            <div class="principle">
+              <div class="num">01 / DENSITY</div>
+              <h4>Show the data, hide the chrome</h4>
+              <p>Operators live in this product. Surfaces stay quiet so seven-figure numbers, status, and deltas can do the work.</p>
+            </div>
+            <div class="principle">
+              <div class="num">02 / DEEP NAVIGATION</div>
+              <h4>Navy anchors the workspace</h4>
+              <p>The deep-navy nav grounds long sessions. Amber accents call out the one path forward when there is one.</p>
+            </div>
+            <div class="principle">
+              <div class="num">03 / PRECISION</div>
+              <h4>Numbers are first-class</h4>
+              <p>Tabular numerals, monospace IDs, and disciplined alignment keep tables and forms scannable at speed.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- COLOR -->
+        <section class="ds-section">
+          <h2>Color <span class="num">02</span></h2>
+
+          <div class="ramp-label">Navy <span class="desc">/ Navigation panel & deep surfaces — primary brand color</span></div>
+          <div class="swatch-grid">
+            <div class="swatch" style="background:var(--navy-950);color:#fff"><b>950</b><span>0E1024</span></div>
+            <div class="swatch" style="background:var(--navy-900);color:#fff"><b>900</b><span>14172E</span></div>
+            <div class="swatch" style="background:var(--navy-800);color:#fff"><b>800</b><span>1A1D3A</span></div>
+            <div class="swatch" style="background:var(--navy-700);color:#fff"><b>700</b><span>252849</span></div>
+            <div class="swatch" style="background:var(--navy-600);color:#fff"><b>600</b><span>353869</span></div>
+            <div class="swatch" style="background:var(--navy-500);color:#fff"><b>500</b><span>4A4E85</span></div>
+            <div class="swatch" style="background:var(--navy-400);color:#fff"><b>400</b><span>6F73A6</span></div>
+            <div class="swatch" style="background:var(--navy-300);color:#0E1024"><b>300</b><span>9B9EC5</span></div>
+            <div class="swatch" style="background:var(--navy-200);color:#0E1024"><b>200</b><span>C5C7DD</span></div>
+            <div class="swatch" style="background:var(--navy-100);color:#0E1024"><b>100</b><span>E4E5EE</span></div>
+            <div class="swatch" style="background:var(--bg);color:#0E1024;border:1px solid var(--line)"><b>50</b><span>F4F5FA</span></div>
+          </div>
+
+          <div class="ramp-label">Neon Green <span class="desc">/ Primary action, focus, data hero — used sparingly</span></div>
+          <div class="swatch-grid">
+            <div class="swatch" style="background:var(--accent-700);color:#fff"><b>700</b><span>008746</span></div>
+            <div class="swatch" style="background:var(--accent-600);color:#0E1024"><b>600</b><span>00B85F</span></div>
+            <div class="swatch" style="background:var(--accent-500);color:#0E1024"><b>500</b><span>00E676</span></div>
+            <div class="swatch" style="background:var(--accent-400);color:#0E1024"><b>400</b><span>25E373</span></div>
+            <div class="swatch" style="background:var(--accent-300);color:#0E1024"><b>300</b><span>54EE91</span></div>
+            <div class="swatch" style="background:var(--accent-200);color:#0E1024"><b>200</b><span>8FF6B7</span></div>
+            <div class="swatch" style="background:var(--accent-100);color:#0E1024"><b>100</b><span>C5FCDB</span></div>
+            <div class="swatch" style="background:var(--accent-50);color:#0E1024"><b>50</b><span>E8FFF1</span></div>
+            <div class="swatch" style="background:transparent;border:1px dashed var(--line);color:var(--text-subtle);justify-content:center;align-items:center;text-align:center;font-size:9px">Use<br>sparingly</div>
+            <div class="swatch" style="background:transparent;border:1px dashed var(--line);color:var(--text-subtle);justify-content:center;align-items:center;text-align:center;font-size:9px">≤5%<br>of UI</div>
+            <div class="swatch" style="background:transparent;border:1px dashed var(--line);color:var(--text-subtle);justify-content:center;align-items:center;text-align:center;font-size:9px">No<br>gradients</div>
+          </div>
+
+          <div class="ramp-label" style="margin-top:24px">Status <span class="desc">/ Functional colors with paired surfaces for tags & alerts</span></div>
+          <div class="status-grid">
+            <div class="status-tile">
+              <div class="chip" style="background:var(--success-bg);color:var(--success)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+              <div>
+                <div class="l">Success</div>
+                <div class="v">#2E9F6E</div>
+              </div>
+            </div>
+            <div class="status-tile">
+              <div class="chip" style="background:var(--warning-bg);color:var(--warning)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+              </div>
+              <div>
+                <div class="l">Warning</div>
+                <div class="v">#E89F0E</div>
+              </div>
+            </div>
+            <div class="status-tile">
+              <div class="chip" style="background:var(--danger-bg);color:var(--danger)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>
+              </div>
+              <div>
+                <div class="l">Danger</div>
+                <div class="v">#E5484D</div>
+              </div>
+            </div>
+            <div class="status-tile">
+              <div class="chip" style="background:var(--info-bg);color:var(--info)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              </div>
+              <div>
+                <div class="l">Info</div>
+                <div class="v">#4F62F2</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TYPOGRAPHY -->
+        <section class="ds-section">
+          <h2>Typography <span class="num">03</span></h2>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-h"><h3>Type scale</h3><div class="right muted" style="font-size:11px">Inter / variable</div></div>
+              <div class="card-b" style="padding: 4px 18px">
+                <div class="type-row"><div class="name">Display</div><div class="meta">44 / 600 / -3%</div><div class="sample type-display">$32,472K</div></div>
+                <div class="type-row"><div class="name">H1</div><div class="meta">32 / 600 / -2.5%</div><div class="sample type-h1">Paramount-CTV-CBS-Sports</div></div>
+                <div class="type-row"><div class="name">H2</div><div class="meta">24 / 600 / -2%</div><div class="sample type-h2">Campaign Goals</div></div>
+                <div class="type-row"><div class="name">H3</div><div class="meta">20 / 600 / -1.5%</div><div class="sample type-h3">Top Placements</div></div>
+                <div class="type-row"><div class="name">H4</div><div class="meta">16 / 600</div><div class="sample type-h4">Pricing and buyer</div></div>
+                <div class="type-row"><div class="name">Body</div><div class="meta">13 / 400</div><div class="sample type-body">Bid through Google ADX with priority preferenced for managed-demand strategy partners.</div></div>
+                <div class="type-row"><div class="name">Small</div><div class="meta">12 / 400</div><div class="sample type-sm">Last week (EST) • Yesterday • $31,701</div></div>
+                <div class="type-row"><div class="name">Caption</div><div class="meta">11 / 500 / 4%</div><div class="sample type-xs">PRICING AND BUYER</div></div>
+                <div class="type-row"><div class="name">Mono</div><div class="meta">12 / JetBrains</div><div class="sample type-mono">UMB-TD-FBC4-5A4F438</div></div>
+              </div>
+            </div>
+
+            <div class="col" style="gap:12px">
+              <div class="card">
+                <div class="card-h"><h3>Stack</h3></div>
+                <div class="card-b">
+                  <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase">Sans</div>
+                  <div style="font-size:32px;font-weight:600;letter-spacing:-0.03em;line-height:1">Aa Bb 0123</div>
+                  <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);margin-top:8px">'Inter', system-ui, sans-serif</div>
+                  <div style="display:flex;gap:8px;margin-top:10px;font-size:11px;color:var(--text-muted)">
+                    <span>400</span><span>500</span><span>600</span><span>700</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-h"><h3>Mono</h3></div>
+                <div class="card-b">
+                  <div style="font-family:var(--font-mono);font-size:24px;font-weight:500;line-height:1">Aa 01l|I</div>
+                  <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-subtle);margin-top:8px">'JetBrains Mono', ui-monospace</div>
+                  <p style="font-size:11px;color:var(--text-muted);margin:8px 0 0;line-height:1.5">Used for IDs, request fingerprints, code paths, and currency tickers in dense tables.</p>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-h"><h3>Numerics</h3></div>
+                <div class="card-b">
+                  <div style="display:flex;gap:18px">
+                    <div style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-0.02em">$32,472</div>
+                    <div style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-0.02em">62,459</div>
+                  </div>
+                  <p style="font-size:11px;color:var(--text-muted);margin:8px 0 0;line-height:1.5">Tabular numerals on for any column or KPI showing aligned values.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- BUTTONS -->
+        <section class="ds-section">
+          <h2>Buttons <span class="num">04</span></h2>
+          <div class="card">
+            <div class="card-b" style="padding: 22px 24px">
+              <div class="btn-grid">
+                <div></div>
+                <div class="head">Primary</div>
+                <div class="head">Accent</div>
+                <div class="head">Secondary</div>
+                <div class="head">Ghost</div>
+                <div class="head">Danger</div>
+
+                <div class="row-l">DEFAULT</div>
+                <div><button class="btn btn-primary">Save deal</button></div>
+                <div><button class="btn btn-accent">Approve</button></div>
+                <div><button class="btn btn-secondary">Cancel</button></div>
+                <div><button class="btn btn-ghost">More</button></div>
+                <div><button class="btn btn-danger">Pause</button></div>
+
+                <div class="row-l">W/ ICON</div>
+                <div><button class="btn btn-primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> New deal
+                </button></div>
+                <div><button class="btn btn-accent">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Approve
+                </button></div>
+                <div><button class="btn btn-secondary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Export
+                </button></div>
+                <div><button class="btn btn-ghost">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button></div>
+                <div><button class="btn btn-danger">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Archive
+                </button></div>
+
+                <div class="row-l">SMALL</div>
+                <div><button class="btn btn-primary btn-sm">Save</button></div>
+                <div><button class="btn btn-accent btn-sm">Approve</button></div>
+                <div><button class="btn btn-secondary btn-sm">Cancel</button></div>
+                <div><button class="btn btn-ghost btn-sm">More</button></div>
+                <div><button class="btn btn-danger btn-sm">Pause</button></div>
+
+                <div class="row-l">LARGE</div>
+                <div><button class="btn btn-primary btn-lg">Save deal</button></div>
+                <div><button class="btn btn-accent btn-lg">Approve</button></div>
+                <div><button class="btn btn-secondary btn-lg">Cancel</button></div>
+                <div><button class="btn btn-ghost btn-lg">More</button></div>
+                <div><button class="btn btn-danger btn-lg">Pause</button></div>
+              </div>
+
+              <hr class="hr" />
+
+              <div style="display:flex;gap:32px;align-items:center;flex-wrap:wrap">
+                <div>
+                  <div class="label" style="margin-bottom:8px">Segmented</div>
+                  <div class="seg">
+                    <button class="on">All inventory</button>
+                    <button>Deals</button>
+                    <button>PMP</button>
+                  </div>
+                </div>
+                <div>
+                  <div class="label" style="margin-bottom:8px">Toggle</div>
+                  <label class="toggle">
+                    <input type="checkbox" checked />
+                    <span class="track"></span>
+                    <span>Active</span>
+                  </label>
+                </div>
+                <div>
+                  <div class="label" style="margin-bottom:8px">Pills</div>
+                  <div class="row">
+                    <span class="pill pill-success"><span class="dot dot-success"></span> Live</span>
+                    <span class="pill pill-warning"><span class="dot dot-warning"></span> Pending</span>
+                    <span class="pill pill-danger"><span class="dot dot-danger"></span> Paused</span>
+                    <span class="pill pill-accent">Managed</span>
+                    <span class="pill pill-neutral">Draft</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="label" style="margin-bottom:8px">Checkbox</div>
+                  <div class="row" style="gap:14px">
+                    <label class="check"><input type="checkbox" checked style="background-color: rgb(37, 40, 73); border-color: rgb(37, 40, 73)" /> Enable request pacing</label>
+                    <label class="check"><input type="checkbox" /> DSP precedence</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TOKENS -->
+        <section class="ds-section">
+          <h2>Tokens reference <span class="num">05</span></h2>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-h"><h3>Color tokens</h3></div>
+              <div class="card-b" style="padding:0">
+                <table class="tok-tbl">
+                  <tbody>
+                    <tr><td><span class="preview" style="background:var(--navy-800)"></span>--navy-800</td><td>#1A1D3A</td><td>Navigation panel</td></tr>
+                    <tr><td><span class="preview" style="background:var(--navy-700)"></span>--navy-700</td><td>#252849</td><td>Hover surface in nav</td></tr>
+                    <tr><td><span class="preview" style="background:var(--accent-500)"></span>--accent-500</td><td>#00E676</td><td>Primary action</td></tr>
+                    <tr><td><span class="preview" style="background:var(--bg)"></span>--bg</td><td>#F4F5FA</td><td>App background</td></tr>
+                    <tr><td><span class="preview" style="background:var(--surface);border-color:var(--line)"></span>--surface</td><td>#FFFFFF</td><td>Cards, inputs</td></tr>
+                    <tr><td><span class="preview" style="background:var(--text)"></span>--text</td><td>#15172A</td><td>Primary text</td></tr>
+                    <tr><td><span class="preview" style="background:var(--text-muted)"></span>--text-muted</td><td>#5A5E78</td><td>Secondary text</td></tr>
+                    <tr><td><span class="preview" style="background:var(--success)"></span>--success</td><td>#2E9F6E</td><td>Live, deltas up</td></tr>
+                    <tr><td><span class="preview" style="background:var(--danger)"></span>--danger</td><td>#E5484D</td><td>Errors, deltas down</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col" style="gap:12px">
+              <div class="card">
+                <div class="card-h"><h3>Radius</h3></div>
+                <div class="card-b" style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
+                  <div style="text-align:center"><div style="width:48px;height:48px;background:var(--bg-alt);border:1px solid var(--line);border-radius:3px"></div><div class="type-mono" style="margin-top:6px">3 / xs</div></div>
+                  <div style="text-align:center"><div style="width:48px;height:48px;background:var(--bg-alt);border:1px solid var(--line);border-radius:4px"></div><div class="type-mono" style="margin-top:6px">4 / sm</div></div>
+                  <div style="text-align:center"><div style="width:48px;height:48px;background:var(--bg-alt);border:1px solid var(--line);border-radius:6px"></div><div class="type-mono" style="margin-top:6px">6 / md</div></div>
+                  <div style="text-align:center"><div style="width:48px;height:48px;background:var(--bg-alt);border:1px solid var(--line);border-radius:10px"></div><div class="type-mono" style="margin-top:6px">10 / lg</div></div>
+                  <div style="text-align:center"><div style="width:48px;height:48px;background:var(--bg-alt);border:1px solid var(--line);border-radius:14px"></div><div class="type-mono" style="margin-top:6px">14 / xl</div></div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-h"><h3>Shadow</h3></div>
+                <div class="card-b" style="display:flex;gap:18px">
+                  <div style="text-align:center"><div style="width:60px;height:60px;background:#fff;border-radius:8px;box-shadow:var(--shadow-xs)"></div><div class="type-mono" style="margin-top:8px">xs</div></div>
+                  <div style="text-align:center"><div style="width:60px;height:60px;background:#fff;border-radius:8px;box-shadow:var(--shadow-sm)"></div><div class="type-mono" style="margin-top:8px">sm</div></div>
+                  <div style="text-align:center"><div style="width:60px;height:60px;background:#fff;border-radius:8px;box-shadow:var(--shadow-md)"></div><div class="type-mono" style="margin-top:8px">md</div></div>
+                  <div style="text-align:center"><div style="width:60px;height:60px;background:#fff;border-radius:8px;box-shadow:var(--shadow-lg)"></div><div class="type-mono" style="margin-top:8px">lg</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

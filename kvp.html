@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nexxen — Key-Value Pairs</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Page-specific layout: 3-column workspace */
+    .kvp-shell {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      min-height: calc(100vh - 56px - 48px);
+      overflow: hidden;
+    }
+
+    .kvp-keys {
+      border-right: 1px solid var(--line);
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: #FBFBFD;
+    }
+    .kvp-key {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: var(--r-md);
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background .12s, color .12s;
+    }
+    .kvp-key:hover { background: var(--bg-alt); color: var(--text); }
+    .kvp-key.on {
+      background: var(--accent-100);
+      color: var(--navy-900);
+      font-weight: 500;
+    }
+    .kvp-key .ct {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-subtle);
+      font-variant-numeric: tabular-nums;
+    }
+    .kvp-key.on .ct { color: var(--accent-700); font-weight: 600; }
+    .kvp-key.add {
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .kvp-key.add svg { width: 14px; height: 14px; }
+
+    .kvp-main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .kvp-key-h {
+      padding: 22px 28px 18px;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .kvp-key-h h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+    }
+    .kvp-key-h .field {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    .kvp-key-h .field label {
+      position: absolute;
+      top: 0; left: 0;
+    }
+    .kvp-key-h .name-row {
+      display: flex; gap: 10px; align-items: flex-end;
+    }
+    .kvp-key-h .name-row .col {
+      flex: 0 1 320px;
+      gap: 6px;
+    }
+    .kvp-key-h .name-row .col label { color: var(--text-muted); font-size: 11px; font-weight: 500; }
+
+    .kvp-values {
+      padding: 16px 28px 28px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .kvp-vh {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .kvp-vh .input-icon { width: 280px; }
+    .kvp-vh .input-icon .input { background: transparent; border: 0; padding-left: 24px; }
+    .kvp-vh .input-icon .input:focus { box-shadow: none; }
+    .kvp-vh .acts {
+      margin-left: auto;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .kvp-vh .lnk {
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 500;
+      transition: color .12s;
+    }
+    .kvp-vh .lnk:hover { color: var(--text); }
+    .kvp-vh .lnk.danger:hover { color: var(--danger); }
+    .kvp-vh .add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--navy-900);
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .kvp-vh .add-btn .ic {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--accent-400);
+      display: grid; place-items: center;
+      color: var(--navy-900);
+      font-size: 14px;
+      line-height: 1;
+      box-shadow: 0 0 0 0 rgba(140,245,133,0);
+      transition: box-shadow .15s;
+    }
+    .kvp-vh .add-btn:hover .ic { box-shadow: 0 0 12px rgba(140,245,133,0.55); }
+    .kvp-vh .add-btn.disabled { color: var(--text-subtle); cursor: not-allowed; }
+    .kvp-vh .add-btn.disabled .ic { background: var(--navy-200); box-shadow: none; }
+
+    /* Empty state */
+    .kvp-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 0;
+      color: var(--text-subtle);
+      font-size: 13px;
+    }
+
+    /* Inline add row */
+    .kvp-inline {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      margin: 16px auto 0;
+      max-width: 640px;
+      padding: 18px 22px 22px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .kvp-inline .x {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 22px; height: 22px;
+      border-radius: var(--r-sm);
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--text-subtle);
+    }
+    .kvp-inline .x:hover { background: var(--bg-alt); color: var(--text); }
+    .kvp-inline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px 16px;
+      align-items: end;
+    }
+    .kvp-inline-grid .field label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+    .kvp-inline-grid .field label.required::after { color: var(--danger); }
+
+    .kvp-inline-pager {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .kvp-inline-pager .add-mini {
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .kvp-inline-pager .add-mini .ic {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--accent-400);
+      color: var(--navy-900);
+      display: grid; place-items: center;
+      font-size: 11px; font-weight: 700; line-height: 1;
+    }
+    .kvp-inline-pager .add-mini.alt .ic { background: var(--bg-alt); color: var(--text-muted); }
+
+    .kvp-or {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-subtle);
+      letter-spacing: 0.16em;
+      margin: 16px 0 12px;
+      position: relative;
+    }
+    .kvp-or::before, .kvp-or::after {
+      content: ""; position: absolute; top: 50%;
+      width: calc(50% - 22px); height: 1px; background: var(--line);
+    }
+    .kvp-or::before { left: 0; }
+    .kvp-or::after { right: 0; }
+
+    .kvp-csv {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-pill);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 13px;
+      transition: border-color .12s, background .12s;
+    }
+    .kvp-csv:hover { border-color: var(--navy-600); background: var(--bg-alt); }
+
+    /* Values table */
+    .kvp-vtable {
+      margin-top: 14px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .kvp-vtable th {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .kvp-vtable th .sort {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      margin-left: 4px;
+      gap: 1px;
+    }
+    .kvp-vtable th .sort svg { width: 8px; height: 4px; opacity: 0.5; }
+    .kvp-vtable th.actions { text-align: right; }
+    .kvp-vtable td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--hairline);
+      vertical-align: middle;
+    }
+    .kvp-vtable td.value { font-family: var(--font-mono); font-size: 12px; color: var(--text); }
+    .kvp-vtable td.actions { text-align: right; }
+    .kvp-vtable .del {
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .kvp-vtable .del:hover { color: var(--danger); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 76px;
+      right: 28px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--success);
+      border-radius: var(--r-md);
+      padding: 10px 18px 10px 14px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      z-index: 100;
+      animation: toastIn .3s ease;
+    }
+    .toast .ic {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--success);
+      color: #fff;
+      display: grid; place-items: center;
+    }
+    .toast .ic svg { width: 10px; height: 10px; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px) } }
+
+    /* Modal */
+    .scrim {
+      position: fixed; inset: 0;
+      background: rgba(20,23,46,0.55);
+      backdrop-filter: blur(2px);
+      display: grid;
+      place-items: center;
+      z-index: 200;
+      animation: fadeIn .15s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0 } }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-lg);
+      width: 560px;
+      max-width: calc(100vw - 40px);
+      animation: modalIn .2s ease;
+      overflow: hidden;
+    }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(8px) } }
+    .modal-h {
+      padding: 18px 22px 14px;
+      display: flex; align-items: center;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .modal-h h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .modal-h .x {
+      margin-left: auto;
+      width: 26px; height: 26px;
+      border-radius: var(--r-sm);
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .modal-h .x:hover { background: var(--bg-alt); color: var(--text); }
+    .modal-b { padding: 18px 22px 22px; }
+    .modal-f {
+      padding: 12px 22px 16px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      border-top: 1px solid var(--hairline);
+      background: var(--bg);
+    }
+
+    .modal .sub-h {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 12px;
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px 14px;
+      align-items: end;
+    }
+    .modal-grid .field label {
+      font-size: 11px; color: var(--text); font-weight: 500;
+    }
+
+    /* Warning modal — packages list */
+    .pkg-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 12px;
+    }
+    .pkg-table th {
+      text-align: left;
+      padding: 8px 12px;
+      font-weight: 600;
+      color: var(--text);
+      border-bottom: 1px solid var(--line);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+    }
+    .pkg-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .pkg-table a {
+      color: var(--info);
+      text-decoration: underline;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* Flow stage selector */
+    .stage-bar {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .stage-bar .stage-l {
+      font-size: 10px;
+      color: var(--text-subtle);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0 8px;
+      font-weight: 600;
+    }
+    .stage-bar button {
+      background: transparent;
+      border: 0;
+      padding: 5px 10px;
+      border-radius: var(--r-sm);
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .stage-bar button:hover { background: var(--bg-alt); color: var(--text); }
+    .stage-bar button.on {
+      background: var(--navy-800);
+      color: #fff;
+    }
+  </style>
+</head>
+<body data-route="form">
+  <div class="app">
+    <div id="nav-slot"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="crumbs">Deal <span style="color:var(--text-subtle)">/</span> <span>Key-Value Pairs</span></div>
+        <div class="right">
+          <div class="page-tabs">
+            <a href="design-system.html">System</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="form.html">Deal Form</a>
+            <a href="kvp.html" class="on">Key-Value Pairs</a>
+            <a href="table.html">Reports</a>
+          </div>
+          <div class="stage-bar">
+            <span class="stage-l">Flow</span>
+            <button data-stage="empty">Empty</button>
+            <button data-stage="config" class="on">Configured</button>
+            <button data-stage="add">Add values</button>
+            <button data-stage="modal-add">Modal</button>
+            <button data-stage="modal-csv">CSV</button>
+            <button data-stage="warn">Warn</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="content" style="padding: 16px 24px;">
+
+        <section class="kvp-shell">
+
+          <!-- Keys list -->
+          <aside class="kvp-keys" id="keys"></aside>
+
+          <!-- Main panel -->
+          <section class="kvp-main">
+            <div class="kvp-key-h">
+              <h2>Key1</h2>
+              <div class="name-row">
+                <div class="col">
+                  <label class="required" style="font-size:11px;color:var(--text);font-weight:500">Key Display Name</label>
+                  <input class="input input-flat" value="Page Position" />
+                </div>
+                <button class="btn btn-secondary" style="height:30px">Save</button>
+              </div>
+            </div>
+
+            <div class="kvp-values">
+              <div class="kvp-vh">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input class="input" placeholder="Search Values" />
+                </div>
+                <div class="acts">
+                  <span class="lnk">Download CSV</span>
+                  <span class="lnk danger" id="deleteAll">Delete All</span>
+                  <span class="add-btn" id="addBtn">
+                    <span class="ic">+</span>
+                    Add New
+                  </span>
+                </div>
+              </div>
+
+              <div id="bodyArea"></div>
+
+            </div>
+          </section>
+
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toastSlot"></div>
+
+  <!-- MODAL -->
+  <div id="modalSlot"></div>
+
+  <script src="app.js"></script>
+  <script>
+    const KEYS_DEFAULT = [
+      { id: 'k1', name: 'Page Position', n: 3, on: true },
+      { id: 'k2', name: 'Series Season', n: 12 },
+      { id: 'k3', name: 'Video Group ID', n: 8 },
+      { id: 'k4', name: 'Content Category', n: null },
+      { id: 'k5', name: 'Game Show', n: 4 },
+    ];
+    const KEYS_EMPTY = [
+      { id: 'k1', name: 'Key1', n: null, on: true },
+      { id: 'k2', name: 'Key2', n: null },
+      { id: 'k3', name: 'Key3', n: null },
+      { id: 'k4', name: 'Key4', n: null },
+      { id: 'k5', name: 'Key5', n: null },
+    ];
+    const VALUES = [
+      { v: 'abovethefold', d: 'Above the Fold' },
+      { v: 'belowthefold', d: 'Below the Fold' },
+      { v: 'bottom', d: 'Bottom' },
+    ];
+
+    function renderKeys(list) {
+      const html = list.map(k => `
+        <div class="kvp-key ${k.on ? 'on' : ''}">
+          <span>${k.name}</span>
+          ${k.n != null ? `<span class="ct">${k.n}</span>` : ''}
+        </div>
+      `).join('') + `
+        <div class="kvp-key add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+          Configure New
+        </div>
+      `;
+      document.getElementById('keys').innerHTML = html;
+    }
+
+    function renderTable() {
+      const rows = VALUES.map(r => `
+        <tr>
+          <td class="value">${r.v}</td>
+          <td>${r.d}</td>
+          <td class="actions"><span class="del">Delete</span></td>
+        </tr>
+      `).join('');
+      return `
+        <table class="kvp-vtable">
+          <thead>
+            <tr>
+              <th>Value <span class="sort"><svg viewBox="0 0 8 4"><path d="M0 4 4 0 8 4Z" fill="currentColor"/></svg><svg viewBox="0 0 8 4"><path d="M0 0 4 4 8 0Z" fill="currentColor"/></svg></span></th>
+              <th>Display Name <span class="sort"><svg viewBox="0 0 8 4"><path d="M0 4 4 0 8 4Z" fill="currentColor"/></svg><svg viewBox="0 0 8 4"><path d="M0 0 4 4 8 0Z" fill="currentColor"/></svg></span></th>
+              <th class="actions">Actions <span class="sort"><svg viewBox="0 0 8 4"><path d="M0 4 4 0 8 4Z" fill="currentColor"/></svg><svg viewBox="0 0 8 4"><path d="M0 0 4 4 8 0Z" fill="currentColor"/></svg></span></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function renderInlineAdd() {
+      return `
+        <div class="kvp-inline">
+          <span class="x" data-act="closeInline"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+          <div class="kvp-inline-grid">
+            <div class="field"><label class="required">Value</label><input class="input" placeholder="Type…" /></div>
+            <div class="field"><label class="required">Display Name</label><input class="input" placeholder="Type…" /></div>
+            <button class="btn btn-primary" data-act="saveValues">Save</button>
+          </div>
+          <div class="kvp-inline-pager">
+            <span class="add-mini alt"><span class="ic">−</span></span>
+            <span class="add-mini"><span class="ic">+</span> Add</span>
+          </div>
+          <div class="kvp-or">OR</div>
+          <button class="kvp-csv" data-act="openCsv">Upload CSV</button>
+        </div>
+      `;
+    }
+
+    function renderEmpty() { return `<div class="kvp-empty">No Values Defined</div>`; }
+
+    function showToast(msg) {
+      document.getElementById('toastSlot').innerHTML = `
+        <div class="toast">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <span>${msg}</span>
+        </div>
+      `;
+      setTimeout(() => { document.getElementById('toastSlot').innerHTML = ''; }, 3200);
+    }
+
+    function showModalAdd() {
+      document.getElementById('modalSlot').innerHTML = `
+        <div class="scrim" data-act="closeModal">
+          <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-h">
+              <h3>Add values</h3>
+              <span class="x" data-act="closeModal"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+            </div>
+            <div class="modal-b">
+              <h4 class="sub-h">Manual Input</h4>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin-bottom:10px">
+                <div class="field"><label>Value Name</label><input class="input" value="abovethefold" /></div>
+                <div class="field"><label>Display Name</label><input class="input" value="Above The Fold" /></div>
+                <div class="field"><label>Value Name</label><input class="input" value="belowthefold" /></div>
+                <div class="field"><label>Display Name</label><input class="input" value="Below the Fold" /></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px 14px;align-items:end">
+                <div class="field"><label>Value Name</label><input class="input" value="bottom" /></div>
+                <div class="field"><label>Display Name</label><input class="input" value="Bottom" /></div>
+                <button class="btn btn-primary" data-act="saveModal">Save</button>
+              </div>
+              <div class="kvp-inline-pager" style="margin-top:14px">
+                <span class="add-mini alt"><span class="ic">−</span></span>
+                <span class="add-mini"><span class="ic">+</span> Add</span>
+              </div>
+              <div class="kvp-or">OR</div>
+              <button class="kvp-csv" data-act="openCsv">Upload CSV</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showWarn() {
+      document.getElementById('modalSlot').innerHTML = `
+        <div class="scrim" data-act="closeModal">
+          <div class="modal" onclick="event.stopPropagation()" style="width:580px">
+            <div class="modal-h">
+              <h3>Warning</h3>
+              <span class="x" data-act="closeModal"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+            </div>
+            <div class="modal-b">
+              <p style="margin:0 0 8px;font-size:13px;color:var(--text-muted);line-height:1.5">Inventory packages are linked to this KVP. Please unlink them before deleting this value.</p>
+              <table class="pkg-table">
+                <thead><tr><th>Package</th><th>Associated Deal</th></tr></thead>
+                <tbody>
+                  ${Array.from({length:5}).map(() => `
+                    <tr>
+                      <td><a href="#">1674_package_1674_84996</a></td>
+                      <td><a href="#">deal_14514_78614-1664-1689777862137</a></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-f">
+              <button class="btn btn-primary" data-act="closeModal">OK</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function setStage(stage) {
+      document.querySelectorAll('.stage-bar button').forEach(b => b.classList.toggle('on', b.dataset.stage === stage));
+      const body = document.getElementById('bodyArea');
+      document.getElementById('modalSlot').innerHTML = '';
+      document.getElementById('toastSlot').innerHTML = '';
+      const addBtn = document.getElementById('addBtn');
+      addBtn.classList.remove('disabled');
+
+      if (stage === 'empty') {
+        renderKeys(KEYS_EMPTY);
+        body.innerHTML = renderEmpty();
+      } else if (stage === 'config') {
+        renderKeys(KEYS_DEFAULT);
+        body.innerHTML = renderTable();
+        showToast('Success! Your values are available for targeting.');
+      } else if (stage === 'add') {
+        renderKeys(KEYS_DEFAULT);
+        addBtn.classList.add('disabled');
+        body.innerHTML = renderInlineAdd() + renderTable();
+      } else if (stage === 'modal-add') {
+        renderKeys(KEYS_DEFAULT);
+        body.innerHTML = renderEmpty();
+        showModalAdd();
+      } else if (stage === 'modal-csv') {
+        renderKeys(KEYS_DEFAULT);
+        body.innerHTML = renderEmpty();
+        document.getElementById('modalSlot').innerHTML = `
+          <div class="scrim" data-act="closeModal">
+            <div class="modal" onclick="event.stopPropagation()" style="width:480px">
+              <div class="modal-h">
+                <h3>Upload CSV</h3>
+                <span class="x" data-act="closeModal"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+              </div>
+              <div class="modal-b">
+                <div style="border:2px dashed var(--line);border-radius:var(--r-md);padding:36px 18px;text-align:center;background:var(--bg)">
+                  <div style="width:42px;height:42px;border-radius:var(--r-md);background:var(--accent-100);color:var(--accent-700);display:grid;place-items:center;margin:0 auto 12px">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+                  </div>
+                  <div style="font-size:13px;font-weight:500;margin-bottom:4px">Drop CSV file here</div>
+                  <div style="font-size:11px;color:var(--text-subtle)">or <span style="color:var(--accent-700);font-weight:500;cursor:pointer">browse files</span></div>
+                </div>
+                <p style="margin:12px 0 0;font-size:11px;color:var(--text-subtle);line-height:1.5">Format: 2 columns (Value, Display Name). Max 1000 rows. Value names must be alphanumeric and ≤64 characters.</p>
+              </div>
+              <div class="modal-f">
+                <button class="btn btn-secondary" data-act="closeModal">Cancel</button>
+                <button class="btn btn-primary disabled" disabled style="opacity:0.5;cursor:not-allowed">Upload</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (stage === 'warn') {
+        renderKeys(KEYS_DEFAULT);
+        body.innerHTML = renderTable();
+        showWarn();
+      }
+    }
+
+    document.querySelectorAll('.stage-bar button').forEach(b => {
+      b.addEventListener('click', () => setStage(b.dataset.stage));
+    });
+
+    document.body.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-act]');
+      if (!a) return;
+      const act = a.dataset.act;
+      if (act === 'closeModal') document.getElementById('modalSlot').innerHTML = '';
+      if (act === 'closeInline') setStage('config');
+      if (act === 'saveValues') { setStage('config'); }
+      if (act === 'saveModal') { document.getElementById('modalSlot').innerHTML = ''; setStage('config'); }
+      if (act === 'openCsv') { setStage('modal-csv'); }
+    });
+
+    // Add New click
+    document.body.addEventListener('click', (e) => {
+      if (e.target.closest('#addBtn') && !document.getElementById('addBtn').classList.contains('disabled')) {
+        setStage('add');
+      }
+      if (e.target.closest('#deleteAll')) {
+        setStage('warn');
+      }
+    });
+
+    setStage('config');
+  </script>
+</body>
+</html>

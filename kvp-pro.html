@@ -1,0 +1,3281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>nexxen — Metadata · Key-Value Pairs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* dark navy surfaces — aligned to Custom Targeting reference */
+      --bg-0: #0A0F1E;
+      --bg-1: #0E1424;
+      --bg-2: #131A2E;
+      --bg-3: #1F2845;
+      --bg-4: #2D375A;
+      --line: #1F2845;
+      --line-soft: #131A2E;
+      --hairline: #161D33;
+      --glass: rgba(19,26,46,0.65);
+
+      --text:        #ECEFF8;
+      --text-muted:  #8A92AE;
+      --text-subtle: #525B7B;
+      --text-dim:    #3A4263;
+
+      /* neon brand */
+      --neon: #6FE9A4;
+      --neon-2: #58D690;
+      --neon-glow: rgba(111,233,164,0.22);
+      --neon-glow-soft: rgba(111,233,164,0.10);
+
+      /* semantic */
+      --warn: #E3A21A;
+      --warn-bg: rgba(227,162,26,0.12);
+      --danger: #FF7A7E;
+      --danger-bg: rgba(255,122,126,0.12);
+      --info: #6E8BFF;
+      --info-bg: rgba(110,139,255,0.12);
+      --success: var(--neon);
+      --success-bg: var(--neon-glow);
+
+      --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px; --r-pill: 999px;
+
+      --font: 'Inter', -apple-system, system-ui, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --nav-w: 64px;
+      --left-w: 260px;
+      --right-w: 420px;
+      --topbar-h: 52px;
+      --header-h: 56px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    body {
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg-0);
+      letter-spacing: -0.005em;
+      -webkit-font-smoothing: antialiased;
+      background-image:
+        radial-gradient(1200px 600px at 100% -10%, rgba(110,139,255,0.06), transparent 60%),
+        radial-gradient(900px 500px at -10% 110%, rgba(111,233,164,0.04), transparent 60%);
+    }
+
+    button { font-family: inherit; }
+    input, textarea { font-family: inherit; color: inherit; }
+    ::selection { background: var(--neon); color: var(--bg-0); }
+
+    /* ==============================
+       APP SHELL
+       ============================== */
+    .app {
+      display: grid;
+      grid-template-columns: var(--nav-w) 1fr;
+      height: 100vh;
+    }
+
+    /* Left rail */
+    .rail {
+      background: var(--bg-1);
+      border-right: 1px solid var(--line-soft);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 0;
+      gap: 4px;
+    }
+    .rail .brand {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--neon), var(--neon-2));
+      color: var(--bg-0);
+      display: grid; place-items: center;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.04em;
+      box-shadow: 0 0 24px var(--neon-glow), inset 0 0 0 1px rgba(255,255,255,0.15);
+      margin-bottom: 14px;
+    }
+    .rail-divider { width: 22px; height: 1px; background: var(--line); margin: 6px 0; }
+    .rail-btn {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      color: var(--text-subtle);
+      cursor: pointer;
+      transition: color .12s, background .12s;
+      position: relative;
+    }
+    .rail-btn:hover { color: var(--text); background: var(--bg-2); }
+    .rail-btn.on { color: var(--neon); background: rgba(111,233,164,0.08); }
+    .rail-btn svg { width: 18px; height: 18px; }
+    .rail .who {
+      margin-top: auto;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon), var(--neon-2));
+      color: var(--bg-0);
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 11px;
+    }
+
+    /* Main column */
+    .main {
+      display: grid;
+      grid-template-rows: var(--topbar-h) 1fr;
+      min-width: 0;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-1);
+      position: relative;
+      z-index: 5;
+    }
+    .crumbs { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+    .crumbs b { color: var(--text); font-weight: 500; }
+    .crumbs .sep { color: var(--text-dim); }
+    .crumbs .sync {
+      margin-left: 4px;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 7px;
+      background: var(--success-bg);
+      color: var(--neon);
+      border-radius: var(--r-pill);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .crumbs .sync .pulse {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--neon);
+      box-shadow: 0 0 0 0 var(--neon);
+      animation: pulse 1.6s ease-out infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 var(--neon-glow); }
+      80% { box-shadow: 0 0 0 7px rgba(111,233,164,0); }
+      100% { box-shadow: 0 0 0 0 rgba(111,233,164,0); }
+    }
+
+    .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+    .stage-bar {
+      display: flex; gap: 2px;
+      padding: 3px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+    }
+    .stage-bar .lbl {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-subtle);
+      padding: 0 8px; align-self: center;
+    }
+    .stage-bar button {
+      background: transparent; border: 0;
+      padding: 5px 9px;
+      border-radius: 5px;
+      font-size: 11.5px; font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .stage-bar button:hover { background: var(--bg-3); color: var(--text); }
+    .stage-bar button.on { background: var(--bg-4); color: var(--text); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+
+    .kbd {
+      display: inline-flex;
+      padding: 1px 5px;
+      font-family: var(--mono);
+      font-size: 10px;
+      background: var(--bg-3);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--text-muted);
+      letter-spacing: 0;
+    }
+
+    /* ==============================
+       3-PANEL WORKSPACE
+       ============================== */
+    .work {
+      display: grid;
+      grid-template-columns: var(--left-w) minmax(0, 1fr) var(--right-w);
+      min-height: 0;
+      transition: grid-template-columns .25s ease;
+    }
+    .work.no-drawer { grid-template-columns: var(--left-w) minmax(0, 1fr) 0; }
+    .work.no-drawer .drawer { display: none; }
+    @media (max-width: 1280px) {
+      .work { grid-template-columns: var(--left-w) minmax(0, 1fr) 0; }
+      .work .drawer {
+        position: fixed;
+        top: var(--topbar-h); right: 0; bottom: 0;
+        width: var(--right-w);
+        z-index: 50;
+        box-shadow: -20px 0 50px rgba(0,0,0,0.5);
+        display: flex;
+      }
+      .work.no-drawer .drawer { display: none; }
+    }
+
+    /* ===== LEFT PANEL: Taxonomy ===== */
+    .left {
+      border-right: 1px solid var(--line);
+      background: var(--bg-1);
+      display: flex; flex-direction: column;
+      min-height: 0;
+    }
+    .left-h {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--hairline);
+      position: sticky; top: 0;
+      background: var(--bg-1);
+    }
+    .left-h .row { display: flex; align-items: center; gap: 8px; }
+    .left-h h3 {
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      font-weight: 600;
+    }
+    .left-h .ct {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+    .left-h .new {
+      width: 22px; height: 22px;
+      border-radius: 5px;
+      background: var(--bg-3);
+      color: var(--text);
+      display: grid; place-items: center;
+      cursor: pointer;
+    }
+    .left-h .new:hover { background: var(--neon); color: var(--bg-0); }
+    .left-h .search {
+      position: relative;
+      margin-top: 10px;
+    }
+    .left-h .search svg {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      width: 13px; height: 13px; color: var(--text-subtle);
+    }
+    .left-h .search input {
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px 7px 30px;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .12s, box-shadow .12s;
+    }
+    .left-h .search input::placeholder { color: var(--text-subtle); }
+    .left-h .search input:focus {
+      border-color: var(--neon-2);
+      box-shadow: 0 0 0 3px var(--neon-glow);
+    }
+    .left-h .search .kbd { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+
+    .left-h .filters {
+      display: flex; gap: 4px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .left-h .filters .chip {
+      font-size: 10.5px; font-weight: 500;
+      padding: 3px 8px;
+      border-radius: var(--r-pill);
+      background: var(--bg-2);
+      color: var(--text-muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .left-h .filters .chip.on { background: var(--neon-glow-soft); color: var(--neon); border-color: rgba(111,233,164,0.25); }
+
+    .left-body { overflow-y: auto; padding: 6px 8px 14px; flex: 1; }
+    .left-body::-webkit-scrollbar { width: 6px; }
+    .left-body::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+
+    .group-h {
+      display: flex; align-items: center; gap: 6px;
+      padding: 12px 8px 6px;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .group-h .ct { margin-left: auto; font-family: var(--mono); font-size: 9.5px; color: var(--text-dim); }
+    .group-h svg { width: 10px; height: 10px; opacity: 0.6; }
+
+    .kvp-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      transition: background .1s;
+    }
+    .kvp-row:not(.on):hover { background: var(--bg-2); }
+    .kvp-row.on:hover {
+      background: var(--bg-2);
+    }
+    .kvp-row .name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .kvp-row .name b {
+      font-weight: 500;
+      font-size: 12.5px;
+      color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .kvp-row .name span {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    .kvp-row .ct {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-subtle);
+      background: var(--bg-3);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .kvp-row .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--neon);
+      box-shadow: 0 0 6px var(--neon);
+    }
+    .kvp-row .dot.warn { background: var(--warn); box-shadow: 0 0 6px rgba(227,162,26,0.6); }
+    .kvp-row .dot.idle { background: var(--text-dim); box-shadow: none; }
+
+    .kvp-row.on {
+      background: transparent;
+    }
+    .kvp-row.on::after {
+      content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px;
+      background: var(--neon);
+      border-radius: 0 2px 2px 0;
+    }
+    .kvp-row.on b { color: var(--neon); font-weight: 600; }
+    .kvp-row.on .name span { color: rgba(111,233,164,0.5); }
+    .kvp-row.on .ct {
+      background: rgba(111,233,164,0.18);
+      color: var(--neon);
+      font-weight: 600;
+    }
+
+    /* ===== CENTER PANEL ===== */
+    .center {
+      display: flex; flex-direction: column;
+      min-width: 0; min-height: 0;
+      background: var(--bg-0);
+      position: relative;
+    }
+    .center::before {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(800px 400px at 80% -20%, rgba(111,233,164,0.04), transparent 60%);
+    }
+
+    /* Metadata header card */
+    .meta {
+      margin: 16px 20px 0;
+      background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 16px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .meta::before {
+      content: "";
+      position: absolute; right: -40px; top: -40px; width: 240px; height: 240px;
+      background: radial-gradient(circle, rgba(111,233,164,0.08), transparent 70%);
+      pointer-events: none;
+    }
+    .meta-top { display: flex; align-items: flex-start; gap: 12px; }
+    .meta-top h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .meta-top .key {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-3);
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--line);
+    }
+    .meta-top .key svg { width: 11px; height: 11px; opacity: 0.7; }
+    .meta-top .scope {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: var(--r-pill);
+      background: var(--info-bg);
+      color: var(--info);
+    }
+    .meta-top .actions { margin-left: auto; display: flex; gap: 6px; }
+    .meta-desc {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 700px;
+      line-height: 1.5;
+    }
+
+    /* ===== Risk / Health strip — ambient ===== */
+    .health {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    .health-score-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px 2px 4px;
+      border-radius: var(--r-pill);
+      background: rgba(111,233,164,0.06);
+      border: 1px solid rgba(111,233,164,0.2);
+      color: var(--neon);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .health-score-mini .ring {
+      --pct: 96;
+      --c: var(--neon);
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: conic-gradient(var(--c) calc(var(--pct) * 1%), rgba(255,255,255,0.08) 0);
+      position: relative;
+    }
+    .health-score-mini .ring::after {
+      content: "";
+      position: absolute; inset: 3px;
+      border-radius: 50%;
+      background: var(--bg-1);
+    }
+    .health-score-mini .v { font-size: 11px; }
+
+    .health .lvl {
+      display: inline-flex; align-items: center; gap: 5px;
+      color: var(--neon);
+      font-weight: 500;
+    }
+    .health .lvl::before {
+      content: "";
+      width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+    .health .sep { color: var(--text-dim); }
+    .health .seg-txt {
+      color: var(--text-muted);
+    }
+    .health .seg-txt b { color: var(--text); font-weight: 500; }
+
+    .health-spec {
+      display: inline-flex;
+      height: 4px;
+      width: 80px;
+      border-radius: 2px;
+      overflow: hidden;
+      background: var(--bg-3);
+      gap: 1px;
+      vertical-align: middle;
+      cursor: help;
+      position: relative;
+    }
+    .health-spec .seg { height: 100%; transition: filter .15s ease; }
+    .health-spec:hover .seg { filter: brightness(1.2); }
+    .health-spec .seg.active  { background: var(--neon); }
+    .health-spec .seg.synced  { background: var(--info); }
+    .health-spec .seg.validating  { background: var(--info); opacity: 0.55; }
+    .health-spec .seg.draft   { background: var(--text-subtle); }
+    .health-spec .seg.warn    { background: var(--warn); }
+    .health-spec .seg.deprecated { background: var(--danger); }
+
+    .health-spec-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .health-spec-wrap:hover { background: var(--bg-2); }
+    .health-spec-wrap .tip-content {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      width: 200px;
+      background: var(--bg-3);
+      color: var(--text);
+      border: 1px solid var(--bg-4);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px;
+      line-height: 1.5;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .12s;
+      z-index: 9999;
+    }
+    .health-spec-wrap .tip-content .row { display: flex; justify-content: space-between; padding: 2px 0; }
+    .health-spec-wrap .tip-content .row .k { color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px; }
+    .health-spec-wrap .tip-content .row .k::before { content: ""; width: 6px; height: 6px; border-radius: 1px; }
+    .health-spec-wrap .tip-content .row.active .k::before { background: var(--neon); }
+    .health-spec-wrap .tip-content .row.synced .k::before { background: var(--info); }
+    .health-spec-wrap .tip-content .row.warn .k::before { background: var(--warn); }
+    .health-spec-wrap .tip-content .row.deprecated .k::before { background: var(--danger); }
+    .health-spec-wrap .tip-content .row.draft .k::before { background: var(--text-subtle); }
+    .health-spec-wrap .tip-content .row .v { color: var(--text); font-family: var(--mono); font-size: 10.5px; }
+    .health-spec-wrap:hover .tip-content { opacity: 1; }
+
+    .health .stamp {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .health .stamp .pulse-tiny {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--neon);
+      box-shadow: 0 0 6px var(--neon);
+      animation: dotpulse 1.6s ease-in-out infinite;
+    }
+    .meta-stats {
+      display: flex;
+      gap: 28px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--hairline);
+    }
+    .meta-stat .l {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .meta-stat .l svg { width: 11px; height: 11px; }
+    .meta-stat .v {
+      margin-top: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .meta-stat .v.mono { font-family: var(--mono); font-size: 12.5px; }
+    .meta-stat .v .pulse-dot {
+      display: inline-block;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--neon);
+      margin-right: 5px; vertical-align: middle;
+      animation: dotpulse 1.6s ease-in-out infinite;
+    }
+    @keyframes dotpulse { 50% { opacity: 0.3 } }
+
+    /* ===== Buttons ===== */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--bg-2);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .12s, border-color .12s, color .12s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--bg-3); border-color: var(--bg-4); }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-sm { padding: 5px 9px; font-size: 11.5px; }
+    .btn-lg { padding: 9px 14px; font-size: 13px; }
+    .btn-primary {
+      background: var(--neon);
+      color: var(--bg-0);
+      border-color: var(--neon);
+      box-shadow: 0 0 0 0 var(--neon-glow);
+      transition: box-shadow .15s, background .12s;
+    }
+    .btn-primary:hover {
+      background: #A2F89A;
+      border-color: #A2F89A;
+      box-shadow: 0 0 18px var(--neon-glow);
+    }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+    .btn-ghost:hover { background: var(--bg-2); color: var(--text); }
+    .btn-danger { color: var(--danger); border-color: rgba(255,122,126,0.25); background: rgba(255,122,126,0.08); }
+    .btn-danger:hover { background: rgba(255,122,126,0.16); border-color: rgba(255,122,126,0.4); }
+    .btn-icon { padding: 6px; }
+
+    /* ===== Workspace toolbar ===== */
+    .ws-toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px 10px;
+      flex-wrap: wrap;
+    }
+    .ws-toolbar .input-icon {
+      position: relative;
+      flex: 0 1 320px;
+      min-width: 200px;
+    }
+    .ws-toolbar .input-icon svg {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      width: 13px; height: 13px; color: var(--text-subtle);
+    }
+    .ws-toolbar .input-icon input {
+      width: 100%;
+      background: var(--bg-1);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px 7px 30px;
+      font-size: 12px;
+      outline: none;
+    }
+    .ws-toolbar .input-icon input:focus { border-color: var(--neon-2); box-shadow: 0 0 0 3px var(--neon-glow); }
+    .ws-toolbar .filt-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px;
+      background: var(--bg-2);
+      border: 1px dashed var(--line);
+      border-radius: var(--r-pill);
+      font-size: 11.5px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .ws-toolbar .filt-chip:hover { color: var(--text); border-color: var(--bg-4); }
+    .ws-toolbar .filt-chip.set { background: var(--neon-glow-soft); color: var(--neon); border: 1px solid rgba(111,233,164,0.3); border-style: solid; }
+    .ws-toolbar .filt-chip svg { width: 11px; height: 11px; opacity: 0.7; }
+
+    .ws-toolbar .right-tools { margin-left: auto; display: flex; gap: 6px; }
+
+    /* ===== Bulk toolbar (sticky) ===== */
+    .bulk {
+      margin: 0 20px;
+      padding: 8px 14px;
+      background: linear-gradient(90deg, rgba(111,233,164,0.10), rgba(110,139,255,0.06));
+      border: 1px solid rgba(111,233,164,0.25);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; gap: 14px;
+      animation: slideDown .2s ease;
+    }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-4px) } }
+    .bulk .ct {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12.5px; color: var(--text);
+    }
+    .bulk .ct .num { font-weight: 600; color: var(--neon); }
+    .bulk .acts { margin-left: auto; display: flex; gap: 6px; }
+    .bulk .x { color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; }
+    .bulk .x:hover { background: var(--bg-3); color: var(--text); }
+
+    /* ===== TABLE ===== */
+    .table-wrap {
+      flex: 1;
+      margin: 12px 20px 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--bg-1);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      min-height: 0;
+    }
+    .table-scroll { overflow: auto; flex: 1; }
+    .table-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .table-scroll::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 4px; }
+
+    table.kt {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12.5px;
+    }
+    table.kt thead th {
+      position: sticky; top: 0;
+      background: var(--bg-2);
+      background-clip: padding-box;
+      backdrop-filter: blur(8px);
+      text-align: left;
+      padding: 9px 14px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--line);
+      z-index: 3;
+      user-select: none;
+      box-shadow: inset 0 -1px 0 var(--line), 0 6px 10px -8px rgba(0,0,0,0.6);
+    }
+    /* Sticky checkbox + value columns (left side) */
+    table.kt thead th.cb,
+    table.kt tbody td.cb {
+      position: sticky; left: 0;
+      background: var(--bg-2);
+      z-index: 2;
+    }
+    table.kt tbody td.cb { background: var(--bg-1); }
+    table.kt tbody tr:hover td.cb { background: var(--bg-2); }
+    table.kt tbody tr.sel td.cb { background: #131831; }
+    table.kt thead th.cb { z-index: 4; }
+    /* Sticky right actions column */
+    table.kt thead th.actions,
+    table.kt tbody td.actions-c {
+      position: sticky; right: 0;
+      background: var(--bg-1);
+      z-index: 2;
+      box-shadow: inset 1px 0 0 var(--hairline);
+    }
+    table.kt thead th.actions { background: var(--bg-2); z-index: 4; box-shadow: inset 1px 0 0 var(--line), inset 0 -1px 0 var(--line); }
+    table.kt tbody tr:hover td.actions-c { background: var(--bg-2); }
+    table.kt tbody tr.sel td.actions-c { background: #131831; }
+    table.kt thead th.sortable { cursor: pointer; }
+    table.kt thead th.sortable:hover { color: var(--text); }
+    table.kt thead th .sort-i { opacity: 0.4; margin-left: 3px; }
+    table.kt thead th.sorted .sort-i { opacity: 1; color: var(--neon); }
+    table.kt thead th.num, table.kt tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    table.kt thead th.cb, table.kt tbody td.cb { width: 36px; padding-left: 14px; padding-right: 0; }
+    table.kt thead th.actions { text-align: right; }
+
+    table.kt tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--hairline);
+      vertical-align: middle;
+      color: var(--text);
+    }
+    table.kt tbody tr { transition: background .1s; }
+    table.kt tbody tr:hover { background: var(--bg-2); }
+    table.kt tbody tr.sel { background: rgba(111,233,164,0.06); box-shadow: inset 2px 0 0 var(--neon); }
+    table.kt tbody tr:hover .row-acts { opacity: 1; transform: translateX(0); }
+    table.kt tbody tr:focus-within .row-acts { opacity: 1; transform: translateX(0); }
+    /* sel-state opaque base for sticky cells */
+    table.kt tbody tr.sel td { background-color: transparent; }
+
+    /* ===== Tooltip (generic, used for "why stale?" and disabled reasons) ===== */
+    .tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tip > .tip-trigger {
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: var(--bg-3);
+      color: var(--text-dim);
+      border: 1px solid var(--bg-4);
+      display: inline-grid; place-items: center;
+      font-size: 9px; font-weight: 700;
+      cursor: help;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .tip > .tip-trigger:hover { background: var(--bg-4); color: var(--text-muted); }
+    .tip > .tip-content {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: var(--bg-3);
+      color: var(--text);
+      border: 1px solid var(--bg-4);
+      border-radius: 6px;
+      padding: 8px 10px;
+      width: 240px;
+      font-size: 11.5px;
+      font-weight: 400;
+      letter-spacing: normal;
+      text-transform: none;
+      line-height: 1.45;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .12s ease, transform .12s ease;
+      z-index: 50;
+      white-space: normal;
+    }
+    .tip > .tip-content::after {
+      content: "";
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--bg-3);
+    }
+    .tip > .tip-content b { color: var(--warn); display: block; font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
+    .tip > .tip-content .meta-line { color: var(--text-muted); font-size: 10.5px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--bg-4); display: flex; justify-content: space-between; }
+    .tip > .tip-content .meta-line .v { color: var(--text); font-family: var(--mono); }
+    .tip:hover > .tip-content,
+    .tip:focus-within > .tip-content {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    /* Tooltip variants */
+    .tip.tip-info > .tip-trigger { background: rgba(110,139,255,0.18); color: var(--info); border-color: rgba(110,139,255,0.35); }
+    .tip.tip-info > .tip-trigger:hover { background: var(--info); color: var(--bg-0); }
+    .tip.tip-info > .tip-content b { color: var(--info); }
+    .tip.tip-neutral > .tip-trigger { background: var(--bg-3); color: var(--text-muted); border-color: var(--bg-4); }
+    .tip.tip-neutral > .tip-trigger:hover { background: var(--bg-4); color: var(--text); }
+    .tip.tip-neutral > .tip-content b { color: var(--text); }
+    /* Right-edge tooltips flip */
+    .tip.tip-right > .tip-content { left: auto; right: 0; transform: translateX(0) translateY(4px); }
+    .tip.tip-right > .tip-content::after { left: auto; right: 12px; transform: none; }
+    .tip.tip-right:hover > .tip-content { transform: translateX(0) translateY(0); }
+
+    /* ===== Confidence indicator ===== */
+    .conf {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: 8px;
+      vertical-align: middle;
+      cursor: help;
+    }
+    .conf .bar {
+      width: 3px;
+      height: 9px;
+      background: var(--bg-3);
+      border-radius: 1px;
+    }
+    .conf.high  .bar:nth-child(-n+3) { background: var(--neon); box-shadow: 0 0 4px var(--neon-glow); }
+    .conf.med   .bar:nth-child(-n+2) { background: var(--warn); }
+    .conf.low   .bar:nth-child(-n+1) { background: var(--danger); }
+    .conf .lbl {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-left: 3px;
+    }
+    .conf.high .lbl { color: var(--neon); }
+    .conf.med  .lbl { color: var(--warn); }
+    .conf.low  .lbl { color: var(--danger); }
+
+    /* Imported badge */
+    .imp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      margin-left: 6px;
+      padding: 1px 5px 1px 4px;
+      background: var(--bg-3);
+      border-radius: 3px;
+      vertical-align: middle;
+    }
+    .imp-badge svg { width: 9px; height: 9px; opacity: 0.7; }
+
+    /* ===== Row hover actions: clarity ===== */
+    .row-acts {
+      display: inline-flex;
+      gap: 0;
+      opacity: 0;
+      transform: translateX(4px);
+      transition: opacity .14s ease, transform .14s ease;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 2px;
+      box-shadow: 0 6px 14px -8px rgba(0,0,0,0.5);
+    }
+    .row-acts button {
+      width: 26px; height: 24px;
+      border-radius: 4px;
+      background: transparent;
+      border: 0;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: grid; place-items: center;
+      position: relative;
+    }
+    .row-acts button:hover { background: var(--bg-4); color: var(--text); }
+    .row-acts button[disabled] {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .row-acts button[disabled][data-locked="1"] { pointer-events: auto; }
+    .row-acts button.del:hover { color: var(--danger); background: rgba(255,122,126,0.12); }
+    .row-acts button.primary { color: var(--neon); }
+    .row-acts button.primary:hover { background: var(--neon-glow); color: var(--neon); }
+    .row-acts .sep {
+      width: 1px;
+      align-self: stretch;
+      background: var(--hairline);
+      margin: 2px 1px;
+    }
+    /* Action button label tooltip */
+    .row-acts button[data-label]::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%) translateY(2px);
+      background: var(--bg-3);
+      color: var(--text);
+      border: 1px solid var(--bg-4);
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .1s ease, transform .1s ease;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+      z-index: 30;
+    }
+    .row-acts button[data-label]:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .row-acts button[data-shortcut]::before {
+      content: attr(data-shortcut);
+      position: absolute;
+      bottom: -4px;
+      right: -2px;
+      font-family: var(--mono);
+      font-size: 8.5px;
+      color: var(--text-dim);
+      background: var(--bg-1);
+      padding: 0 2px;
+      border-radius: 2px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .1s ease;
+    }
+    .row-acts button[data-shortcut]:hover::before { opacity: 0.9; }
+    .row-acts svg { width: 13px; height: 13px; }
+
+    /* ===== Loading skeleton ===== */
+    .skel-row td { border-bottom: 1px solid var(--hairline); }
+    .skel {
+      display: inline-block;
+      height: 12px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--bg-2) 0%, var(--bg-3) 50%, var(--bg-2) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s linear infinite;
+      vertical-align: middle;
+    }
+    .skel.w-sm  { width: 50px; }
+    .skel.w-md  { width: 110px; }
+    .skel.w-lg  { width: 160px; }
+    .skel.w-xl  { width: 220px; }
+    .skel.pill  { height: 16px; width: 60px; border-radius: 999px; }
+    .skel.bar   { height: 4px; width: 40px; }
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+    .loading-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--neon-glow);
+      overflow: hidden;
+      z-index: 5;
+    }
+    .loading-bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 30%;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      animation: lbar 1.2s ease-in-out infinite;
+    }
+    @keyframes lbar {
+      from { transform: translateX(-100%); }
+      to   { transform: translateX(450%); }
+    }
+
+    /* ===== Empty / Error states ===== */
+    .state-empty, .state-error {
+      padding: 56px 24px;
+      text-align: center;
+    }
+    .state-empty .ic, .state-error .ic {
+      width: 56px; height: 56px;
+      margin: 0 auto 14px;
+      border-radius: 14px;
+      display: grid; place-items: center;
+    }
+    .state-empty .ic {
+      background: var(--bg-2);
+      color: var(--text-muted);
+      border: 1px dashed var(--line);
+    }
+    .state-error .ic {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid rgba(255,122,126,0.3);
+    }
+    .state-empty h4, .state-error h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .state-empty p, .state-error p {
+      margin: 0 auto 18px;
+      max-width: 360px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    .state-actions { display: inline-flex; gap: 8px; }
+    .state-error .err-detail {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      padding: 6px 10px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .state-error .err-detail code { color: var(--danger); }
+
+    /* ===== Permission-aware disabled ===== */
+    .btn[disabled],
+    .btn.is-disabled {
+      opacity: 0.45;
+      cursor: not-allowed !important;
+      pointer-events: none;
+    }
+    /* wrapper allows cursor + tooltip on a logically-disabled control */
+    .perm-lock {
+      position: relative;
+      display: inline-flex;
+      cursor: not-allowed;
+    }
+    .perm-lock .lock-i {
+      position: absolute;
+      top: -4px; right: -4px;
+      width: 13px; height: 13px;
+      background: var(--bg-3);
+      border: 1px solid var(--line);
+      color: var(--text-muted);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      pointer-events: none;
+    }
+    .perm-lock .lock-i svg { width: 8px; height: 8px; }
+    .perm-lock > .tip-content {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--bg-3);
+      color: var(--text);
+      border: 1px solid var(--bg-4);
+      border-radius: 6px;
+      padding: 8px 10px;
+      width: 220px;
+      font-size: 11.5px;
+      font-weight: 400;
+      line-height: 1.45;
+      letter-spacing: normal;
+      text-transform: none;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .12s ease;
+      z-index: 50;
+    }
+    .perm-lock .tip-content b { display: block; font-weight: 600; color: var(--warn); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 3px; }
+    .perm-lock:hover > .tip-content { opacity: 1; }
+
+    /* viewer-mode banner */
+    .viewer-banner {
+      margin: 0 20px 0;
+      padding: 8px 14px;
+      background: rgba(227,162,26,0.08);
+      border: 1px solid rgba(227,162,26,0.25);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .viewer-banner .ic {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--warn-bg);
+      color: var(--warn);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .viewer-banner .ic svg { width: 11px; height: 11px; }
+    .viewer-banner b { font-weight: 600; }
+    .viewer-banner span { color: var(--text-muted); }
+    .viewer-banner .req { margin-left: auto; }
+
+    /* Demo state switcher (in toolbar) */
+    .demo-states {
+      display: inline-flex;
+      gap: 1px;
+      padding: 2px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+    }
+    .demo-states .lbl {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 0 8px; align-self: center;
+    }
+    .demo-states button {
+      background: transparent;
+      border: 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .demo-states button:hover { color: var(--text); background: var(--bg-3); }
+    .demo-states button.on { background: var(--bg-4); color: var(--neon); box-shadow: inset 0 0 0 1px rgba(111,233,164,0.2); }
+
+    .ck {
+      width: 14px; height: 14px;
+      appearance: none;
+      border: 1.5px solid var(--bg-4);
+      border-radius: 3px;
+      background: var(--bg-2);
+      cursor: pointer;
+      position: relative;
+      vertical-align: middle;
+      transition: background .12s, border-color .12s;
+    }
+    .ck:hover { border-color: var(--text-muted); }
+    .ck:checked {
+      background: var(--neon);
+      border-color: var(--neon);
+      box-shadow: 0 0 8px var(--neon-glow);
+    }
+    .ck:checked::after {
+      content: "";
+      position: absolute;
+      left: 3px; top: 0px;
+      width: 4px; height: 8px;
+      border: solid var(--bg-0);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .ck.ind:checked { background: var(--neon); }
+    .ck.ind:checked::after { left: 2px; top: 5px; width: 8px; height: 0; border-width: 2px 0 0 0; transform: none; }
+
+    td.value-c .v {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      padding: 2px 7px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    td.dn-c .dn { color: var(--text); }
+    td.dn-c.editing .dn-input {
+      width: 100%;
+      background: var(--bg-2);
+      border: 1px solid var(--neon-2);
+      box-shadow: 0 0 0 3px var(--neon-glow);
+      color: var(--text);
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 12.5px;
+      outline: none;
+    }
+
+    td.used-c .used {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    td.used-c .used b { color: var(--text); font-weight: 500; }
+    td.used-c .used .mini-bar {
+      width: 40px; height: 4px;
+      background: var(--bg-3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    td.used-c .used .mini-bar i {
+      display: block; height: 100%;
+      background: linear-gradient(90deg, var(--neon-2), var(--neon));
+      border-radius: 2px;
+    }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: var(--r-pill);
+      letter-spacing: 0.01em;
+    }
+    .pill .pdot { width: 5px; height: 5px; border-radius: 50%; }
+    .pill.active   { background: var(--success-bg); color: var(--neon); }
+    .pill.active .pdot { background: var(--neon); box-shadow: 0 0 4px var(--neon); }
+    .pill.draft    { background: var(--bg-3); color: var(--text-muted); }
+    .pill.draft .pdot { background: var(--text-muted); }
+    .pill.validating { background: var(--info-bg); color: var(--info); }
+    .pill.validating .pdot { background: var(--info); animation: dotpulse 1.4s ease-in-out infinite; }
+    .pill.warn     { background: var(--warn-bg); color: var(--warn); }
+    .pill.warn .pdot { background: var(--warn); }
+    .pill.synced   { background: var(--info-bg); color: var(--info); }
+    .pill.synced .pdot { background: var(--info); }
+    .pill.deprecated { background: rgba(255,122,126,0.10); color: var(--danger); }
+    .pill.deprecated .pdot { background: var(--danger); }
+    .pill.archived { background: var(--bg-3); color: var(--text-dim); text-decoration: line-through; text-decoration-thickness: 1px; }
+    .pill.archived .pdot { background: var(--text-dim); }
+    /* Lifecycle micro-arrow indicating progression */
+    .lifecycle-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .lifecycle-mini .step {
+      width: 5px; height: 5px; border-radius: 1px;
+      background: var(--bg-3);
+    }
+    .lifecycle-mini .step.done { background: var(--text-subtle); }
+    .lifecycle-mini .step.cur { background: currentColor; box-shadow: 0 0 4px currentColor; }
+    .lifecycle-mini .step.skip { opacity: 0.3; }
+
+    td.lu-c {
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-variant-numeric: tabular-nums;
+    }
+    td.lu-c .who { color: var(--text-dim); }
+
+    td.actions-c { text-align: right; }
+
+    .table-foot {
+      display: flex; align-items: center;
+      padding: 9px 14px;
+      border-top: 1px solid var(--hairline);
+      background: var(--bg-1);
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+    .table-foot .pgr { margin-left: auto; display: flex; gap: 2px; }
+    .table-foot .pgr button {
+      min-width: 24px; height: 24px;
+      padding: 0 6px;
+      border-radius: 4px;
+      background: transparent; border: 0;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11.5px;
+    }
+    .table-foot .pgr button:hover { background: var(--bg-3); color: var(--text); }
+    .table-foot .pgr button.on { background: var(--bg-3); color: var(--neon); }
+
+    /* ===== RIGHT DRAWER ===== */
+    .drawer {
+      border-left: 1px solid var(--line);
+      background: var(--bg-1);
+      display: flex; flex-direction: column;
+      min-height: 0;
+      transform: translateX(0);
+      animation: drawerIn .3s cubic-bezier(.2,.8,.2,1);
+      position: relative;
+      overflow: hidden;
+    }
+    @keyframes drawerIn { from { transform: translateX(20px); opacity: 0 } }
+    .drawer::before {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: radial-gradient(400px 200px at 100% 0%, rgba(111,233,164,0.06), transparent 70%);
+    }
+
+    .drawer-h {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--hairline);
+      display: flex; align-items: center; gap: 10px;
+      position: relative;
+    }
+    .drawer-h h3 {
+      margin: 0; font-size: 14px; font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .drawer-h .x {
+      margin-left: auto;
+      width: 26px; height: 26px;
+      border-radius: 5px;
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .drawer-h .x:hover { background: var(--bg-3); color: var(--text); }
+
+    .drawer-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--hairline);
+      padding: 0 6px;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .drawer-tab {
+      padding: 9px 14px;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .drawer-tab:hover { color: var(--text); }
+    .drawer-tab.on { color: var(--neon); border-bottom-color: var(--neon); }
+    .drawer-tab svg { width: 12px; height: 12px; }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px 18px;
+      position: relative;
+      z-index: 1;
+    }
+    .drawer-body::-webkit-scrollbar { width: 6px; }
+    .drawer-body::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+
+    .drawer-foot {
+      padding: 12px 18px;
+      border-top: 1px solid var(--hairline);
+      display: flex; gap: 8px;
+      background: var(--bg-1);
+      position: relative; z-index: 1;
+    }
+    .drawer-foot .grow { flex: 1; }
+
+    /* ===== Form bits ===== */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .field label .hint { color: var(--text-dim); margin-left: 4px; font-weight: 400; }
+    .field label .req { color: var(--danger); margin-left: 2px; }
+    .input {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .12s, box-shadow .12s;
+      font-family: inherit;
+    }
+    .input::placeholder { color: var(--text-subtle); }
+    .input:focus { border-color: var(--neon-2); box-shadow: 0 0 0 3px var(--neon-glow); }
+    .input.mono { font-family: var(--mono); font-size: 12px; }
+    .input.error { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(255,122,126,0.18); }
+    .input.error + .err { color: var(--danger); }
+
+    .err { font-size: 11px; color: var(--danger); display: flex; align-items: center; gap: 4px; }
+    .err svg { width: 11px; height: 11px; }
+    .ok-msg { font-size: 11px; color: var(--neon); display: flex; align-items: center; gap: 4px; }
+
+    .row-add {
+      display: grid;
+      grid-template-columns: 1fr 1fr 26px;
+      gap: 8px;
+      align-items: end;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+    .row-add:last-of-type { border-bottom: 0; }
+    .row-add .rm {
+      width: 26px; height: 30px;
+      border-radius: 5px;
+      background: var(--bg-2);
+      color: var(--text-muted);
+      border: 1px solid var(--line);
+      display: grid; place-items: center;
+      cursor: pointer;
+    }
+    .row-add .rm:hover { background: var(--danger-bg); color: var(--danger); border-color: rgba(255,122,126,0.3); }
+
+    /* ===== Bulk paste textarea ===== */
+    .paste {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .paste:focus { border-color: var(--neon-2); box-shadow: 0 0 0 3px var(--neon-glow); }
+
+    .preview-list {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .preview-list::-webkit-scrollbar { width: 6px; }
+    .preview-list::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+    .preview-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--hairline);
+      font-size: 12px;
+    }
+    .preview-row:last-child { border-bottom: 0; }
+    .preview-row .v { font-family: var(--mono); font-size: 11.5px; color: var(--text); flex: 1; }
+    .preview-row.dup { background: rgba(227,162,26,0.05); }
+    .preview-row.invalid { background: rgba(255,122,126,0.05); }
+    .preview-row .badge {
+      font-size: 9.5px; font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .preview-row.new .badge { background: var(--success-bg); color: var(--neon); }
+    .preview-row.dup .badge { background: var(--warn-bg); color: var(--warn); }
+    .preview-row.invalid .badge { background: var(--danger-bg); color: var(--danger); }
+
+    .preview-summary {
+      display: flex; gap: 14px;
+      padding: 10px 12px;
+      background: var(--bg-2);
+      border-bottom: 1px solid var(--hairline);
+      font-size: 11px;
+      font-family: var(--mono);
+    }
+    .preview-summary span { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); }
+    .preview-summary span .n { color: var(--text); font-weight: 600; }
+    .preview-summary span.add .n { color: var(--neon); }
+    .preview-summary span.dup .n { color: var(--warn); }
+    .preview-summary span.bad .n { color: var(--danger); }
+
+    /* ===== CSV Pipeline stepper ===== */
+    .stepper {
+      display: flex; gap: 0;
+      margin-bottom: 16px;
+      padding: 4px;
+      background: var(--bg-2);
+      border-radius: var(--r-md);
+      border: 1px solid var(--line);
+    }
+    .step {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 10.5px; font-weight: 500;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      position: relative;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .step .n {
+      display: inline-grid; place-items: center;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--bg-3);
+      color: var(--text-dim);
+      font-size: 9px; font-weight: 700;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .step.done { color: var(--text-muted); }
+    .step.done .n { background: var(--neon); color: var(--bg-0); }
+    .step.on { color: var(--neon); }
+    .step.on .n {
+      background: var(--neon); color: var(--bg-0);
+      box-shadow: 0 0 0 3px var(--neon-glow);
+    }
+
+    /* CSV dropzone */
+    .dropzone {
+      border: 1.5px dashed var(--line);
+      border-radius: var(--r-lg);
+      padding: 32px 18px;
+      text-align: center;
+      background:
+        radial-gradient(220px 110px at 50% 50%, rgba(111,233,164,0.05), transparent 70%),
+        var(--bg-2);
+      transition: border-color .15s, background .15s;
+      cursor: pointer;
+    }
+    .dropzone:hover {
+      border-color: var(--neon-2);
+      background:
+        radial-gradient(220px 110px at 50% 50%, rgba(111,233,164,0.10), transparent 70%),
+        var(--bg-2);
+    }
+    .dropzone .icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--neon-glow);
+      color: var(--neon);
+      display: grid; place-items: center;
+      margin: 0 auto 12px;
+    }
+    .dropzone .icon svg { width: 20px; height: 20px; }
+    .dropzone h4 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--text); }
+    .dropzone p { margin: 0; font-size: 11.5px; color: var(--text-subtle); }
+    .dropzone p a { color: var(--neon); text-decoration: none; font-weight: 500; }
+    .dropzone p a:hover { text-decoration: underline; }
+
+    /* uploaded file row */
+    .file-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+    .file-row .ic {
+      width: 30px; height: 30px;
+      border-radius: 6px;
+      background: var(--neon-glow);
+      color: var(--neon);
+      display: grid; place-items: center;
+    }
+    .file-row .nm { display: flex; flex-direction: column; gap: 1px; }
+    .file-row .nm b { font-size: 12.5px; font-weight: 500; }
+    .file-row .nm span { font-size: 10.5px; color: var(--text-subtle); font-family: var(--mono); }
+    .file-row .check {
+      margin-left: auto;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--neon);
+      color: var(--bg-0);
+      display: grid; place-items: center;
+    }
+    .file-row .check svg { width: 10px; height: 10px; }
+
+    /* mapping rows */
+    .map-row {
+      display: grid;
+      grid-template-columns: 1fr 24px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .map-row:last-child { border-bottom: 0; }
+    .map-row .csv-col {
+      padding: 7px 10px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--text);
+    }
+    .map-row .arrow { text-align: center; color: var(--text-dim); }
+    .select {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .diff-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .diff-stat {
+      background: var(--bg-2);
+      padding: 12px 14px;
+    }
+    .diff-stat .l {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .diff-stat .v {
+      font-size: 22px; font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+      display: flex; align-items: baseline; gap: 4px;
+    }
+    .diff-stat.add .v { color: var(--neon); }
+    .diff-stat.upd .v { color: var(--info); }
+    .diff-stat.skip .v { color: var(--warn); }
+    .diff-stat .sym { font-size: 14px; font-weight: 600; opacity: 0.7; }
+
+    .diff-list {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .diff-list::-webkit-scrollbar { width: 6px; }
+    .diff-list::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+    .diff-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--hairline);
+      font-size: 12px;
+    }
+    .diff-row:last-child { border-bottom: 0; }
+    .diff-row .sym {
+      width: 18px; text-align: center;
+      font-family: var(--mono); font-weight: 700;
+    }
+    .diff-row.add .sym { color: var(--neon); }
+    .diff-row.upd .sym { color: var(--info); }
+    .diff-row.skip .sym { color: var(--warn); }
+    .diff-row .v { font-family: var(--mono); font-size: 11.5px; flex: 1; color: var(--text); }
+    .diff-row .reason { color: var(--text-subtle); font-size: 11px; }
+
+    /* Dependency drawer */
+    .dep-warn {
+      padding: 12px 14px;
+      background: var(--warn-bg);
+      border: 1px solid rgba(227,162,26,0.3);
+      border-radius: var(--r-md);
+      display: flex; gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .dep-warn .ic { color: var(--warn); flex-shrink: 0; }
+    .dep-warn .ic svg { width: 16px; height: 16px; }
+    .dep-warn .tx b { display: block; font-size: 12.5px; color: var(--text); margin-bottom: 2px; }
+    .dep-warn .tx p { margin: 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+
+    /* Revenue-at-risk callout */
+    .rev-risk {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      padding: 14px;
+      background:
+        linear-gradient(135deg, rgba(255,122,126,0.08), transparent 70%),
+        var(--bg-2);
+      border: 1px solid rgba(255,122,126,0.25);
+      border-radius: var(--r-md);
+      margin-bottom: 14px;
+      align-items: center;
+    }
+    .rev-risk .amt {
+      font-family: var(--mono);
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--danger);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .rev-risk .amt-lbl {
+      display: block;
+      margin-top: 4px;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .rev-risk .breakdown { font-size: 11.5px; color: var(--text-muted); line-height: 1.6; }
+    .rev-risk .breakdown .row { display: flex; justify-content: space-between; gap: 12px; }
+    .rev-risk .breakdown .row .v { color: var(--text); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .rev-risk .breakdown .span { display: block; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--bg-3); font-size: 10.5px; color: var(--text-dim); }
+
+    /* Required permission box */
+    .perm-req {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      margin-bottom: 14px;
+    }
+    .perm-req .ic {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: var(--bg-3);
+      color: var(--text-muted);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .perm-req .ic svg { width: 14px; height: 14px; }
+    .perm-req .tx { flex: 1; min-width: 0; font-size: 11.5px; line-height: 1.5; }
+    .perm-req .tx b { color: var(--text); display: block; font-size: 12px; }
+    .perm-req .tx span { color: var(--text-muted); }
+    .perm-req .tx code {
+      font-family: var(--mono); font-size: 10.5px;
+      background: var(--bg-3); padding: 1px 5px; border-radius: 3px;
+      color: var(--text); border: 1px solid var(--line);
+    }
+    .perm-req.ok { border-color: rgba(111,233,164,0.25); background: rgba(111,233,164,0.04); }
+    .perm-req.ok .ic { background: var(--success-bg); color: var(--neon); }
+
+    /* Rollback option panel */
+    .rollback {
+      padding: 12px 14px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      margin-bottom: 14px;
+    }
+    .rollback h5 {
+      margin: 0 0 4px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .rollback h5 svg { width: 12px; height: 12px; color: var(--info); }
+    .rollback p {
+      margin: 0 0 10px; font-size: 11.5px; color: var(--text-muted); line-height: 1.5;
+    }
+    .rollback .opts { display: flex; flex-direction: column; gap: 6px; }
+    .rollback .opt {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      background: var(--bg-1);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: border-color .12s, background .12s;
+    }
+    .rollback .opt:hover { border-color: var(--bg-4); background: var(--bg-3); }
+    .rollback .opt input { accent-color: var(--info); }
+    .rollback .opt .lbl { font-size: 12px; color: var(--text); flex: 1; min-width: 0; }
+    .rollback .opt .lbl b { font-weight: 500; }
+    .rollback .opt .sub { display: block; font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+    .rollback .opt .ttl {
+      font-family: var(--mono); font-size: 10.5px;
+      color: var(--text-muted);
+      padding: 2px 6px; background: var(--bg-3); border-radius: 3px;
+      border: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+
+    /* Audit log preview */
+    .audit-prev {
+      padding: 12px 14px;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      margin-bottom: 14px;
+    }
+    .audit-prev h5 {
+      margin: 0 0 8px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .audit-prev h5 svg { width: 12px; height: 12px; }
+    .audit-prev .entry {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      background: var(--bg-1);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+    }
+    .audit-prev .entry .k { color: var(--text-dim); }
+    .audit-prev .entry .v { color: var(--text); }
+    .audit-prev .entry .v.danger { color: var(--danger); }
+    .audit-prev .entry .v.info { color: var(--info); }
+    .audit-prev .lnk {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-top: 8px;
+      font-size: 11px; color: var(--info);
+      cursor: pointer;
+    }
+    .audit-prev .lnk:hover { text-decoration: underline; }
+    .audit-prev .lnk svg { width: 11px; height: 11px; }
+
+    .dep-section {
+      margin-bottom: 14px;
+    }
+    .dep-section h5 {
+      margin: 0 0 8px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dep-section h5 .ct {
+      font-family: var(--mono);
+      background: var(--bg-3);
+      color: var(--text);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+    .dep-list {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      max-height: 160px;
+      overflow-y: auto;
+      background: var(--bg-2);
+    }
+    .dep-list::-webkit-scrollbar { width: 6px; }
+    .dep-list::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+    .dep-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--hairline);
+      font-size: 12px;
+    }
+    .dep-row:last-child { border-bottom: 0; }
+    .dep-row .nm {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--info);
+      cursor: pointer;
+    }
+    .dep-row .nm:hover { text-decoration: underline; }
+    .dep-row .ms { color: var(--text-subtle); font-size: 10.5px; }
+
+    .confirm-input {
+      margin-top: 12px;
+    }
+    .confirm-input p {
+      margin: 0 0 6px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+    .confirm-input p code {
+      font-family: var(--mono);
+      background: var(--bg-3);
+      color: var(--danger);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    /* ===== Toast ===== */
+    .toast-stack {
+      position: fixed;
+      top: 60px;
+      right: 24px;
+      display: flex; flex-direction: column; gap: 8px;
+      z-index: 200;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--neon);
+      border-radius: var(--r-md);
+      padding: 10px 14px 10px 12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12.5px;
+      min-width: 280px;
+      max-width: 380px;
+      pointer-events: auto;
+      animation: toastIn .3s ease;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px) } }
+    .toast .ic {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--neon);
+      color: var(--bg-0);
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .toast .ic svg { width: 11px; height: 11px; }
+    .toast.warn { border-left-color: var(--warn); }
+    .toast.warn .ic { background: var(--warn); }
+    .toast .body b { display: block; color: var(--text); font-weight: 600; }
+    .toast .body span { color: var(--text-muted); font-size: 11px; }
+
+    /* radial loader */
+    .loader {
+      width: 14px; height: 14px;
+      border: 2px solid var(--bg-3);
+      border-top-color: var(--neon);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg) } }
+
+    .empty-table {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-subtle);
+      font-size: 13px;
+    }
+    .empty-table .ic {
+      width: 48px; height: 48px;
+      margin: 0 auto 12px;
+      border-radius: 12px;
+      background: var(--bg-2);
+      color: var(--text-muted);
+      display: grid; place-items: center;
+    }
+    .empty-table h4 { margin: 0 0 4px; font-size: 14px; color: var(--text); font-weight: 600; }
+
+  </style>
+</head>
+<body>
+
+<template id="__bundler_thumbnail" data-bg-color="#0A0F1E">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0A0F1E"/>
+    <text x="80" y="380" font-family="Geist, Inter, sans-serif" font-size="180" font-weight="600" letter-spacing="-6" fill="#ECEFF8">KVP</text>
+    <rect x="80" y="430" width="180" height="6" fill="#6FE9A4"/>
+    <text x="80" y="540" font-family="JetBrains Mono, monospace" font-size="22" letter-spacing="3" fill="#6E7794">METADATA · KEY-VALUE PAIRS</text>
+  </svg>
+</template>
+  <div class="app">
+    <!-- Left rail -->
+    <aside class="rail">
+      <div class="brand" title="nexxen">N</div>
+      <div class="rail-btn" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></div>
+      <div class="rail-btn" title="Deals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+      <div class="rail-btn on" title="Metadata · KVPs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><path d="M9 8h10M9 12h10M9 16h6"/></svg></div>
+      <div class="rail-btn" title="Inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+      <div class="rail-btn" title="Reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>
+      <div class="rail-divider"></div>
+      <div class="rail-btn" title="Forecaster"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg></div>
+      <div class="rail-btn" title="Alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+      <div class="who" title="Elena Marx">EM</div>
+    </aside>
+
+    <!-- Main column -->
+    <div class="main">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="crumbs">
+          <span>Metadata</span><span class="sep">/</span>
+          <b>Key-Value Pairs</b>
+          <span class="sync"><span class="pulse"></span> Synced · 2s</span>
+        </div>
+        <div class="right">
+          <div class="demo-states" id="demoStates" title="Demo: switch table state">
+            <span class="lbl">View</span>
+            <button data-state="data" class="on">Data</button>
+            <button data-state="loading">Loading</button>
+            <button data-state="empty">Empty</button>
+            <button data-state="error">Error</button>
+            <span class="lbl" style="border-left:1px solid var(--line);margin-left:4px;padding-left:10px">Role</span>
+            <button data-role="admin" class="on">Admin</button>
+            <button data-role="viewer">Viewer</button>
+          </div>
+          <button class="btn btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 5H5a2 2 0 0 0-2 2v3M3 16v3a2 2 0 0 0 2 2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3"/></svg></button>
+          <span class="kbd" title="Press ⌘K">⌘K</span>
+        </div>
+      </header>
+
+      <!-- 3-panel work area -->
+      <div class="work" id="work">
+
+        <!-- ===== LEFT PANEL ===== -->
+        <aside class="left">
+          <div class="left-h">
+            <div class="row">
+              <h3>Taxonomy</h3>
+              <span class="ct">2,184</span>
+              <span class="new" title="New KVP">+</span>
+            </div>
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input placeholder="Search keys" />
+              <span class="kbd">/</span>
+            </div>
+            <div class="filters">
+              <span class="chip on">All</span>
+              <span class="chip">Mine</span>
+              <span class="chip">Recently used</span>
+              <span class="chip">Stale</span>
+            </div>
+          </div>
+          <div class="left-body" id="taxonomy"></div>
+        </aside>
+
+        <!-- ===== CENTER PANEL ===== -->
+        <section class="center">
+          <!-- Metadata header card -->
+          <div class="meta">
+            <div class="meta-top">
+              <h1>Page Position</h1>
+              <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-9.6 9.6M15.5 2H21v5.5M3 10.4V21h10.6M3 21l8-8"/></svg>page_position</span>
+              <span class="scope"><span class="pdot" style="width:5px;height:5px;border-radius:50%;background:currentColor"></span> Global · CTV/Video</span>
+              <div class="actions">
+                <button class="btn btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Export</button>
+                <button class="btn btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+            <p class="meta-desc">Targeting key for slot placement on host pages. Used by CTV and video deals to filter inventory by ad position. Changes propagate to bid request enrichment within ~30 seconds.</p>
+
+            <!-- Risk / Health strip — ambient single-line -->
+            <div class="health" role="group" aria-label="Health summary">
+              <span class="health-score-mini" title="Composite health score">
+                <span class="ring" style="--pct:96;--c:var(--neon)"></span>
+                <span class="v">96</span>
+              </span>
+              <span class="lvl">Low risk</span>
+              <span class="sep">·</span>
+              <span class="seg-txt"><b>Fully synced</b> · 128/128 deals</span>
+              <span class="sep">·</span>
+              <span class="seg-txt">No validation errors</span>
+              <span class="sep">·</span>
+              <span class="health-spec-wrap" tabindex="0" aria-label="Value distribution">
+                <span class="health-spec" aria-hidden="true">
+                  <span class="seg active" style="flex:10"></span>
+                  <span class="seg validating" style="flex:1"></span>
+                  <span class="seg synced" style="flex:1"></span>
+                  <span class="seg warn" style="flex:1"></span>
+                  <span class="seg deprecated" style="flex:1"></span>
+                  <span class="seg draft" style="flex:2"></span>
+                </span>
+                <span class="seg-txt" style="font-size:11px">16 values</span>
+                <span class="tip-content" role="tooltip">
+                  <div class="row active"><span class="k">Active</span><span class="v">10 · 63%</span></div>
+                  <div class="row synced"><span class="k">Validating</span><span class="v">1 · 6%</span></div>
+                  <div class="row synced"><span class="k">Syncing</span><span class="v">1 · 6%</span></div>
+                  <div class="row warn"><span class="k">Stale</span><span class="v">1 · 6%</span></div>
+                  <div class="row draft"><span class="k">Draft</span><span class="v">2 · 13%</span></div>
+                  <div class="row deprecated"><span class="k">Deprecated</span><span class="v">1 · 6%</span></div>
+                </span>
+              </span>
+              <span class="stamp"><span class="pulse-tiny"></span>Live · 2s ago</span>
+            </div>
+
+            <div class="meta-stats">
+              <div class="meta-stat">
+                <div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> Synced to</div>
+                <div class="v"><span class="pulse-dot"></span>128 deals</div>
+              </div>
+              <div class="meta-stat">
+                <div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Propagation</div>
+                <div class="v">Live · cache fresh</div>
+              </div>
+              <div class="meta-stat">
+                <div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg> Owner</div>
+                <div class="v">Yield Ops · Elena Marx</div>
+              </div>
+              <div class="meta-stat">
+                <div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Last updated</div>
+                <div class="v">2h ago <span style="color:var(--text-dim)">· by EM</span></div>
+              </div>
+              <div class="meta-stat">
+                <div class="l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z"/></svg> Values</div>
+                <div class="v mono">14 / 1,000</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Workspace toolbar -->
+          <div class="ws-toolbar">
+            <div class="input-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input placeholder="Filter values…" />
+            </div>
+            <span class="filt-chip set">Status: Active <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+            <span class="filt-chip">Used in deal <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+            <span class="filt-chip">Updated this week <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+            <span class="filt-chip" style="border-style:dashed">+ Add filter</span>
+            <div class="right-tools">
+              <button class="btn btn-sm" title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg></button>
+              <button class="btn btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M6 12h12M10 18h4"/></svg> Columns</button>
+              <button class="btn btn-primary btn-sm" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add values <span class="kbd" style="background:rgba(0,0,0,0.2);color:rgba(0,0,0,0.7);border:0">A</span></button>
+            </div>
+          </div>
+
+          <!-- Viewer-mode banner -->
+          <div id="viewerBanner" hidden></div>
+
+          <!-- Bulk toolbar (only when selection exists) -->
+          <div id="bulkSlot"></div>
+
+          <!-- Table -->
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table class="kt" id="vt">
+                <thead>
+                  <tr>
+                    <th class="cb"><input type="checkbox" class="ck" id="ckAll"/></th>
+                    <th class="sortable">Value</th>
+                    <th class="sortable">Display Name</th>
+                    <th class="sortable num" style="text-align:left;text-transform:uppercase">Used In</th>
+                    <th class="sortable">Status</th>
+                    <th class="sortable sorted">Last Updated <span class="sort-i">↓</span></th>
+                    <th class="actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="vtBody"></tbody>
+              </table>
+            </div>
+            <div class="table-foot">
+              <span><b style="color:var(--text)">16</b> values · 1 validating · 1 deprecated · 1 archived</span>
+              <div class="pgr">
+                <button>‹</button>
+                <button class="on">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>›</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== RIGHT DRAWER ===== -->
+        <aside class="drawer" id="drawer">
+          <!-- contents injected -->
+        </aside>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toasts"></div>
+
+<script>
+  // ============================================
+  // DATA
+  // ============================================
+  const TAXONOMY = {
+    'Global': [
+      { id:'page_position', name:'Page Position', n:14, dot:'on', sel:true },
+      { id:'environment',   name:'Environment',  n:6,  dot:'on' },
+      { id:'language',      name:'Language',     n:42, dot:'on' },
+      { id:'country',       name:'Country',      n:248,dot:'on' },
+      { id:'device_class',  name:'Device Class', n:8,  dot:'on' },
+    ],
+    'CTV': [
+      { id:'series_season', name:'Series Season', n:212, dot:'on' },
+      { id:'show_id',       name:'Show ID',       n:1840,dot:'on' },
+      { id:'episode_number',name:'Episode #',     n:0,   dot:'idle' },
+      { id:'genre_ctv',     name:'CTV Genre',     n:18,  dot:'on' },
+      { id:'rating',        name:'Content Rating',n:7,   dot:'on' },
+      { id:'live_or_vod',   name:'Live / VOD',    n:2,   dot:'on' },
+    ],
+    'Video': [
+      { id:'video_group_id',name:'Video Group ID', n:96, dot:'on' },
+      { id:'playback_method',name:'Playback',      n:4,  dot:'on' },
+      { id:'slot_position', name:'Slot Position',  n:5,  dot:'on' },
+      { id:'in_stream',     name:'In-Stream',      n:3,  dot:'warn' },
+    ],
+    'Audience': [
+      { id:'audience_seg',  name:'Audience Segment', n:412,dot:'on' },
+      { id:'household_size',name:'Household Size',   n:6,  dot:'on' },
+    ],
+    'Archived': [
+      { id:'old_genre',     name:'Genre (legacy)',   n:0, dot:'idle' },
+      { id:'partner_id_v1', name:'Partner ID v1',    n:0, dot:'idle' },
+    ],
+  };
+
+  const VALUES = [
+    { v:'abovefold',   d:'Above the Fold',    used:32, total:128, status:'active', upd:'2h ago',     who:'EM' },
+    { v:'belowfold',   d:'Below the Fold',    used:18, total:128, status:'active', upd:'2h ago',     who:'EM',
+      lifecycleNote:{ headline:'Active · low confidence', detail:'Match score 71% from CSV import. Review mapping before relying on this for billing.' },
+      imported:{ source:'CSV · iab_taxonomy_v3.csv', confidence:'med', score:0.71, mapping:'fuzzy match · "below_the_fold" → belowfold' } },
+    { v:'midroll',     d:'Mid-roll',          used:24, total:128, status:'active', upd:'1d ago',     who:'JS' },
+    { v:'preroll',     d:'Pre-roll',          used:54, total:128, status:'active', upd:'1d ago',     who:'JS' },
+    { v:'postroll',    d:'Post-roll',         used:9,  total:128, status:'active', upd:'3d ago',     who:'JS', imported:{ source:'CSV · iab_taxonomy_v3.csv', confidence:'high', score:0.94, mapping:'value→value · exact match' } },
+    { v:'sidebar',     d:'Sidebar',           used:6,  total:128, status:'active', upd:'5d ago',     who:'AC' },
+    { v:'homepagehero',d:'Homepage Hero',     used:11, total:128, status:'active', upd:'1w ago',     who:'AC', imported:{ source:'CSV · partner_kvps_q1.csv', confidence:'med', score:0.71, mapping:'fuzzy match · "homepg_hero" → homepagehero' } },
+    { v:'overlay_u',   d:'Overlay (Upper)',   used:0,  total:128, status:'validating', upd:'30s ago', who:'EM',
+      lifecycleNote:{ headline:'Validating against schema', detail:'Running OpenRTB 2.7 conformance check. Estimated 12s remaining.' } },
+    { v:'bottom',      d:'Bottom',            used:0,  total:128, status:'draft',  upd:'just now',   who:'EM',
+      lifecycleNote:{ headline:'Not published yet', detail:'Saved as draft by Erin M. — won\'t appear in bid requests until published.' } },
+    { v:'overlay_l',   d:'Overlay (Lower)',   used:0,  total:128, status:'draft',  upd:'12m ago',    who:'EM',
+      lifecycleNote:{ headline:'Not published yet', detail:'Draft idle for 12 minutes. Publish or discard.' } },
+    { v:'pip_corner',  d:'PiP Corner',        used:2,  total:128, status:'stale',   upd:'2w ago',     who:'TR',
+      lifecycleNote:{ headline:'No bid traffic in 14 days', detail:'No bid requests have included this value since Apr 23. Threshold for "stale" is 14 days of zero traffic.', lastSeen:'14d ago', threshold:'14d' },
+      imported:{ source:'CSV · partner_kvps_q1.csv', confidence:'low', score:0.42, mapping:'no match · created as new value' } },
+    { v:'breakroll',   d:'Break-roll',        used:15, total:128, status:'synced', upd:'4h ago',     who:'JS' },
+    { v:'companion',   d:'Companion Banner',  used:7,  total:128, status:'active', upd:'2d ago',     who:'AC' },
+    { v:'inread',      d:'In-Read Article',   used:13, total:128, status:'active', upd:'6d ago',     who:'EM' },
+    { v:'outstream',   d:'Out-Stream',        used:5,  total:128, status:'deprecated', upd:'3w ago', who:'TR',
+      lifecycleNote:{ headline:'Deprecated but still referenced', detail:'OpenRTB 2.7 removed pos=outstream in favor of placement.subtype. Still used by 5 deals — migrate before May 30, 2026.', deals:5, sunset:'May 30, 2026' } },
+    { v:'mobileweb',   d:'Mobile Web',        used:0,  total:128, status:'archived', upd:'62d ago', who:'AC',
+      lifecycleNote:{ headline:'Archived · read-only', detail:'Archived by Anne C. on Mar 5. Restore to make editable again.' } },
+  ];
+
+  // Demo state for the table: 'data' | 'loading' | 'empty' | 'error'
+  let TABLE_STATE = 'data';
+  // Permission role: 'admin' | 'editor' | 'viewer'
+  let ROLE = 'admin';
+  const ROLE_NEEDED_FOR_EDIT = 'Editor or Yield Ops Admin';
+
+  // ============================================
+  // RENDER
+  // ============================================
+  function renderTaxonomy() {
+    const el = document.getElementById('taxonomy');
+    let html = '';
+    for (const [group, items] of Object.entries(TAXONOMY)) {
+      const total = items.reduce((s, i) => s + i.n, 0);
+      const isArchived = group === 'Archived';
+      html += `
+        <div class="group-h">
+          <svg viewBox="0 0 12 12"><path d="M3 5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          ${group}
+          <span class="ct">${isArchived ? items.length : total.toLocaleString()}</span>
+        </div>
+      `;
+      html += items.map(i => `
+        <div class="kvp-row ${i.sel?'on':''}" data-key="${i.id}">
+          <span class="dot ${i.dot==='warn'?'warn':i.dot==='idle'?'idle':''}"></span>
+          <div class="name">
+            <b>${i.name}</b>
+            <span>${i.id}</span>
+          </div>
+          <span class="ct">${i.n}</span>
+        </div>
+      `).join('');
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('.kvp-row').forEach(r => {
+      r.addEventListener('click', () => {
+        el.querySelectorAll('.kvp-row').forEach(x => x.classList.remove('on'));
+        r.classList.add('on');
+      });
+    });
+  }
+
+  // Lifecycle order — used both for stepper and "next state" hints
+  const LIFECYCLE = ['draft', 'validating', 'active', 'stale', 'deprecated', 'archived'];
+
+  function lifecycleStepper(s) {
+    const cur = LIFECYCLE.indexOf(s);
+    if (cur < 0) return '';
+    return `<span class="lifecycle-mini" aria-hidden="true">${
+      LIFECYCLE.map((step, i) => {
+        let cls = 'step';
+        if (i < cur) cls += ' done';
+        else if (i === cur) cls += ' cur';
+        else cls += ' skip';
+        return `<span class="${cls}" title="${step}"></span>`;
+      }).join('')
+    }</span>`;
+  }
+
+  function statusPill(s, row) {
+    const map = {
+      active:     ['active',     'Active'],
+      draft:      ['draft',      'Draft'],
+      validating: ['validating', 'Validating'],
+      stale:      ['warn',       'Stale'],
+      synced:     ['synced',     'Syncing'],
+      deprecated: ['deprecated', 'Deprecated'],
+      archived:   ['archived',   'Archived'],
+      // legacy alias
+      warn:       ['warn',       'Stale'],
+    };
+    const [cls, lbl] = map[s] || map.active;
+    const stepper = lifecycleStepper(s === 'warn' ? 'stale' : s);
+    const base = `<span class="pill ${cls}"><span class="pdot"></span>${lbl}</span>${stepper}`;
+
+    // Build "why" tooltip from lifecycleNote (preferred) or imported confidence
+    let note = row && row.lifecycleNote;
+    // Active + low/med confidence → synthesize a note
+    if (!note && s === 'active' && row && row.imported && (row.imported.confidence === 'low' || row.imported.confidence === 'med')) {
+      note = {
+        headline: 'Active · ' + (row.imported.confidence === 'low' ? 'low' : 'medium') + ' confidence',
+        detail: 'Match score ' + Math.round(row.imported.score * 100) + '% from ' + row.imported.source + '. ' + row.imported.mapping + '.',
+      };
+    }
+    if (!note) return base;
+
+    // Per-status accent for the headline + caret color
+    const accent = ({
+      validating: 'var(--info)',
+      stale:      'var(--warn)',
+      warn:       'var(--warn)',
+      deprecated: 'var(--danger)',
+      archived:   'var(--text-dim)',
+      draft:      'var(--text-muted)',
+      active:     'var(--warn)',
+    })[s] || 'var(--text)';
+
+    const rows = [];
+    if (note.lastSeen)  rows.push(['Last seen',  note.lastSeen]);
+    if (note.threshold) rows.push(['Threshold',  note.threshold]);
+    if (note.deals != null) rows.push(['Deals using', String(note.deals)]);
+    if (note.sunset)    rows.push(['Sunset',     note.sunset]);
+
+    const metaHtml = rows.map((r, i) =>
+      `<span class="meta-line"${i > 0 ? ' style="margin-top:2px;border-top:0;padding-top:0"' : ''}>
+         <span>${r[0]}</span><span class="v">${r[1]}</span>
+       </span>`
+    ).join('');
+
+    return `
+      <span class="tip" tabindex="0" aria-label="Why ${lbl.toLowerCase()}?">
+        ${base}
+        <span class="tip-trigger" aria-hidden="true">?</span>
+        <span class="tip-content" role="tooltip">
+          <b style="color:${accent}">${note.headline}</b>
+          <span style="color:var(--text-muted);font-size:11px">${note.detail}</span>
+          ${metaHtml}
+        </span>
+      </span>
+    `;
+  }
+
+  function confidenceChip(imp) {
+    if (!imp) return '';
+    const pct = Math.round(imp.score * 100);
+    const lbl = imp.confidence === 'high' ? 'High' : imp.confidence === 'med' ? 'Med' : 'Low';
+    return `
+      <span class="tip ${imp.confidence === 'high' ? 'tip-info' : imp.confidence === 'low' ? '' : 'tip-neutral'}" tabindex="0" aria-label="Import confidence">
+        <span class="conf ${imp.confidence}" aria-hidden="true">
+          <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+          <span class="lbl">${lbl} · ${pct}%</span>
+        </span>
+        <span class="tip-content" role="tooltip" style="width:260px">
+          <b>Imported · ${lbl} confidence</b>
+          ${imp.mapping}
+          <span class="meta-line">
+            <span>Source</span><span class="v" style="font-size:10.5px">${imp.source.replace('CSV · ','')}</span>
+          </span>
+          <span class="meta-line" style="margin-top:2px;border-top:0;padding-top:0">
+            <span>Match score</span><span class="v">${pct}%</span>
+          </span>
+        </span>
+      </span>
+    `;
+  }
+
+  function renderTable(opts = {}) {
+    const tbody = document.getElementById('vtBody');
+    const { selectAll = false, selectedSet = new Set() } = opts;
+    const colspan = 7;
+    const canEdit = ROLE !== 'viewer';
+
+    if (TABLE_STATE === 'loading') {
+      tbody.innerHTML = Array.from({length: 6}).map(() => `
+        <tr class="skel-row">
+          <td class="cb"><span class="skel" style="width:14px;height:14px;border-radius:3px"></span></td>
+          <td><span class="skel w-md"></span></td>
+          <td><span class="skel w-lg"></span></td>
+          <td><span class="skel w-sm"></span> &nbsp; <span class="skel bar"></span></td>
+          <td><span class="skel pill"></span></td>
+          <td><span class="skel w-md"></span></td>
+          <td class="actions-c"><span class="skel" style="width:90px;height:22px;border-radius:6px"></span></td>
+        </tr>
+      `).join('');
+      return;
+    }
+    if (TABLE_STATE === 'empty') {
+      tbody.innerHTML = `
+        <tr><td colspan="${colspan}">
+          <div class="state-empty">
+            <div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3h18v4H3zM3 11h18v4H3zM3 19h18v2H3z"/></svg></div>
+            <h4>No values yet</h4>
+            <p>This key has no values. Add them manually, paste a list, or import a CSV from your taxonomy spreadsheet.</p>
+            <div class="state-actions">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('addBtn').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add first value</button>
+              <button class="btn btn-sm">Browse template library</button>
+            </div>
+          </div>
+        </td></tr>`;
+      return;
+    }
+    if (TABLE_STATE === 'error') {
+      tbody.innerHTML = `
+        <tr><td colspan="${colspan}">
+          <div class="state-error">
+            <div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+            <h4>Couldn't load values</h4>
+            <p>The taxonomy service didn't respond in time. Your selection and filters are preserved — try again, or open the audit log to see if a recent change is in flight.</p>
+            <div class="state-actions">
+              <button class="btn btn-primary btn-sm" id="retryLoad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg> Retry</button>
+              <button class="btn btn-sm">View audit log</button>
+            </div>
+            <div class="err-detail">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <code>504 GATEWAY_TIMEOUT</code> · req <code>kvp-7c12-9a4f</code> · 8.2s
+            </div>
+          </div>
+        </td></tr>`;
+      const r = tbody.querySelector('#retryLoad');
+      if (r) r.addEventListener('click', () => {
+        TABLE_STATE = 'loading'; renderTable();
+        setTimeout(() => { TABLE_STATE = 'data'; renderTable(); applyDemoButtonState(); showToast({title:'Reloaded', sub:'16 values · synced'}); }, 1100);
+      });
+      return;
+    }
+
+    const html = VALUES.map((r, i) => {
+      const sel = selectAll || selectedSet.has(r.v);
+      const usedPct = Math.min(100, Math.round((r.used / r.total) * 100));
+      const importedBadge = r.imported ? `<span class="imp-badge" title="Imported value"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>CSV</span>` : '';
+      const conf = r.imported ? confidenceChip(r.imported) : '';
+      const editLockAttr = canEdit ? '' : 'data-locked="1" aria-disabled="true"';
+      const editLockTip = canEdit ? '' : ` · ${ROLE_NEEDED_FOR_EDIT} only`;
+      return `
+        <tr class="${sel ? 'sel' : ''}" data-v="${r.v}">
+          <td class="cb"><input type="checkbox" class="ck row-ck" ${sel?'checked':''} ${canEdit?'':'disabled'}/></td>
+          <td class="value-c"><span class="v">${r.v}</span>${importedBadge}</td>
+          <td class="dn-c"><span class="dn">${r.d}</span>${conf}</td>
+          <td class="used-c">
+            <span class="used">
+              <b>${r.used}</b> deals
+              <span class="mini-bar"><i style="width:${usedPct}%"></i></span>
+            </span>
+          </td>
+          <td>${statusPill(r.status, r)}</td>
+          <td class="lu-c">${r.upd} <span class="who">· ${r.who}</span></td>
+          <td class="actions-c">
+            <span class="row-acts" role="toolbar" aria-label="Row actions">
+              <button class="primary" data-label="Edit${editLockTip}" data-shortcut="E" ${editLockAttr} ${canEdit?'':'disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button data-label="Duplicate${editLockTip}" data-shortcut="D" ${canEdit?'':'disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+              <button data-label="Inspect dependencies" data-shortcut="I"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+              <span class="sep"></span>
+              <button class="del" data-label="Delete${editLockTip}" data-shortcut="⌫" ${canEdit?'':'disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+            </span>
+          </td>
+        </tr>`;
+    }).join('');
+    tbody.innerHTML = html;
+
+    tbody.querySelectorAll('.row-ck').forEach((ck, i) => {
+      ck.addEventListener('change', () => {
+        ck.closest('tr').classList.toggle('sel', ck.checked);
+        updateBulkBar();
+      });
+    });
+    tbody.querySelectorAll('.del').forEach(b => {
+      b.addEventListener('click', () => { if (!b.disabled) setStage('depend'); });
+    });
+    tbody.querySelectorAll('.dn-c').forEach(c => {
+      c.addEventListener('dblclick', () => {
+        const cur = c.querySelector('.dn').textContent;
+        c.classList.add('editing');
+        c.innerHTML = `<input class="dn-input" value="${cur}"/>`;
+        const inp = c.querySelector('.dn-input');
+        inp.focus(); inp.select();
+        const commit = () => {
+          c.classList.remove('editing');
+          c.innerHTML = `<span class="dn">${inp.value}</span>`;
+          c.addEventListener('dblclick', arguments.callee);
+          showToast({title:'Saved', sub:`Display name updated · ${inp.value}`});
+        };
+        inp.addEventListener('blur', commit);
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+      });
+    });
+  }
+
+  function updateBulkBar() {
+    const checked = document.querySelectorAll('#vtBody .row-ck:checked').length;
+    const slot = document.getElementById('bulkSlot');
+    if (checked === 0) { slot.innerHTML = ''; return; }
+    slot.innerHTML = `
+      <div class="bulk">
+        <span class="ct"><span class="num">${checked}</span> selected</span>
+        <span class="ct" style="color:var(--text-muted)">of ${VALUES.length}</span>
+        <span class="acts">
+          <button class="btn btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Bulk edit</button>
+          <button class="btn btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> Export</button>
+          <button class="btn btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> Mark synced</button>
+          <button class="btn btn-sm btn-danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete</button>
+        </span>
+        <span class="x" id="clearSel"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </div>
+    `;
+    document.getElementById('clearSel').addEventListener('click', () => {
+      document.querySelectorAll('#vtBody .row-ck').forEach(c => { c.checked = false; c.closest('tr').classList.remove('sel'); });
+      document.getElementById('ckAll').checked = false;
+      updateBulkBar();
+    });
+  }
+
+  document.getElementById('ckAll').addEventListener('change', (e) => {
+    const checked = e.target.checked;
+    document.querySelectorAll('#vtBody .row-ck').forEach(c => {
+      c.checked = checked;
+      c.closest('tr').classList.toggle('sel', checked);
+    });
+    updateBulkBar();
+  });
+
+  // ============================================
+  // DRAWER STATES
+  // ============================================
+  function drawerCloseBtn() {
+    return `<span class="x" id="closeDrawer"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></span>`;
+  }
+
+  function drawerEmpty() {
+    return `
+      <div class="drawer-h">
+        <h3>Inspector</h3>
+        ${drawerCloseBtn()}
+      </div>
+      <div class="drawer-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-subtle)">
+        <div style="width:48px;height:48px;border-radius:12px;background:var(--bg-2);color:var(--text-muted);display:grid;place-items:center;margin-bottom:14px">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <div style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:4px">Select a row</div>
+        <p style="font-size:12px;color:var(--text-muted);margin:0;line-height:1.5">Click any value to inspect dependencies, or press <span class="kbd">A</span> to add new values.</p>
+      </div>
+    `;
+  }
+
+  function drawerAddTabs(active) {
+    return `
+      <div class="drawer-tabs">
+        <span class="drawer-tab ${active==='manual'?'on':''}" data-tab="manual">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Manual Entry
+        </span>
+        <span class="drawer-tab ${active==='paste'?'on':''}" data-tab="paste">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          Bulk Paste
+        </span>
+        <span class="drawer-tab ${active==='csv'?'on':''}" data-tab="csv">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          CSV Import
+        </span>
+      </div>
+    `;
+  }
+
+  function drawerAddManual() {
+    const rows = [
+      { v:'overlay_u', d:'Overlay (Upper)', err:null },
+      { v:'sticky_bottom', d:'Sticky Bottom', err:null },
+      { v:'abovefold', d:'Above the Fold', err:'duplicate' },
+      { v:'', d:'', err:null },
+    ];
+    return `
+      <div class="drawer-h">
+        <h3>Add values · Page Position</h3>
+        <span style="font-size:11px;color:var(--text-subtle);margin-left:6px">${rows.length} drafted</span>
+        ${drawerCloseBtn()}
+      </div>
+      ${drawerAddTabs('manual')}
+      <div class="drawer-body">
+        <div style="display:flex;flex-direction:column;gap:0">
+          ${rows.map((r, i) => `
+            <div class="row-add">
+              <div class="field">
+                <label>Value <span class="req">*</span> <span class="hint">lowercase, _</span></label>
+                <input class="input mono ${r.err?'error':''}" value="${r.v}" placeholder="lowercase_value" />
+                ${r.err === 'duplicate' ? `
+                  <span class="err"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> "abovefold" already exists</span>
+                ` : ''}
+              </div>
+              <div class="field">
+                <label>Display Name <span class="req">*</span></label>
+                <input class="input" value="${r.d}" placeholder="Human-readable" />
+              </div>
+              <button class="rm" title="Remove row">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+              </button>
+            </div>
+          `).join('')}
+        </div>
+        <button class="btn btn-sm" style="margin-top:14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Add row <span class="kbd" style="margin-left:4px">⌘↵</span>
+        </button>
+
+        <div style="margin-top:18px;padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            Validation rules
+          </div>
+          <ul style="margin:0;padding-left:18px;font-size:11.5px;color:var(--text-muted);line-height:1.6">
+            <li>Lowercase letters, numbers, and underscores only</li>
+            <li>Max 64 characters · must be unique within key</li>
+            <li>Changes propagate to bid request enrichment in ~30s</li>
+          </ul>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <span style="font-size:11px;color:var(--text-muted);align-self:center">2 valid · 1 issue · 1 empty</span>
+        <span class="grow"></span>
+        <button class="btn" id="closeDrawer2">Cancel</button>
+        <button class="btn btn-primary" id="saveAdd">Save 2 values</button>
+      </div>
+    `;
+  }
+
+  function drawerAddPaste() {
+    return `
+      <div class="drawer-h">
+        <h3>Bulk paste · Page Position</h3>
+        ${drawerCloseBtn()}
+      </div>
+      ${drawerAddTabs('paste')}
+      <div class="drawer-body">
+        <div class="field">
+          <label>Paste one value per line <span class="hint">tab-separated for value + display</span></label>
+          <textarea class="paste" id="pasteArea">overlay_u\tOverlay (Upper)
+sticky_bottom\tSticky Bottom
+abovefold\tAbove the Fold
+breakroll\tBreak-roll
+homepagehero\tHomepage Hero
+PIP CORNER\tPiP Corner
+inline_native\tInline Native
+splash\tSplash Screen</textarea>
+        </div>
+
+        <div class="preview-list" style="margin-top:14px">
+          <div class="preview-summary">
+            <span class="add"><span class="n">+ 4</span> new</span>
+            <span class="dup"><span class="n">~ 3</span> duplicates</span>
+            <span class="bad"><span class="n">! 1</span> invalid</span>
+            <span style="margin-left:auto;color:var(--text-dim)">Live preview</span>
+          </div>
+          <div class="preview-row new"><span class="badge">new</span><span class="v">overlay_u</span><span style="color:var(--text-muted)">Overlay (Upper)</span></div>
+          <div class="preview-row new"><span class="badge">new</span><span class="v">sticky_bottom</span><span style="color:var(--text-muted)">Sticky Bottom</span></div>
+          <div class="preview-row dup"><span class="badge">dup</span><span class="v">abovefold</span><span style="color:var(--text-muted)">Above the Fold · already exists</span></div>
+          <div class="preview-row dup"><span class="badge">dup</span><span class="v">breakroll</span><span style="color:var(--text-muted)">Break-roll · already exists</span></div>
+          <div class="preview-row dup"><span class="badge">dup</span><span class="v">homepagehero</span><span style="color:var(--text-muted)">Homepage Hero · already exists</span></div>
+          <div class="preview-row invalid"><span class="badge">invalid</span><span class="v">PIP CORNER</span><span style="color:var(--text-muted)">→ <span style="color:var(--neon)">pip_corner</span> · auto-normalize?</span></div>
+          <div class="preview-row new"><span class="badge">new</span><span class="v">inline_native</span><span style="color:var(--text-muted)">Inline Native</span></div>
+          <div class="preview-row new"><span class="badge">new</span><span class="v">splash</span><span style="color:var(--text-muted)">Splash Screen</span></div>
+        </div>
+
+        <label style="margin-top:14px;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text-muted);cursor:pointer">
+          <input type="checkbox" class="ck" checked /> Auto-normalize invalid values to <code style="font-family:var(--mono);background:var(--bg-3);padding:1px 5px;border-radius:3px;color:var(--neon);font-size:11px">snake_case</code>
+        </label>
+        <label style="margin-top:8px;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text-muted);cursor:pointer">
+          <input type="checkbox" class="ck" /> Skip duplicates silently
+        </label>
+      </div>
+      <div class="drawer-foot">
+        <span style="font-size:11px;color:var(--text-muted);align-self:center">5 will be saved</span>
+        <span class="grow"></span>
+        <button class="btn" id="closeDrawer3">Cancel</button>
+        <button class="btn btn-primary" id="savePaste">Save & publish</button>
+      </div>
+    `;
+  }
+
+  function drawerCsvUpload() {
+    return `
+      <div class="drawer-h">
+        <h3>CSV Import · Page Position</h3>
+        ${drawerCloseBtn()}
+      </div>
+      ${drawerAddTabs('csv')}
+      <div class="drawer-body">
+        <div class="stepper">
+          <div class="step on"><span class="n">1</span>Upload</div>
+          <div class="step"><span class="n">2</span>Map</div>
+          <div class="step"><span class="n">3</span>Validate</div>
+          <div class="step"><span class="n">4</span>Diff</div>
+          <div class="step"><span class="n">5</span>Publish</div>
+        </div>
+
+        <div class="dropzone">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+          </div>
+          <h4>Drop CSV file here</h4>
+          <p>or <a href="#">browse files</a> · max 1,000 rows · 2 columns</p>
+        </div>
+
+        <div style="margin-top:14px;padding:11px 12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px;font-size:11.5px;color:var(--text-muted);line-height:1.5">
+          <b style="color:var(--text);font-size:12px;display:block;margin-bottom:4px">Expected format</b>
+          <code style="font-family:var(--mono);font-size:11px;color:var(--text);display:block;margin-top:6px;background:var(--bg-3);padding:8px;border-radius:4px">value,display_name<br>abovefold,Above the Fold<br>belowfold,Below the Fold</code>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <span class="grow"></span>
+        <button class="btn" id="closeDrawer4">Cancel</button>
+        <button class="btn btn-primary">Continue →</button>
+      </div>
+    `;
+  }
+
+  function drawerCsvMap() {
+    return `
+      <div class="drawer-h">
+        <h3>CSV Import · Map columns</h3>
+        ${drawerCloseBtn()}
+      </div>
+      ${drawerAddTabs('csv')}
+      <div class="drawer-body">
+        <div class="stepper">
+          <div class="step done"><span class="n">✓</span>Upload</div>
+          <div class="step on"><span class="n">2</span>Map</div>
+          <div class="step"><span class="n">3</span>Validate</div>
+          <div class="step"><span class="n">4</span>Diff</div>
+          <div class="step"><span class="n">5</span>Publish</div>
+        </div>
+
+        <div class="file-row">
+          <div class="ic"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+          <div class="nm"><b>page_positions_q2_2026.csv</b><span>52 rows · 2 columns · 4.3 KB</span></div>
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></div>
+        </div>
+
+        <div style="margin-top:18px">
+          <h5 style="margin:0 0 4px;font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Column mapping</h5>
+          <p style="margin:0 0 10px;font-size:11.5px;color:var(--text-subtle)">CSV columns auto-detected. Adjust mappings if needed.</p>
+          <div class="map-row">
+            <div class="csv-col">slot_key</div>
+            <div class="arrow">→</div>
+            <select class="select"><option>Value (system key)</option><option>Display Name</option><option>— skip —</option></select>
+          </div>
+          <div class="map-row">
+            <div class="csv-col">human_label</div>
+            <div class="arrow">→</div>
+            <select class="select"><option>Display Name</option><option>Value (system key)</option><option>— skip —</option></select>
+          </div>
+          <div class="map-row">
+            <div class="csv-col">notes</div>
+            <div class="arrow">→</div>
+            <select class="select"><option>— skip —</option><option>Description (custom)</option></select>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;padding:10px 12px;background:var(--info-bg);border-radius:6px;font-size:11.5px;color:var(--info);display:flex;gap:8px;align-items:flex-start">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-top:1px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Preview the first 3 rows to confirm mapping looks correct.
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn">← Back</button>
+        <span class="grow"></span>
+        <button class="btn" id="closeDrawer5">Cancel</button>
+        <button class="btn btn-primary">Validate →</button>
+      </div>
+    `;
+  }
+
+  function drawerCsvValidate() {
+    return `
+      <div class="drawer-h">
+        <h3>CSV Import · Validate</h3>
+        ${drawerCloseBtn()}
+      </div>
+      ${drawerAddTabs('csv')}
+      <div class="drawer-body">
+        <div class="stepper">
+          <div class="step done"><span class="n">✓</span>Upload</div>
+          <div class="step done"><span class="n">✓</span>Map</div>
+          <div class="step on"><span class="n">3</span>Validate</div>
+          <div class="step"><span class="n">4</span>Diff</div>
+          <div class="step"><span class="n">5</span>Publish</div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px;margin-bottom:12px">
+          <div class="loader"></div>
+          <div style="flex:1">
+            <b style="font-size:12.5px">Scanning 52 rows…</b>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:1px">Detecting duplicates, invalid characters, conflicts</div>
+          </div>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">94%</span>
+        </div>
+
+        <div class="preview-list">
+          <div class="preview-summary">
+            <span class="add"><span class="n">42</span> valid</span>
+            <span class="dup"><span class="n">8</span> duplicates</span>
+            <span class="bad"><span class="n">2</span> invalid</span>
+            <span style="margin-left:auto;color:var(--text-dim)">52 total</span>
+          </div>
+          <div class="preview-row invalid"><span class="badge">invalid</span><span class="v">Above Fold</span><span style="color:var(--text-muted)">Row 17 · contains spaces</span></div>
+          <div class="preview-row invalid"><span class="badge">invalid</span><span class="v">UPPERCASE_VAL</span><span style="color:var(--text-muted)">Row 31 · uppercase not allowed</span></div>
+          <div class="preview-row dup"><span class="badge">dup</span><span class="v">abovefold</span><span style="color:var(--text-muted)">Row 4 · already exists</span></div>
+          <div class="preview-row dup"><span class="badge">dup</span><span class="v">midroll</span><span style="color:var(--text-muted)">Row 12 · already exists</span></div>
+          <div class="preview-row new"><span class="badge">new</span><span class="v">overlay_u</span><span style="color:var(--text-muted)">Row 22</span></div>
+          <div class="preview-row new"><span class="badge">new</span><span class="v">sticky_top</span><span style="color:var(--text-muted)">Row 28</span></div>
+          <div class="preview-row new"><span class="badge">new</span><span class="v">interstitial</span><span style="color:var(--text-muted)">Row 35</span></div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:14px;font-size:11.5px;color:var(--text-muted)">
+          <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" class="ck" checked/> Auto-fix uppercase</label>
+          <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" class="ck" checked/> Skip duplicates</label>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn">← Back</button>
+        <span class="grow"></span>
+        <button class="btn" id="closeDrawer6">Cancel</button>
+        <button class="btn btn-primary">Review diff →</button>
+      </div>
+    `;
+  }
+
+  function drawerCsvDiff() {
+    return `
+      <div class="drawer-h">
+        <h3>CSV Import · Confirm publish</h3>
+        ${drawerCloseBtn()}
+      </div>
+      ${drawerAddTabs('csv')}
+      <div class="drawer-body">
+        <div class="stepper">
+          <div class="step done"><span class="n">✓</span>Upload</div>
+          <div class="step done"><span class="n">✓</span>Map</div>
+          <div class="step done"><span class="n">✓</span>Validate</div>
+          <div class="step on"><span class="n">4</span>Diff</div>
+          <div class="step"><span class="n">5</span>Publish</div>
+        </div>
+
+        <div class="diff-stats">
+          <div class="diff-stat add"><div class="l">Added</div><div class="v"><span class="sym">+</span>42</div></div>
+          <div class="diff-stat upd"><div class="l">Updated</div><div class="v"><span class="sym">~</span>8</div></div>
+          <div class="diff-stat skip"><div class="l">Skipped</div><div class="v"><span class="sym">−</span>2</div></div>
+        </div>
+
+        <h5 style="margin:0 0 8px;font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Changeset preview</h5>
+        <div class="diff-list">
+          <div class="diff-row add"><span class="sym">+</span><span class="v">overlay_u</span><span class="reason">Overlay (Upper)</span></div>
+          <div class="diff-row add"><span class="sym">+</span><span class="v">sticky_top</span><span class="reason">Sticky Top</span></div>
+          <div class="diff-row add"><span class="sym">+</span><span class="v">interstitial</span><span class="reason">Interstitial</span></div>
+          <div class="diff-row add"><span class="sym">+</span><span class="v">native_inread</span><span class="reason">Native In-Read</span></div>
+          <div class="diff-row upd"><span class="sym">~</span><span class="v">midroll</span><span class="reason">Display name → "Mid-Roll Break"</span></div>
+          <div class="diff-row upd"><span class="sym">~</span><span class="v">preroll</span><span class="reason">Display name → "Pre-Roll Spot"</span></div>
+          <div class="diff-row skip"><span class="sym">−</span><span class="v">Above Fold</span><span class="reason">invalid · contains spaces</span></div>
+          <div class="diff-row skip"><span class="sym">−</span><span class="v">UPPERCASE_VAL</span><span class="reason">invalid · uppercase not allowed</span></div>
+        </div>
+
+        <div style="margin-top:14px;padding:11px 12px;background:var(--neon-glow-soft);border:1px solid rgba(111,233,164,0.25);border-radius:6px;display:flex;gap:8px;align-items:flex-start">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top:1px;flex-shrink:0;color:var(--neon)"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <div style="font-size:11.5px;line-height:1.5">
+            <b style="color:var(--text);font-size:12px;display:block;margin-bottom:2px">Ready to publish</b>
+            <span style="color:var(--text-muted)">Changes will propagate to <b style="color:var(--text)">128 active deals</b> within ~30 seconds. Audit log entry will be created.</span>
+          </div>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn">← Back</button>
+        <span class="grow"></span>
+        <button class="btn" id="closeDrawer7">Cancel</button>
+        <button class="btn btn-primary" id="publish">Publish 50 changes →</button>
+      </div>
+    `;
+  }
+
+  function drawerDepend() {
+    return `
+      <div class="drawer-h">
+        <h3>Cannot delete · <span style="font-family:var(--mono);font-size:12px;background:var(--bg-3);padding:2px 7px;border-radius:4px;color:var(--text);border:1px solid var(--line)">abovefold</span></h3>
+        ${drawerCloseBtn()}
+      </div>
+      <div class="drawer-body">
+        <div class="dep-warn">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+          <div class="tx">
+            <b>This value has 18 active dependencies</b>
+            <p>Removing it will affect targeting on 12 PMP deals, 4 audience segments, and 2 forecasting templates. Unlink dependencies before deleting.</p>
+          </div>
+        </div>
+
+        <!-- Revenue at risk -->
+        <div class="rev-risk">
+          <div>
+            <div class="amt">$847K</div>
+            <span class="amt-lbl">Revenue at risk · 30d</span>
+          </div>
+          <div class="breakdown">
+            <div class="row"><span>PMP deals (12)</span><span class="v">$612,400</span></div>
+            <div class="row"><span>Audience extensions (4)</span><span class="v">$184,200</span></div>
+            <div class="row"><span>Forecast bookings (2)</span><span class="v">$50,800</span></div>
+            <span class="span">Based on trailing 30d delivered revenue from deals targeting <code style="font-family:var(--mono);font-size:10.5px;background:var(--bg-3);padding:1px 4px;border-radius:3px;color:var(--text)">pos=abovefold</code>. Source: Yield Reporter.</span>
+          </div>
+        </div>
+
+        <!-- Required permission -->
+        <div class="perm-req ok">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+          <div class="tx">
+            <b>You have permission to force-delete</b>
+            <span>Requires <code>metadata.kvp.force_delete</code> · granted via role <code>Yield Ops Admin</code>.</span>
+          </div>
+        </div>
+
+        <div class="dep-section">
+          <h5>Active PMP Deals <span class="ct">12</span></h5>
+          <div class="dep-list">
+            ${[
+              ['UMB-TD-FBC4-5A4F438','Paramount-CTV-CBS-Sports'],
+              ['UMB-DV-A12C-1188901','Disney-CTV-Hulu-Bundle'],
+              ['UMB-AM-7A3F-9023115','Roku-Open-OTT-Music'],
+              ['UMB-TD-9981-7700121','NBC-MNF-Direct-Demand'],
+              ['UMB-TR-66BB-3340092','Pluto-VOD-Sports-MidRoll'],
+              ['UMB-DV-2245-1112005','Samsung-AdsTV-Bundled'],
+            ].map(([id, nm]) => `
+              <div class="dep-row">
+                <span class="nm">${id}</span>
+                <span class="ms">${nm}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="dep-section">
+          <h5>Audience Segments <span class="ct">4</span></h5>
+          <div class="dep-list">
+            <div class="dep-row"><span class="nm">aud_seg_ctv_premium</span><span class="ms">CTV Premium Viewers</span></div>
+            <div class="dep-row"><span class="nm">aud_seg_sports_fans</span><span class="ms">Sports Enthusiasts (US)</span></div>
+            <div class="dep-row"><span class="nm">aud_seg_hh_size_4plus</span><span class="ms">Households 4+</span></div>
+            <div class="dep-row"><span class="nm">aud_seg_news_pm</span><span class="ms">PM News Audience</span></div>
+          </div>
+        </div>
+
+        <div class="dep-section">
+          <h5>Forecasting Templates <span class="ct">2</span></h5>
+          <div class="dep-list">
+            <div class="dep-row"><span class="nm">fcst_ctv_q2_2026</span><span class="ms">Q2 2026 CTV avails</span></div>
+            <div class="dep-row"><span class="nm">fcst_video_holiday</span><span class="ms">Holiday Video forecast</span></div>
+          </div>
+        </div>
+
+        <!-- Rollback option -->
+        <div class="rollback">
+          <h5><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg> Rollback safety net</h5>
+          <p>If something breaks downstream, you can restore this value within the chosen window. After expiry, the deletion is permanent.</p>
+          <div class="opts">
+            <label class="opt">
+              <input type="radio" name="rb" />
+              <span class="lbl"><b>1 hour</b><span class="sub">Quick rollback for low-risk deletes</span></span>
+              <span class="ttl">TTL 1h</span>
+            </label>
+            <label class="opt" style="border-color:rgba(110,139,255,0.35);background:rgba(110,139,255,0.04)">
+              <input type="radio" name="rb" checked />
+              <span class="lbl"><b>7 days</b> · recommended<span class="sub">Default for values with active deal dependencies</span></span>
+              <span class="ttl">TTL 7d</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="rb" />
+              <span class="lbl"><b>30 days</b><span class="sub">Maximum window — requires approval from a second admin</span></span>
+              <span class="ttl">TTL 30d</span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="rb" />
+              <span class="lbl"><b>Permanent</b><span class="sub" style="color:var(--danger)">No rollback — cannot be undone</span></span>
+              <span class="ttl">No TTL</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Audit log preview -->
+        <div class="audit-prev">
+          <h5><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Audit log entry · preview</h5>
+          <div class="entry"><span class="k">action:</span>     <span class="v danger">metadata.kvp.force_delete</span>
+<span class="k">value:</span>      <span class="v">abovefold</span>
+<span class="k">key:</span>        <span class="v">pos</span>
+<span class="k">actor:</span>      <span class="v">elena.marx@nexxen.io</span>
+<span class="k">role:</span>       <span class="v">yield_ops_admin</span>
+<span class="k">cascade:</span>    <span class="v">12 deals · 4 segments · 2 forecasts</span>
+<span class="k">revenue_30d:</span><span class="v danger">$847,400</span>
+<span class="k">rollback:</span>   <span class="v info">7d window · expires Jun 14, 2026</span>
+<span class="k">ip:</span>         <span class="v">10.42.7.118</span>
+<span class="k">ts:</span>         <span class="v">2026-06-07T14:32:08Z</span></div>
+          <span class="lnk">View full history<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+
+        <div class="confirm-input">
+          <p>To force-delete and detach all dependencies, type <code>abovefold</code> below:</p>
+          <input class="input mono" placeholder="Type value name to confirm" />
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn">View audit log</button>
+        <span class="grow"></span>
+        <button class="btn" id="closeDrawer8">Cancel</button>
+        <button class="btn btn-danger" disabled style="opacity:0.5;cursor:not-allowed">Force delete</button>
+      </div>
+    `;
+  }
+
+  // ============================================
+  // STAGE WIRING
+  // ============================================
+  const drawer = document.getElementById('drawer');
+  const work = document.getElementById('work');
+
+  const STAGES = {
+    'default':       { drawer: drawerEmpty,       hasDrawer: false },
+    'add-manual':    { drawer: drawerAddManual,   hasDrawer: true },
+    'add-paste':     { drawer: drawerAddPaste,    hasDrawer: true },
+    'csv-upload':    { drawer: drawerCsvUpload,   hasDrawer: true },
+    'csv-map':       { drawer: drawerCsvMap,      hasDrawer: true },
+    'csv-validate':  { drawer: drawerCsvValidate, hasDrawer: true },
+    'csv-diff':      { drawer: drawerCsvDiff,     hasDrawer: true },
+    'depend':        { drawer: drawerDepend,      hasDrawer: true },
+  };
+
+  // CSV pipeline ordering for next/back
+  const CSV_STEPS = ['csv-upload', 'csv-map', 'csv-validate', 'csv-diff'];
+
+  function setStage(name) {
+    const cfg = STAGES[name] || STAGES['default'];
+    drawer.innerHTML = cfg.drawer();
+    work.classList.toggle('no-drawer', !cfg.hasDrawer);
+
+    updateBulkBar();
+
+    // wire close buttons
+    drawer.querySelectorAll('[id^="closeDrawer"]').forEach(b => b.addEventListener('click', () => setStage('default')));
+    // wire tabs inside drawer
+    drawer.querySelectorAll('.drawer-tab').forEach(t => t.addEventListener('click', () => {
+      const m = { manual: 'add-manual', paste: 'add-paste', csv: 'csv-upload' };
+      setStage(m[t.dataset.tab]);
+    }));
+
+    // wire CSV step navigation
+    const idx = CSV_STEPS.indexOf(name);
+    if (idx >= 0) {
+      const foot = drawer.querySelector('.drawer-foot');
+      if (foot) {
+        const nextBtn = foot.querySelector('.btn-primary:not([disabled])');
+        const backBtn = [...foot.querySelectorAll('.btn')].find(b => b.textContent.trim().startsWith('←'));
+        if (nextBtn && idx < CSV_STEPS.length - 1) {
+          nextBtn.addEventListener('click', (e) => {
+            // if it's the publish button, fall through to publish handler below
+            if (nextBtn.id === 'publish') return;
+            e.preventDefault();
+            setStage(CSV_STEPS[idx + 1]);
+          });
+        }
+        if (backBtn && idx > 0) {
+          backBtn.addEventListener('click', () => setStage(CSV_STEPS[idx - 1]));
+        }
+      }
+    }
+
+    const save = drawer.querySelector('#saveAdd, #savePaste, #publish');
+    if (save) save.addEventListener('click', () => {
+      const wasName = name;
+      setStage('default');
+      showToast({ title: wasName === 'csv-diff' ? 'Published 50 changes' : 'Saved', sub: 'Synced to 128 deals · cache refreshing' });
+    });
+  }
+
+  document.getElementById('addBtn').addEventListener('click', () => {
+    if (ROLE === 'viewer') return;
+    setStage('add-manual');
+  });
+
+  // ============================================
+  // DEMO STATE + ROLE SWITCHER
+  // ============================================
+  function applyDemoButtonState() {
+    const ds = document.getElementById('demoStates');
+    if (!ds) return;
+    ds.querySelectorAll('button[data-state]').forEach(b => b.classList.toggle('on', b.dataset.state === TABLE_STATE));
+    ds.querySelectorAll('button[data-role]').forEach(b => b.classList.toggle('on', b.dataset.role === ROLE));
+
+    // Toggle Add button vs lock
+    const addBtn = document.getElementById('addBtn');
+    if (ROLE === 'admin') {
+      addBtn.hidden = false;
+    } else {
+      addBtn.hidden = true;
+    }
+
+    // Viewer banner
+    const banner = document.getElementById('viewerBanner');
+    if (ROLE === 'viewer') {
+      banner.hidden = false;
+      banner.innerHTML = `
+        <div class="viewer-banner">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+          <b>Read-only access</b>
+          <span>You can view and export, but can't edit values. Editor or Yield Ops Admin role required.</span>
+          <button class="btn btn-sm req">Request access</button>
+        </div>`;
+    } else {
+      banner.hidden = true;
+      banner.innerHTML = '';
+    }
+
+    // Bulk bar role-aware (in case selection persists)
+    document.querySelectorAll('#bulkSlot .btn').forEach(b => {
+      if (b.textContent.match(/Edit|Delete|synced/i) && ROLE === 'viewer') b.classList.add('is-disabled');
+      else b.classList.remove('is-disabled');
+    });
+  }
+
+  document.getElementById('demoStates').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.state) {
+      TABLE_STATE = b.dataset.state;
+      renderTable();
+      updateHealthStrip();
+    } else if (b.dataset.role) {
+      ROLE = b.dataset.role;
+      renderTable();
+    }
+    applyDemoButtonState();
+  });
+
+  // ============================================
+  // HEALTH STRIP — reactive to demo state
+  // ============================================
+  function updateHealthStrip() {
+    const strip = document.querySelector('.health');
+    if (!strip) return;
+    const ring = strip.querySelector('.ring');
+    const scoreV = strip.querySelector('.health-score-mini .v');
+    const scoreChip = strip.querySelector('.health-score-mini');
+    const lvl = strip.querySelector('.lvl');
+    const stamp = strip.querySelector('.stamp');
+
+    const set = (cfg) => {
+      ring.style.setProperty('--pct', cfg.pct);
+      ring.style.setProperty('--c', cfg.color);
+      scoreV.textContent = cfg.pct;
+      scoreChip.style.color = cfg.color;
+      scoreChip.style.background = cfg.chipBg;
+      scoreChip.style.borderColor = cfg.chipBorder;
+      lvl.textContent = cfg.label;
+      lvl.style.color = cfg.color;
+      stamp.innerHTML = cfg.stamp;
+    };
+
+    if (TABLE_STATE === 'error') {
+      set({
+        pct: 42, color: 'var(--danger)',
+        chipBg: 'rgba(255,122,126,0.08)', chipBorder: 'rgba(255,122,126,0.25)',
+        label: 'Degraded',
+        stamp: '<span class="pulse-tiny" style="background:var(--danger);box-shadow:0 0 6px var(--danger)"></span>Service timeout · last ok 8m ago',
+      });
+    } else if (TABLE_STATE === 'loading') {
+      set({
+        pct: 96, color: 'var(--info)',
+        chipBg: 'rgba(110,139,255,0.08)', chipBorder: 'rgba(110,139,255,0.25)',
+        label: 'Reconciling',
+        stamp: '<span class="pulse-tiny" style="background:var(--info);box-shadow:0 0 6px var(--info)"></span>Fetching latest snapshot…',
+      });
+    } else if (TABLE_STATE === 'empty') {
+      set({
+        pct: 100, color: 'var(--text-subtle)',
+        chipBg: 'var(--bg-2)', chipBorder: 'var(--line)',
+        label: 'Inactive',
+        stamp: 'No values · nothing to validate',
+      });
+    } else {
+      set({
+        pct: 96, color: 'var(--neon)',
+        chipBg: 'rgba(111,233,164,0.06)', chipBorder: 'rgba(111,233,164,0.2)',
+        label: 'Low risk',
+        stamp: '<span class="pulse-tiny"></span>Live · 2s ago',
+      });
+    }
+  }
+
+  // ============================================
+  // TOAST
+  // ============================================
+  function showToast({ title, sub, kind = 'success', timeout = 3500 }) {
+    const stack = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = `toast ${kind === 'warn' ? 'warn' : ''}`;
+    el.innerHTML = `
+      <div class="ic">${kind === 'warn'
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 8v4M12 16h.01"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>'}</div>
+      <div class="body"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</div>
+    `;
+    stack.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; }, timeout - 250);
+    setTimeout(() => el.remove(), timeout);
+  }
+
+  // ============================================
+  // KEYBOARD
+  // ============================================
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if ((e.key === 'a' || e.key === 'A') && ROLE !== 'viewer') setStage('add-manual');
+    if (e.key === 'Escape') setStage('default');
+    if (e.key === '/') { e.preventDefault(); document.querySelector('.left-h .search input').focus(); }
+  });
+
+  // ============================================
+  // INIT
+  // ============================================
+    renderTaxonomy();
+    renderTable();
+    applyDemoButtonState();
+    setStage('default');
+
+    // Make CSV dropzone clickable to advance
+    document.body.addEventListener('click', (e) => {
+      if (e.target.closest('.dropzone')) setStage('csv-map');
+    });
+    setTimeout(() => showToast({ title: 'Cache refreshed', sub: '128 deals · 2s ago' }), 800);
+</script>
+</body>
+</html>
+
+<style id="__om-edit-overrides">
+</style>

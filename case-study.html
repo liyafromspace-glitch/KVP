@@ -1,0 +1,4110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>KVP Governance — Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #F7F9FE;
+    --bg-card:   #FFFFFF;
+    --bg-soft:   #E9ECEF;
+    --line:      #E2E5E8;
+    --hairline:  #EBEDF0;
+
+    --ink:       #1A1D21;
+    --ink-2:     #3A3F45;
+    --muted:     #6B7178;
+    --subtle:    #9AA0A6;
+
+    --accent:    #14B88A;
+    --accent-2:  #0FA378;
+    --accent-soft: rgba(20,184,138,0.10);
+
+    --warn: #E3A21A;
+    --danger: #E5484D;
+    --info:  #4A6BFF;
+
+    --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 24px;
+
+    --font: 'Geist', -apple-system, 'Helvetica Neue', system-ui, sans-serif;
+    --mono: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+    --serif: 'Instrument Serif', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 15.5px;
+    line-height: 1.55;
+    letter-spacing: -0.011em;
+    font-feature-settings: "ss01", "ss02", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  .mono, .lab, .sec-num, .marquee .track, .tag, .scroll-cue, .h-num, .demo-h, .num, .arch-h, .meta .item .lab { font-feature-settings: "ss01", "zero", "tnum"; }
+  ::selection { background: var(--accent); color: #fff; }
+
+  a { color: inherit; text-decoration: none; }
+
+  .container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ============== TOP BAR ============== */
+  .topbar {
+    position: sticky; top: 0;
+    z-index: 30;
+    backdrop-filter: blur(12px);
+    background: rgba(241,243,245,0.86);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s;
+  }
+  .topbar.scrolled { border-bottom-color: var(--line); }
+  .topbar .row {
+    display: flex; align-items: center; gap: 22px;
+    padding: 16px 0;
+    font-size: 13px;
+  }
+  .topbar .name { font-weight: 600; color: var(--ink); }
+  .topbar .sep { color: var(--subtle); margin: 0 4px; }
+  .topbar .role { color: var(--muted); }
+  .topbar .right { margin-left: auto; display: flex; gap: 22px; color: var(--muted); }
+  .topbar .right a:hover { color: var(--ink); }
+  .topbar .progress {
+    position: absolute; left: 0; top: 0; right: 0;
+    height: 2px;
+    background: transparent;
+  }
+  .topbar .progress .bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width .12s linear;
+  }
+
+  /* ============== HERO ============== */
+  .hero {
+    padding: 120px 0 80px;
+    position: relative;
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(60px, 9vw, 136px);
+    font-weight: 600;
+    line-height: 0.94;
+    letter-spacing: -0.045em;
+    color: var(--ink);
+  }
+  .hero h1 .accent {
+    color: var(--accent);
+    font-style: normal;
+    font-family: var(--serif);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 .accent::after {
+    content: "";
+  }
+  .hero .lede {
+    margin-top: 40px;
+    max-width: 580px;
+    font-size: 17px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    letter-spacing: -0.012em;
+    font-weight: 400;
+  }
+  .hero .tags {
+    margin-top: 28px;
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .tag {
+    display: inline-flex; align-items: center;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+  }
+  .hero .scroll-cue {
+    margin-top: 80px;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--subtle);
+    text-transform: uppercase;
+  }
+  .hero .scroll-cue::before {
+    content: ""; width: 40px; height: 1px; background: var(--subtle);
+  }
+
+  /* ============== MARQUEE ============== */
+  .marquee {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+    overflow: hidden;
+    padding: 18px 0;
+    margin-top: 80px;
+  }
+  .marquee .track {
+    display: inline-flex; gap: 48px;
+    animation: scroll 40s linear infinite;
+    white-space: nowrap;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: var(--subtle);
+    text-transform: uppercase;
+  }
+  .marquee .track span { display: inline-flex; align-items: center; gap: 48px; }
+  .marquee .track .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ============== META STRIP ============== */
+  .meta-band { background: #FFFFFF; width: 100%; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
+  .meta {
+    padding: 36px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 32px;
+  }
+  .meta .item .lab {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .meta .item .val {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+    line-height: 1.3;
+  }
+
+  /* ============== SECTIONS ============== */
+  section {
+    padding: 96px 0;
+    position: relative;
+  }
+  section.tight { padding: 64px 0; }
+
+  .sec-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sec-num::after {
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  h2 {
+    margin: 0 0 32px;
+    font-size: clamp(38px, 5.4vw, 68px);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    max-width: 920px;
+    text-wrap: balance;
+  }
+  h2 .accent { color: var(--accent); font-weight: inherit; }
+  h3 {
+    margin: 0 0 14px;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  p.lead { font-size: 18px; color: var(--ink-2); max-width: 640px; line-height: 1.55; letter-spacing: -0.012em; }
+  p.body { font-size: 15.5px; color: var(--ink-2); max-width: 580px; line-height: 1.6; letter-spacing: -0.008em; }
+
+  /* ============== PROBLEM GRID ============== */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .symptoms {
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .symptom {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 14px;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .symptom:last-child { border-bottom: 1px solid var(--line); }
+  .symptom .num {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--subtle); padding-top: 4px;
+  }
+  .symptom .body b {
+    display: block;
+    font-size: 16px; font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .symptom .body span {
+    font-size: 13.5px; color: var(--muted); line-height: 1.55;
+  }
+
+  /* Architecture map */
+  .arch {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 32px 28px;
+    height: 460px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch .arch-h {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .arch .arch-h .pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 var(--accent);
+    animation: pulse 1.6s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(20,184,138,0.4); }
+    80% { box-shadow: 0 0 0 7px rgba(20,184,138,0); }
+    100% { box-shadow: 0 0 0 0 rgba(20,184,138,0); }
+  }
+  .arch .hint {
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 22px;
+  }
+  .arch svg { width: 100%; height: calc(100% - 70px); display: block; }
+  .arch .tip {
+    position: absolute;
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    width: 200px;
+  }
+  .arch .tip b { color: var(--accent); display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; font-weight: 500; }
+
+  /* ============== PULL QUOTE / SHIFT ============== */
+  .shift {
+    padding: 120px 0;
+  }
+  .shift .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .shift .from {
+    font-size: clamp(32px, 4.4vw, 52px);
+    font-weight: 400;
+    color: var(--subtle);
+    line-height: 1.1;
+    text-decoration: line-through;
+    text-decoration-color: rgba(229,72,77,0.4);
+    text-decoration-thickness: 2px;
+    margin-bottom: 8px;
+    letter-spacing: -0.025em;
+  }
+  .shift .arrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin: 14px 0;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .shift .arrow::before { content: "↓"; font-size: 16px; }
+  .shift .to {
+    font-size: clamp(44px, 6.4vw, 80px);
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+  }
+  .shift .to .accent { color: var(--accent); }
+
+  /* ============== SCREEN BLOCK ============== */
+  .screen {
+    padding: 96px 0;
+    border-top: 1px solid var(--line);
+  }
+  .screen-head {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 56px;
+    max-width: 920px;
+  }
+  .screen-head .num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0;
+  }
+  .screen-head h2 { margin: 0; max-width: 18ch; }
+  .screen-head p {
+    font-size: 17px;
+    line-height: 1.55;
+    max-width: 56ch;
+    margin: 6px 0 0;
+    text-wrap: pretty;
+    font-family: var(--font);
+    color: var(--ink-2);
+    color: var(--ink-2);
+    margin: 0;
+    max-width: 460px;
+    line-height: 1.6;
+  }
+
+  /* iframe device */
+  .device {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 24px 60px -28px rgba(20,29,33,0.18), 0 4px 12px rgba(20,29,33,0.04);
+  }
+  .device .chrome {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--line);
+  }
+  .device .chrome .lights { display: flex; gap: 6px; }
+  .device .chrome .lights span {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--bg-soft);
+  }
+  .device .chrome .lights span:nth-child(1) { background: #FF5F57; opacity: 0.5; }
+  .device .chrome .lights span:nth-child(2) { background: #FEBC2E; opacity: 0.5; }
+  .device .chrome .lights span:nth-child(3) { background: #28C840; opacity: 0.5; }
+  .device .chrome .url {
+    margin-left: 14px;
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 360px;
+  }
+  .device .chrome .live {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+  }
+  .device .chrome .live::before {
+    content: "";
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    animation: dotpulse 1.4s ease-in-out infinite;
+  }
+  @keyframes dotpulse { 50% { opacity: 0.4 } }
+
+  .device .frame-wrap {
+    position: relative;
+    height: 640px;
+    overflow: hidden;
+  }
+  .device iframe {
+    border: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* hotspots overlaid on iframe */
+  .hotspots {
+    position: absolute; inset: 0;
+    pointer-events: none;
+  }
+  .hotspot {
+    position: absolute;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .hotspot .pin {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 0 rgba(20,184,138,0.6), 0 4px 12px rgba(20,184,138,0.4);
+    animation: pulsePin 2s ease-out infinite;
+    display: grid; place-items: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+  @keyframes pulsePin {
+    0% { box-shadow: 0 0 0 0 rgba(20,184,138,0.55), 0 4px 12px rgba(20,184,138,0.4); }
+    70% { box-shadow: 0 0 0 14px rgba(20,184,138,0), 0 4px 12px rgba(20,184,138,0.4); }
+    100% { box-shadow: 0 0 0 0 rgba(20,184,138,0), 0 4px 12px rgba(20,184,138,0.4); }
+  }
+  .hotspot .label {
+    position: absolute;
+    top: 38px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    opacity: 0;
+    transition: opacity .15s, transform .15s;
+    pointer-events: none;
+  }
+  .hotspot:hover .label { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  .hotspot.active .pin { background: var(--ink); }
+
+  /* hotspot detail row */
+  .hotspot-row {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 920px;
+    gap: 40px;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+  .hotspot-row:last-child { border-bottom: 0; }
+  .hotspot-row .h-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: -8px;
+  }
+  .hotspot-row .h-num-OLD {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .hotspot-row .h-num .n {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--ink);
+    display: block;
+    margin-top: 8px;
+    letter-spacing: -0.028em;
+    font-family: var(--font);
+    line-height: 1.1;
+  }
+  .hotspot-row .body h3 {
+    margin: 0 0 18px;
+    font-size: clamp(28px, 3.6vw, 44px);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    max-width: 22ch;
+    text-wrap: balance;
+  }
+  .hotspot-row .body p { font-size: 17px; line-height: 1.55; color: var(--ink-2); margin: 0 0 20px; max-width: 56ch; text-wrap: pretty; }
+  .hotspot-row .body ul { padding: 0; margin: 0 0 24px; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .hotspot-row .body ul li {
+    display: grid; grid-template-columns: 16px 1fr;
+    gap: 10px;
+    font-size: 14px; color: var(--ink-2);
+    align-items: baseline;
+  }
+  .hotspot-row .body ul li::before {
+    content: "—"; color: var(--accent); font-weight: 700;
+  }
+
+  /* mini interactive demos — dark artifact shell (Phase 1) */
+  .demo-card {
+    --bg: #0A0F1E;
+    --bg-card: #131A2E;
+    --bg-soft: #1F2845;
+    --line: #1F2845;
+    --hairline: #1A2138;
+    --ink: #ECEFF8;
+    --ink-2: #D9DDEC;
+    --muted: #9CA4BC;
+    --subtle: #6E7794;
+    --accent-soft: rgba(111,233,164,0.10);
+    color: var(--ink);
+    background: #0E1424;
+    border: 1px solid #1F2845;
+    border-radius: var(--r-md);
+    padding: 0;
+    overflow: hidden;
+    margin-top: 16px;
+    box-shadow: 0 14px 40px -18px rgba(0,0,0,0.55);
+  }
+  .demo-card .demo-h {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px;
+    background: #0A0F1E;
+    border-bottom: 1px solid #1F2845;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: #9CA4BC;
+    text-transform: uppercase;
+  }
+  .demo-card .demo-h .play-btn {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    background: rgba(111,233,164,0.10);
+    color: #6FE9A4;
+    border: 1px solid rgba(111,233,164,0.25);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .demo-card .demo-h .play-btn:hover { background: #6FE9A4; color: #06140C; border-color: #6FE9A4; }
+  .demo-card .demo-body {
+    padding: 22px;
+  }
+
+  /* lifecycle demo — propagation-flow style */
+  .lifecycle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 30px 36px 26px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+  }
+  .lifecycle .lf-step {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    min-width: 96px;
+    cursor: pointer;
+    color: var(--subtle);
+    transition: color .25s;
+  }
+  .lifecycle .lf-step .lf-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    opacity: 0.55;
+    transition: opacity .25s;
+  }
+  .lifecycle .lf-step .lf-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--subtle);
+    letter-spacing: 0.01em;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .lifecycle .lf-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+  }
+  .lifecycle .lf-ring {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    position: relative;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .lifecycle .lf-ring::before {
+    content: '';
+    position: absolute;
+    inset: 4.5px;
+    border-radius: 50%;
+    background: currentColor;
+    transform: scale(0.55);
+    opacity: 0;
+    transition: opacity .25s, transform .25s;
+  }
+  .lifecycle .lf-sat {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-left: 5px;
+    transition: opacity .25s, transform .25s;
+  }
+  .lifecycle .lf-step.draft       { color: var(--subtle); }
+  .lifecycle .lf-step.validating  { color: var(--accent); }
+  .lifecycle .lf-step.syncing     { color: var(--accent); }
+  .lifecycle .lf-step.delayed     { color: var(--warn); }
+  .lifecycle .lf-step.deprecated  { color: var(--danger); }
+  .lifecycle .lf-step.validating .lf-ring { animation: dotpulse 1.8s ease-in-out infinite; }
+  .lifecycle .lf-step.active .lf-label { opacity: 1; }
+  .lifecycle .lf-step.active .lf-ring {
+    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 16%, transparent), 0 0 14px -2px currentColor;
+  }
+  .lifecycle .lf-step.active .lf-ring::before { opacity: 1; transform: scale(1); }
+  .lifecycle .lf-step.active .lf-sat { transform: translateX(2px) scale(1.15); }
+  .lifecycle .lf-conn {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    margin-top: 14px; /* center vertically against ring row */
+  }
+  .lifecycle .lf-conn::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
+  }
+  .lifecycle .lf-conn.c-validating { color: var(--accent); }
+  .lifecycle .lf-conn.c-syncing    { color: var(--accent); }
+  .lifecycle .lf-conn.c-delayed    { color: var(--warn); }
+  .lifecycle .lf-conn.c-deprecated { color: var(--danger); }
+  .lifecycle-detail {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    min-height: 56px;
+  }
+  .lifecycle-detail b { color: var(--ink); display: block; margin-bottom: 4px; font-weight: 600; font-size: 13.5px; }
+
+  /* dependency graph demo */
+  .depgraph { position: relative; height: 320px; }
+  .depgraph svg { width: 100%; height: 100%; }
+  .blast-meter {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    min-width: 180px;
+  }
+  .blast-meter .lab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .blast-meter .v {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: var(--mono);
+  }
+  .blast-meter .sub {
+    font-size: 11px; color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+  }
+
+  /* validation demo (typing) */
+  .val-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .val-row {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    padding: 12px 14px;
+  }
+  .val-row .lab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .val-row .input-shell {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 8px 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    min-height: 36px;
+  }
+  .val-row .input-shell.ok { border-color: var(--accent); background: var(--accent-soft); }
+  .val-row .input-shell.err { border-color: rgba(229,72,77,0.4); background: rgba(229,72,77,0.06); }
+  .val-row .input-shell.warn { border-color: rgba(227,162,26,0.4); background: rgba(227,162,26,0.06); }
+  .val-row .caret {
+    width: 1.5px; height: 14px;
+    background: var(--accent);
+    animation: blink 1s ease-in-out infinite;
+  }
+  @keyframes blink { 50% { opacity: 0 } }
+  .val-row .check {
+    margin-left: auto;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: #fff;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .val-row .check.ok { background: var(--accent); }
+  .val-row .check.err { background: var(--danger); }
+  .val-row .check.warn { background: var(--warn); }
+  .val-row .msg {
+    margin-top: 8px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+  .val-row .msg.ok { color: var(--accent-2); }
+  .val-row .msg.err { color: var(--danger); }
+  .val-row .msg.warn { color: var(--warn); }
+
+  /* ============== BULK · NEW (Screen 03) ============== */
+  .bulk2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    --b2-bg: #0E1326;
+    --b2-bg-inset: #0A0F22;
+    --b2-bg-deep: #070B1C;
+    --b2-line: #1B2244;
+    --b2-line-soft: #141A36;
+    --b2-text: #E6EAF7;
+    --b2-text-muted: #8A92B5;
+    --b2-text-subtle: #555C80;
+    --b2-text-dim: #3A4068;
+    --b2-mint: #5FE3A0;
+    --b2-mint-2: #4BCB8C;
+    --b2-mint-soft: rgba(95,227,160,0.14);
+    --b2-mint-soft-2: rgba(95,227,160,0.08);
+    --b2-mint-line: rgba(95,227,160,0.32);
+    --b2-amber: #F5C518;
+    --b2-amber-soft: rgba(245,197,24,0.15);
+    --b2-red: #F26D6D;
+    --b2-red-soft: rgba(242,109,109,0.15);
+  }
+  .bulk2 .card {
+    background: var(--b2-bg);
+    border: 1px solid var(--b2-line);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex; flex-direction: column;
+    color: var(--b2-text);
+    font-family: var(--font);
+    box-shadow: 0 24px 60px -28px rgba(0,0,0,0.6);
+  }
+  .bulk2 .card-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--b2-text-muted);
+    margin: 0 0 12px;
+    letter-spacing: -0.005em;
+  }
+
+  /* Stepper */
+  .b2-stepper {
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .b2-step {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 10px 5px 5px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--b2-text-subtle);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .12s, color .12s;
+  }
+  .b2-step .n {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--b2-bg-inset);
+    border: 1px solid var(--b2-line);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 600;
+    color: var(--b2-text-dim);
+    transition: background .15s, color .15s, box-shadow .15s, border-color .15s;
+  }
+  .b2-step:hover { color: var(--b2-text-muted); }
+  .b2-step:hover .n { border-color: #2A3360; color: var(--b2-text-muted); }
+  .b2-step.on { color: var(--b2-mint); }
+  .b2-step.on .n {
+    background: var(--b2-mint);
+    border-color: var(--b2-mint);
+    color: #06140C;
+    box-shadow: 0 0 0 4px var(--b2-mint-soft-2), 0 0 14px rgba(95,227,160,0.4);
+  }
+  .b2-step.done { color: var(--b2-text-muted); }
+  .b2-step.done .n {
+    background: var(--b2-mint-soft);
+    border-color: var(--b2-mint-line);
+    color: var(--b2-mint);
+  }
+
+  /* Dropzone */
+  .b2-drop {
+    border: 1.5px dashed var(--b2-line);
+    border-radius: 12px;
+    background: var(--b2-bg-deep);
+    padding: 36px 20px 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+    position: relative;
+  }
+  .b2-drop:hover, .b2-drop.dragover {
+    border-color: var(--b2-mint-line);
+    background: rgba(95,227,160,0.04);
+    box-shadow: inset 0 0 0 1px rgba(95,227,160,0.12);
+  }
+  .b2-drop .upico {
+    width: 48px; height: 48px;
+    margin: 0 auto 16px;
+    border-radius: 11px;
+    background: var(--b2-mint-soft);
+    border: 1px solid var(--b2-mint-line);
+    display: grid; place-items: center;
+    color: var(--b2-mint);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .b2-drop:hover .upico { transform: translateY(-2px); box-shadow: 0 8px 24px -6px rgba(95,227,160,0.35); }
+  .b2-drop .upico svg { width: 22px; height: 22px; }
+  .b2-drop .lead {
+    font-size: 16px; font-weight: 600;
+    color: var(--b2-text);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+    font-family: var(--font);
+  }
+  .b2-drop .sub { font-size: 13px; color: var(--b2-text-subtle); }
+  .b2-drop .sub a { color: var(--b2-mint); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+  /* Expected format card */
+  .b2-fmt {
+    margin-top: 14px;
+    padding: 14px 16px 16px;
+    background: var(--b2-bg-deep);
+    border: 1px solid var(--b2-line);
+    border-radius: 10px;
+  }
+  .b2-fmt h6 {
+    margin: 0 0 8px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--b2-text);
+    letter-spacing: -0.005em;
+  }
+  .b2-fmt pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--b2-text-muted);
+    white-space: pre;
+  }
+  .b2-fmt pre .k { color: var(--b2-mint); }
+
+  /* Bulk Paste card */
+  .b2-paste-h {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 13px;
+    color: var(--b2-text);
+    margin-bottom: 8px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+  .b2-paste-h .hint { color: var(--b2-text-subtle); font-size: 12px; font-weight: 400; }
+  .b2-textarea {
+    width: 100%;
+    background: var(--b2-bg-deep);
+    border: 1px solid var(--b2-line);
+    border-radius: 10px;
+    color: var(--b2-text);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.65;
+    padding: 12px 14px;
+    resize: vertical;
+    min-height: 168px;
+    outline: none;
+    transition: border-color .12s, box-shadow .12s;
+    box-sizing: border-box;
+    tab-size: 18;
+  }
+  .b2-textarea:focus { border-color: var(--b2-mint-line); box-shadow: 0 0 0 3px var(--b2-mint-soft-2); }
+
+  /* Summary chips row */
+  .b2-sum {
+    display: flex; align-items: center; gap: 14px;
+    margin-top: 12px;
+    padding: 9px 4px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--b2-text-muted);
+    border-bottom: 1px solid var(--b2-line-soft);
+    flex-wrap: wrap;
+  }
+  .b2-sum .chip { display: inline-flex; align-items: center; gap: 5px; }
+  .b2-sum .chip .sigil { color: var(--b2-text-dim); }
+  .b2-sum .chip.new b { color: var(--b2-mint); }
+  .b2-sum .chip.new .sigil { color: var(--b2-mint); }
+  .b2-sum .chip.dup b { color: var(--b2-amber); }
+  .b2-sum .chip.dup .sigil { color: var(--b2-amber); }
+  .b2-sum .chip.err b { color: var(--b2-red); }
+  .b2-sum .chip.err .sigil { color: var(--b2-red); }
+  .b2-sum .lp { margin-left: auto; color: var(--b2-text-subtle); font-family: var(--font); font-size: 11.5px; }
+  .b2-sum .lp .ldot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--b2-mint);
+    box-shadow: 0 0 8px var(--b2-mint);
+    margin-right: 6px;
+    animation: b2pulse 1.6s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes b2pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+  /* Preview rows */
+  .b2-rows {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 232px;
+    margin-top: 4px;
+    padding-right: 4px;
+  }
+  .b2-rows::-webkit-scrollbar { width: 6px; }
+  .b2-rows::-webkit-scrollbar-thumb { background: var(--b2-line); border-radius: 3px; }
+  .b2-row {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--b2-line-soft);
+    font-size: 12.5px;
+    animation: b2rowIn .25s ease;
+  }
+  .b2-row:last-child { border-bottom: 0; }
+  @keyframes b2rowIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+  .b2-row .b2-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 3px 7px;
+    border-radius: 4px;
+    text-align: center;
+    font-family: var(--font);
+    text-transform: uppercase;
+    width: 56px;
+  }
+  .b2-row .b2-val {
+    font-family: var(--mono);
+    color: var(--b2-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .b2-row .b2-disp {
+    font-family: var(--font);
+    color: var(--b2-text-muted);
+    text-align: right;
+    font-size: 12px;
+  }
+  .b2-row.new .b2-badge { background: var(--b2-mint-soft); color: var(--b2-mint); }
+  .b2-row.new .b2-val { color: var(--b2-text); }
+  .b2-row.dup .b2-badge { background: var(--b2-amber-soft); color: var(--b2-amber); }
+  .b2-row.dup .b2-val { color: var(--b2-text-muted); }
+  .b2-row.dup .b2-disp em { color: var(--b2-text-subtle); font-style: normal; }
+  .b2-row.err .b2-badge { background: var(--b2-red-soft); color: var(--b2-red); }
+  .b2-row.err .b2-val { color: var(--b2-text-muted); text-decoration: line-through; text-decoration-color: var(--b2-red); }
+  .b2-row.err .b2-disp .fix { color: var(--b2-mint); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-family: var(--mono); margin-right: 6px; }
+
+  /* Footer */
+  .b2-foot {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--b2-line-soft);
+  }
+  .b2-foot .count {
+    font-size: 12.5px; color: var(--b2-text-muted); margin-right: auto;
+    min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+  .b2-foot .count b { color: var(--b2-text); font-weight: 600; }
+  .b2-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--b2-line);
+    background: var(--b2-bg-inset);
+    color: var(--b2-text);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .12s, border-color .12s, color .12s, box-shadow .12s, transform .08s;
+    letter-spacing: -0.005em;
+  }
+  .b2-btn:hover { background: #131A36; border-color: #2A3360; }
+  .b2-btn:active { transform: translateY(1px); }
+  .b2-btn.primary {
+    background: var(--b2-mint);
+    border-color: var(--b2-mint);
+    color: #06140C;
+    font-weight: 600;
+  }
+  .b2-btn.primary:hover { background: #7FEEB8; border-color: #7FEEB8; box-shadow: 0 0 22px rgba(95,227,160,0.35); }
+  .b2-btn.primary:disabled, .b2-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  @media (max-width: 980px) {
+    .bulk2 { grid-template-columns: 1fr; }
+  }
+
+  /* CSV Import state content */
+  .b2-csv-body { display: flex; flex-direction: column; gap: 14px; }
+  .b2-file {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--b2-bg-deep);
+    border: 1px solid var(--b2-line);
+    border-radius: 10px;
+  }
+  .b2-file .ic {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--b2-mint-soft);
+    color: var(--b2-mint);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .b2-file .ic svg { width: 16px; height: 16px; }
+  .b2-file .nm { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .b2-file .nm b { font-size: 13px; color: var(--b2-text); font-weight: 600; letter-spacing: -0.005em; }
+  .b2-file .nm span { font-size: 11.5px; color: var(--b2-text-subtle); font-family: var(--mono); }
+  .b2-file .ok { width: 22px; height: 22px; border-radius: 50%; background: var(--b2-mint); color: #06140C; display: grid; place-items: center; }
+  .b2-file .ok svg { width: 12px; height: 12px; }
+
+  .b2-section-h { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--b2-text-subtle); margin: 4px 0 4px; }
+  .b2-map-row {
+    display: grid; grid-template-columns: 1fr 22px 1fr;
+    gap: 10px; align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--b2-line-soft);
+  }
+  .b2-map-row:last-child { border-bottom: 0; }
+  .b2-map-row .col {
+    padding: 7px 10px;
+    background: var(--b2-bg-deep);
+    border: 1px solid var(--b2-line);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--b2-text);
+  }
+  .b2-map-row .arr { text-align: center; color: var(--b2-text-dim); }
+  .b2-map-row .b2-select {
+    position: relative;
+    padding: 8px 30px 8px 12px;
+    background: var(--b2-bg-deep);
+    border: 1px solid var(--b2-line);
+    border-radius: 6px;
+    color: var(--b2-text);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color .15s, background .15s;
+  }
+  .b2-map-row .b2-select::after {
+    content: '';
+    position: absolute;
+    top: 50%; right: 12px;
+    width: 8px; height: 8px;
+    border-right: 1.5px solid var(--b2-text-dim);
+    border-bottom: 1.5px solid var(--b2-text-dim);
+    transform: translateY(-70%) rotate(45deg);
+    transition: transform .2s;
+  }
+  .b2-map-row .b2-select:hover { border-color: var(--b2-mint-line); }
+  .b2-map-row .b2-select.open {
+    border-color: var(--b2-mint);
+    box-shadow: 0 0 0 3px rgba(111,233,164,0.12);
+  }
+  .b2-map-row .b2-select.open::after { transform: translateY(-30%) rotate(-135deg); }
+  .b2-map-row .b2-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #0E1326;
+    border: 1px solid var(--b2-line);
+    border-radius: 8px;
+    box-shadow: 0 22px 40px -16px rgba(0,0,0,0.6);
+    padding: 6px 0;
+    z-index: 30;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .b2-map-row .b2-popover .opt {
+    padding: 9px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--b2-text);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    transition: background .12s;
+  }
+  .b2-map-row .b2-popover .opt:hover { background: rgba(111,233,164,0.08); }
+  .b2-map-row .b2-popover .opt.sel { color: var(--b2-mint); }
+  .b2-map-row .b2-popover .opt .chk {
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--b2-line);
+    border-radius: 3px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    background: transparent;
+  }
+  .b2-map-row .b2-popover .opt.sel .chk {
+    background: var(--b2-mint);
+    border-color: var(--b2-mint);
+  }
+  .b2-map-row .b2-popover .opt.sel .chk::after {
+    content: '';
+    width: 8px; height: 4px;
+    border-left: 2px solid #06140C;
+    border-bottom: 2px solid #06140C;
+    transform: rotate(-45deg) translate(1px, -1px);
+  }
+
+  .b2-loader-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px;
+    background: var(--b2-bg-deep);
+    border: 1px solid var(--b2-line);
+    border-radius: 8px;
+  }
+  .b2-loader-row .ld {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--b2-line);
+    border-top-color: var(--b2-mint);
+    animation: b2spin .8s linear infinite;
+  }
+  @keyframes b2spin { to { transform: rotate(360deg); } }
+  .b2-loader-row .tx { flex: 1; }
+  .b2-loader-row .tx b { font-size: 12.5px; color: var(--b2-text); }
+  .b2-loader-row .tx span { display: block; font-size: 11px; color: var(--b2-text-muted); margin-top: 1px; }
+  .b2-loader-row .pct { font-family: var(--mono); font-size: 11px; color: var(--b2-text-muted); }
+
+  .b2-validation { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; padding-right: 4px; }
+  .b2-validation::-webkit-scrollbar { width: 6px; }
+  .b2-validation::-webkit-scrollbar-thumb { background: var(--b2-line); border-radius: 3px; }
+  .b2-validation .b2-row { border-bottom: 0; padding: 6px 4px; grid-template-columns: 60px 1fr auto; }
+
+  .b2-diff-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .b2-diff-stat {
+    background: var(--b2-bg-deep);
+    border: 1px solid var(--b2-line);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .b2-diff-stat .l { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--b2-text-dim); }
+  .b2-diff-stat .v { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--b2-text); margin-top: 4px; }
+  .b2-diff-stat .v .sym { font-size: 14px; opacity: 0.7; margin-right: 2px; }
+  .b2-diff-stat.add .v { color: var(--b2-mint); }
+  .b2-diff-stat.upd .v { color: #6E8BFF; }
+  .b2-diff-stat.skip .v { color: var(--b2-amber); }
+
+  .b2-diff-list { border: 1px solid var(--b2-line); border-radius: 8px; max-height: 180px; overflow-y: auto; background: var(--b2-bg-deep); }
+  .b2-diff-list::-webkit-scrollbar { width: 6px; }
+  .b2-diff-list::-webkit-scrollbar-thumb { background: var(--b2-line); border-radius: 3px; }
+  .b2-diff-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--b2-line-soft); font-size: 12px; }
+  .b2-diff-row:last-child { border-bottom: 0; }
+  .b2-diff-row .sym { font-family: var(--mono); font-weight: 700; text-align: center; }
+  .b2-diff-row.add .sym { color: var(--b2-mint); }
+  .b2-diff-row.upd .sym { color: #6E8BFF; }
+  .b2-diff-row.skip .sym { color: var(--b2-amber); }
+  .b2-diff-row .v { font-family: var(--mono); font-size: 11.5px; color: var(--b2-text); }
+  .b2-diff-row .reason { color: var(--b2-text-subtle); font-size: 11px; }
+
+  .b2-info {
+    padding: 11px 12px;
+    background: var(--b2-mint-soft-2);
+    border: 1px solid var(--b2-mint-line);
+    border-radius: 8px;
+    display: flex; gap: 10px;
+    font-size: 12px;
+    color: var(--b2-text-muted);
+    line-height: 1.5;
+  }
+  .b2-info b { color: var(--b2-text); display: block; margin-bottom: 2px; font-size: 12.5px; }
+  .b2-info svg { width: 14px; height: 14px; color: var(--b2-mint); flex-shrink: 0; margin-top: 2px; }
+
+  .b2-success {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  .b2-success .ring {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--b2-mint-soft);
+    border: 1px solid var(--b2-mint-line);
+    color: var(--b2-mint);
+    display: grid; place-items: center;
+    margin: 0 auto 18px;
+    box-shadow: 0 0 0 8px rgba(95,227,160,0.06), 0 0 36px rgba(95,227,160,0.3);
+    animation: b2pop .35s cubic-bezier(.2,.9,.3,1.3);
+  }
+  @keyframes b2pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .b2-success .ring svg { width: 28px; height: 28px; }
+  .b2-success h4 { margin: 0 0 6px; font-size: 17px; font-weight: 600; color: var(--b2-text); letter-spacing: -0.01em; font-family: var(--font); }
+  .b2-success p { margin: 0; font-size: 13px; color: var(--b2-text-muted); }
+
+  /* legacy bulk demo (kept for older sections) */
+  .bulk {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+  }
+  .bulk .pane {
+    padding: 16px;
+    min-height: 280px;
+  }
+  .bulk .pane.left { background: var(--bg); border-right: 1px solid var(--line); }
+  .bulk .pane.right { background: var(--bg-card); }
+  .bulk .pane h5 {
+    margin: 0 0 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .bulk pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    line-height: 1.7;
+  }
+  .bulk pre .new-line { background: rgba(20,184,138,0.10); }
+  .bulk pre .dup-line { background: rgba(227,162,26,0.10); }
+  .bulk pre .err-line { background: rgba(229,72,77,0.10); }
+  .bulk .preview-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 13px;
+    font-family: var(--mono);
+    opacity: 0;
+    transform: translateY(4px);
+    animation: rowIn .3s ease forwards;
+  }
+  .bulk .preview-row:last-child { border-bottom: 0; }
+  @keyframes rowIn { to { opacity: 1; transform: translateY(0); } }
+  .bulk .preview-row .v { flex: 1; color: var(--ink); }
+  .bulk .preview-row .b {
+    font-size: 9.5px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: var(--font);
+  }
+  .bulk .preview-row .b.new { background: var(--accent-soft); color: var(--accent-2); }
+  .bulk .preview-row .b.dup { background: rgba(227,162,26,0.12); color: var(--warn); }
+  .bulk .preview-row .b.err { background: rgba(229,72,77,0.12); color: var(--danger); }
+  .bulk .summary {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--hairline);
+    display: flex; gap: 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .bulk .summary span { color: var(--muted); }
+  .bulk .summary span b { font-family: var(--font); font-size: 13px; margin-right: 4px; color: var(--ink); }
+
+  /* CSV mapping */
+  .csv-map {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 18px 12px;
+    align-items: center;
+  }
+  .csv-col {
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: all .3s;
+  }
+  .csv-col.matched { background: var(--accent-soft); border-color: rgba(20,184,138,0.3); }
+  .csv-col .nm { color: var(--ink); font-weight: 500; }
+  .csv-col .sub {
+    font-size: 10.5px; color: var(--muted);
+    margin-top: 3px; font-family: var(--mono);
+  }
+  .csv-col .sub b { color: var(--ink-2); font-weight: 500; }
+  .csv-arrow {
+    text-align: center;
+    color: var(--subtle);
+    font-family: var(--mono);
+    font-size: 13px;
+    transition: color .3s;
+  }
+  .csv-arrow.matched { color: var(--accent); }
+
+  /* Safe deletion — dependency drawer */
+  .dep-grid { display: grid; grid-template-columns: 260px 1fr; gap: 32px; align-items: start; }
+  @media (max-width: 980px) { .dep-grid { grid-template-columns: 1fr; } }
+  .dep-aside { display: flex; flex-direction: column; gap: 18px; position: sticky; top: 32px; }
+  .dep-note { border-left: 1px solid var(--line); padding: 2px 0 2px 16px; }
+  .dep-note-h { display: flex; gap: 10px; align-items: center; font-size: 12px; font-weight: 600; color: var(--ink); letter-spacing: -0.005em; margin-bottom: 6px; }
+  .dep-note-h .i { font-family: var(--mono); font-size: 10px; color: var(--accent-2); background: var(--accent-soft); padding: 2px 6px; border-radius: 999px; letter-spacing: 0.06em; }
+  .dep-note p { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+  .dep-note p i { color: var(--ink); font-style: italic; }
+
+  .dep-demo {
+    background: #0B1020;
+    border: 1px solid #1F2845;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    color: #D9DDEC;
+    font-family: var(--font);
+    box-shadow: 0 20px 60px -30px rgba(0,0,0,0.45);
+  }
+  .dep-h { display: flex; align-items: center; padding: 18px 22px; border-bottom: 1px solid #1F2845; }
+  .dep-h h3 { margin: 0; font-size: 17px; font-weight: 600; color: #ECEFF8; letter-spacing: -0.01em; font-family: var(--font); display: flex; align-items: center; gap: 10px; }
+  .dep-h .chip { font-family: var(--mono); font-size: 12px; background: #131A2E; border: 1px solid #1F2845; color: #ECEFF8; padding: 3px 9px; border-radius: 6px; font-weight: 500; }
+  .dep-h .x { margin-left: auto; width: 28px; height: 28px; background: transparent; border: 0; color: #6E7794; font-size: 22px; line-height: 1; cursor: pointer; border-radius: 6px; }
+  .dep-h .x:hover { background: #131A2E; color: #ECEFF8; }
+  .dep-body { padding: 22px; display: flex; flex-direction: column; gap: 18px; max-height: 720px; overflow-y: auto; }
+  .dep-body::-webkit-scrollbar { width: 8px; }
+  .dep-body::-webkit-scrollbar-thumb { background: #1F2845; border-radius: 4px; }
+
+  .dep-warn { display: flex; gap: 14px; padding: 16px 18px; background: rgba(227,162,26,0.07); border: 1px solid rgba(227,162,26,0.35); border-radius: 10px; }
+  .dep-warn .ic { width: 22px; height: 22px; flex-shrink: 0; color: var(--warn); }
+  .dep-warn .ic svg { width: 22px; height: 22px; }
+  .dep-warn .tx b { font-size: 14.5px; color: #ECEFF8; font-weight: 600; letter-spacing: -0.005em; }
+  .dep-warn .tx p { margin: 4px 0 0; font-size: 13px; color: #B0B7CC; line-height: 1.5; }
+
+  .rev-risk { display: grid; grid-template-columns: minmax(140px, 38%) 1fr; gap: 22px; padding: 20px 22px; background: linear-gradient(135deg, rgba(229,72,77,0.08), rgba(229,72,77,0.02)); border: 1px solid rgba(229,72,77,0.3); border-radius: 10px; align-items: center; }
+  .rev-risk .amt { font-family: var(--font); font-size: 38px; font-weight: 600; color: #FF7A7E; letter-spacing: -0.025em; line-height: 1; }
+  .rev-risk .amt-lbl { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #8A91AB; margin-top: 8px; }
+  .rev-risk .bd { display: flex; flex-direction: column; gap: 6px; }
+  .rev-risk .bd-row { display: flex; justify-content: space-between; font-size: 13px; color: #B0B7CC; }
+  .rev-risk .bd-row .v { font-family: var(--mono); color: #ECEFF8; font-weight: 500; }
+  .rev-risk .bd-foot { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(229,72,77,0.18); font-size: 11.5px; color: #8A91AB; line-height: 1.5; }
+  .rev-risk .bd-foot code { font-family: var(--mono); font-size: 11px; background: #131A2E; border: 1px solid #1F2845; padding: 1px 5px; border-radius: 3px; color: #ECEFF8; }
+
+  .perm-ok { display: flex; gap: 14px; padding: 14px 18px; background: rgba(20,184,138,0.05); border: 1px solid rgba(20,184,138,0.3); border-radius: 10px; align-items: center; }
+  .perm-ok .ic { width: 36px; height: 36px; flex-shrink: 0; background: rgba(20,184,138,0.15); color: #4ED9A8; border-radius: 8px; display: grid; place-items: center; }
+  .perm-ok .ic svg { width: 20px; height: 20px; }
+  .perm-ok .tx b { display: block; font-size: 14px; color: #ECEFF8; font-weight: 600; }
+  .perm-ok .tx span { display: block; font-size: 12.5px; color: #8A91AB; margin-top: 3px; }
+  .perm-ok code { font-family: var(--mono); font-size: 11px; background: #131A2E; border: 1px solid #1F2845; padding: 1px 6px; border-radius: 3px; color: #ECEFF8; }
+
+  .dep-section h5 { margin: 0 0 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6E7794; display: flex; align-items: center; gap: 10px; }
+  .dep-section h5 .ct { font-family: var(--mono); font-size: 11px; background: #131A2E; border: 1px solid #1F2845; color: #ECEFF8; padding: 1px 7px; border-radius: 4px; font-weight: 500; letter-spacing: 0; }
+  .dep-list { background: #0E1424; border: 1px solid #1F2845; border-radius: 8px; overflow: hidden; }
+  .dep-row { display: grid; grid-template-columns: minmax(180px, 38%) 1fr; gap: 16px; padding: 11px 14px; border-bottom: 1px solid #1F2845; align-items: center; cursor: pointer; transition: background .12s; }
+  .dep-row:last-child { border-bottom: 0; }
+  .dep-row:hover { background: #131A2E; }
+  .dep-row .nm { font-family: var(--mono); font-size: 12.5px; color: #6E8BFF; }
+  .dep-row .ms { font-size: 13px; color: #B0B7CC; text-align: right; }
+
+  .rollback { padding: 18px 20px; background: #0E1424; border: 1px solid #1F2845; border-radius: 10px; }
+  .rollback h5 { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6E8BFF; }
+  .rollback h5 svg { width: 14px; height: 14px; }
+  .rollback > p { margin: 0 0 14px; font-size: 12.5px; color: #8A91AB; line-height: 1.5; }
+  .rollback .opts { display: flex; flex-direction: column; gap: 8px; }
+  .rollback .opt { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #131A2E; border: 1px solid #1F2845; border-radius: 8px; cursor: pointer; transition: all .15s; }
+  .rollback .opt:hover { border-color: #2A3556; }
+  .rollback .opt.on { border-color: rgba(110,139,255,0.45); background: rgba(110,139,255,0.06); }
+  .rollback .opt input { accent-color: #6E8BFF; width: 16px; height: 16px; cursor: pointer; }
+  .rollback .opt .lbl { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .rollback .opt .lbl b { font-size: 13.5px; color: #ECEFF8; font-weight: 600; }
+  .rollback .opt .lbl .sub { font-size: 12px; color: #8A91AB; }
+  .rollback .opt .lbl .sub.danger { color: #FF7A7E; }
+  .rollback .opt .ttl { font-family: var(--mono); font-size: 11px; background: #0B1020; border: 1px solid #1F2845; color: #8A91AB; padding: 4px 9px; border-radius: 5px; letter-spacing: 0.04em; }
+
+  .audit-prev { padding: 18px 20px; background: #0E1424; border: 1px solid #1F2845; border-radius: 10px; }
+  .audit-prev h5 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6E7794; }
+  .audit-prev h5 svg { width: 14px; height: 14px; }
+  .audit-prev .entry { font-family: var(--mono); font-size: 12px; line-height: 1.85; background: #0B1020; border: 1px solid #1F2845; border-radius: 8px; padding: 14px 18px; color: #ECEFF8; white-space: pre; overflow-x: auto; }
+  .audit-prev .entry .k { color: #6E7794; }
+  .audit-prev .entry .vv { color: #ECEFF8; }
+  .audit-prev .entry .vd { color: #FF7A7E; }
+  .audit-prev .entry .vi { color: #6E8BFF; }
+  .audit-prev .lnk { display: inline-block; margin-top: 12px; font-size: 12.5px; color: #6E8BFF; text-decoration: none; }
+  .audit-prev .lnk:hover { text-decoration: underline; }
+
+  .confirm-inp p { margin: 0 0 8px; font-size: 13px; color: #B0B7CC; }
+  .confirm-inp code { font-family: var(--mono); font-size: 11.5px; background: #131A2E; border: 1px solid #1F2845; padding: 1px 6px; border-radius: 3px; color: #ECEFF8; }
+  .cf-input { width: 100%; padding: 11px 14px; background: #0E1424; border: 1px solid #1F2845; border-radius: 8px; color: #ECEFF8; font-family: var(--mono); font-size: 13px; outline: none; transition: border-color .15s; }
+  .cf-input:focus { border-color: #6E8BFF; }
+  .cf-input.match { border-color: #FF7A7E; background: rgba(229,72,77,0.06); }
+
+  .dep-foot { display: flex; align-items: center; gap: 10px; padding: 16px 22px; background: #0E1424; border-top: 1px solid #1F2845; }
+  .dep-foot .grow { flex: 1; }
+  .db-btn { padding: 9px 14px; background: #131A2E; border: 1px solid #1F2845; color: #ECEFF8; border-radius: 7px; font-family: var(--font); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+  .db-btn:hover { background: #1F2845; }
+  .db-btn.danger { background: #E5484D; border-color: #E5484D; color: #fff; }
+  .db-btn.danger:hover { background: #FF6166; }
+  .db-btn.danger:disabled { background: #1F2845; border-color: #1F2845; color: #525B7B; cursor: not-allowed; }
+
+  /* Safe deletion (legacy) */
+  .delete-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 28px;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .delete-card::before {
+    content: "";
+    position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: var(--danger);
+  }
+  .delete-target {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .delete-target .ic {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: rgba(229,72,77,0.1);
+    color: var(--danger);
+    display: grid; place-items: center;
+  }
+  .delete-target .v {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .delete-target .v .strk { text-decoration: line-through; color: var(--muted); }
+  .delete-target .sub {
+    font-size: 12px; color: var(--muted);
+    margin-top: 2px;
+  }
+  .blast {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .blast-item {
+    padding: 16px;
+    background: var(--bg);
+    border-radius: var(--r-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .blast-item .lab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .blast-item .v {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    font-feature-settings: "tnum";
+  }
+  .blast-item.revenue .v { color: var(--danger); font-family: var(--mono); }
+  .blast-item .sub {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .blast-item .glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(229,72,77,0.08), transparent 70%);
+    opacity: 0;
+    transition: opacity .5s;
+    pointer-events: none;
+  }
+  .blast-item.lit .glow { opacity: 1; }
+  .delete-actions {
+    margin-top: 22px;
+    display: flex; gap: 10px;
+    align-items: center;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .btn:hover { background: var(--bg); }
+  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn.primary:hover { background: #000; }
+  .btn.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn.danger:hover { background: #C73B40; }
+  .btn.ghost { background: transparent; }
+
+  /* outcomes */
+  .outcomes {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px;
+  }
+  .outc {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 26px 26px 24px;
+    display: flex; flex-direction: column;
+    min-height: 320px;
+    overflow: hidden;
+  }
+  .outc .eyebrow {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--subtle);
+    margin-bottom: 18px;
+  }
+  .outc .eyebrow .idx { color: var(--ink); font-weight: 600; }
+  .outc .eyebrow .cat { display: inline-flex; align-items: center; gap: 6px; }
+  .outc .eyebrow .cat::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .outc .v {
+    font-size: 68px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    font-feature-settings: "tnum", "ss01";
+    display: inline-flex; align-items: baseline; gap: 2px;
+  }
+  .outc .v .arr {
+    font-family: var(--mono);
+    font-size: 44px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .outc .lab {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.38;
+    max-width: 320px;
+    letter-spacing: -0.012em;
+    font-weight: 500;
+  }
+  .outc .outc-viz {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--hairline);
+    flex: 1;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    gap: 10px;
+  }
+  .outc .outc-viz .row {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--subtle);
+  }
+  .outc .outc-viz .row .lbl { letter-spacing: 0.06em; text-transform: uppercase; }
+  .outc .outc-viz .row .bar {
+    position: relative; height: 6px; border-radius: 3px;
+    background: var(--bg-soft);
+    overflow: hidden;
+  }
+  .outc .outc-viz .row .bar .fill {
+    position: absolute; inset: 0 auto 0 0;
+    border-radius: 3px;
+    background: var(--accent);
+  }
+  .outc .outc-viz .row.before .bar .fill { background: var(--danger); opacity: 0.75; }
+  .outc .outc-viz .row .num {
+    font-size: 12px; color: var(--ink); font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    min-width: 38px; text-align: right;
+  }
+  .outc .outc-viz.timeline { gap: 14px; }
+  .outc .outc-viz.timeline .track {
+    position: relative; height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--accent-soft) 0%, var(--accent-soft) 4%, rgba(227,162,26,0.10) 4%, rgba(227,162,26,0.18) 60%, rgba(229,72,77,0.22) 100%);
+    overflow: hidden;
+  }
+  .outc .outc-viz.timeline .track .now {
+    position: absolute; top: 50%; left: 4%; transform: translate(-50%, -50%);
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(20,184,138,0.18), 0 0 14px -2px var(--accent);
+  }
+  .outc .outc-viz.timeline .legend {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--subtle); letter-spacing: 0.04em;
+  }
+  .outc .outc-viz.timeline .legend .here { color: var(--accent); font-weight: 600; }
+  .outc .outc-viz.stack { gap: 12px; }
+  .outc .outc-viz.stack .seg-row {
+    display: flex; height: 14px; border-radius: 4px; overflow: hidden;
+    border: 1px solid var(--hairline);
+  }
+  .outc .outc-viz.stack .seg-row .seg { height: 100%; }
+  .outc .outc-viz.stack .leg {
+    display: flex; flex-direction: column; gap: 6px;
+    font-family: var(--mono); font-size: 11px;
+  }
+  .outc .outc-viz.stack .leg .li {
+    display: grid; grid-template-columns: 10px 1fr auto; gap: 8px;
+    align-items: center; color: var(--ink-2);
+  }
+  .outc .outc-viz.stack .leg .li .sw { width: 8px; height: 8px; border-radius: 2px; }
+  .outc .outc-viz.stack .leg .li .v2 { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .outc .sub {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: var(--subtle);
+    text-transform: uppercase;
+  }
+  .quote {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 32px 28px;
+    min-height: 240px;
+    display: flex; flex-direction: column;
+  }
+  .quote .qm {
+    color: var(--accent);
+    font-family: Georgia, serif;
+    font-size: 36px;
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+  .quote .q {
+    flex: 1;
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    font-family: var(--serif);
+    color: var(--ink);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .quote .who {
+    margin-top: 18px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: var(--subtle);
+    text-transform: uppercase;
+  }
+
+  /* Other works */
+  .others {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .other {
+    position: relative;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    aspect-ratio: 4/3;
+    display: grid; place-items: center;
+    transition: transform .25s, box-shadow .25s;
+    cursor: pointer;
+  }
+  .other:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 50px -22px rgba(0,0,0,0.18);
+  }
+  .other.c1, .other.c2, .other.c3 { background: #F7F9FE; }
+  .other img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    transition: transform .35s ease;
+  }
+  .other:hover img { transform: scale(1.05); }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 64px 0 48px;
+  }
+  footer .row {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  footer .nm {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+  }
+  footer .nm .accent { color: var(--accent); }
+  footer .meta-line {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  footer .right {
+    text-align: right;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  footer .right .small {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--subtle);
+    margin-top: 4px;
+  }
+
+  /* utility */
+  .accent-text { color: var(--accent); }
+
+  @media (max-width: 980px) {
+    .problem-grid, .outcomes, .others, .meta { grid-template-columns: 1fr 1fr; }
+    .val-demo { grid-template-columns: 1fr; }
+    .hotspot-row { grid-template-columns: 1fr; }
+    .device .frame-wrap { height: 480px; }
+  }
+  @media (max-width: 640px) {
+    .outcomes, .others, .meta { grid-template-columns: 1fr; }
+    .container { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<template id="__bundler_thumbnail" data-bg-color="#F5F4ED">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#F5F4ED"/>
+    <text x="80" y="320" font-family="Geist, Inter, sans-serif" font-size="120" font-weight="600" letter-spacing="-4" fill="#1A1D21">KVP</text>
+    <text x="80" y="450" font-family="Geist, Inter, sans-serif" font-size="120" font-weight="600" letter-spacing="-4" fill="#1A1D21">Governance.</text>
+    <rect x="80" y="490" width="380" height="6" fill="#6FE9A4"/>
+    <text x="80" y="600" font-family="JetBrains Mono, monospace" font-size="20" letter-spacing="3" fill="#6E7794">CASE STUDY · LIYA BELL</text>
+  </svg>
+</template>
+
+<!-- TOP BAR -->
+<div class="topbar" id="topbar">
+  <div class="progress"><div class="bar" id="progressBar"></div></div>
+  <div class="container">
+    <div class="row">
+      <span class="name">Liya Bell</span>
+      <span class="sep">|</span>
+      <span class="role">Technical Workflows and Design Systems</span>
+      <div class="right">
+        <a href="#">LinkedIn</a>
+        <a href="#">liyafromspace@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <h1>
+      Operational trust<br>
+      for distributed<br>
+      <span class="accent">metadata</span>.
+    </h1>
+    <p class="lede">How I designed governance infrastructure for targeting metadata across a distributed advertising platform.</p>
+    <div class="tags">
+      <span class="tag">Product Design</span>
+      <span class="tag">Systems Design</span>
+      <span class="tag">Design Systems</span>
+      <span class="tag">UX Research</span>
+      <span class="tag">AdTech / SSP</span>
+    </div>
+    <div class="scroll-cue">Scroll to explore</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="track" id="marqueeTrack"></div>
+</div>
+
+<!-- META -->
+<div class="meta-band">
+<div class="container">
+  <div class="meta">
+    <div class="item">
+      <div class="lab">Role</div>
+      <div class="val">Product Designer</div>
+    </div>
+    <div class="item">
+      <div class="lab">Scope</div>
+      <div class="val">End-to-end UX 
+</div>
+    </div>
+    <div class="item">
+      <div class="lab">Domain</div>
+      <div class="val">SSP / Programmatic<br>Targeting Metadata</div>
+    </div>
+    <div class="item">
+      <div class="lab">Platform</div>
+      <div class="val">Nexxen KVP Console</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 02 — PROBLEM -->
+<section>
+  <div class="container">
+    <div class="sec-num">01 — THE PROBLEM</div>
+    <h2>Metadata changes were silently affecting <span class="accent">live revenue.</span></h2>
+    <div class="problem-grid">
+      <div>
+        <p class="lead" style="margin-bottom:32px">
+          Operators were publishing values into a black box —
+          no visibility into dependencies, propagation state, blast radius, or rollback safety.
+        </p>
+        <div class="symptoms">
+          <div class="symptom">
+            <span class="num">01</span>
+            <div class="body"><b>Live PMP deals affected silently</b><span>A renamed value could drop bid eligibility for active deals — discovered hours later in reporting.</span></div>
+          </div>
+          <div class="symptom">
+            <span class="num">02</span>
+            <div class="body"><b>Forecasting drifted</b><span>Inventory templates referenced taxonomy keys; metadata edits invalidated forecasts without warning.</span></div>
+          </div>
+          <div class="symptom">
+            <span class="num">03</span>
+            <div class="body"><b>No propagation visibility</b><span>"Did the change land?" had no answer. Edge caches, SSP partners, and audit pipelines updated on different clocks.</span></div>
+          </div>
+          <div class="symptom">
+            <span class="num">04</span>
+            <div class="body"><b>Destructive actions had no safety net</b><span>Deleting a value couldn't be undone. The blast radius wasn't visible until things broke.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE ARCHITECTURE MAP -->
+      <div class="arch" id="archMap">
+        <div class="arch-h"><span class="pulse"></span>Dependency Topology</div>
+        <div class="hint">Hover any node to see what one metadata change touches downstream.</div>
+        <svg viewBox="0 0 540 320" id="archSvg">
+          <!-- edges drawn by JS for animation -->
+          <g id="edges"></g>
+          <g id="nodes"></g>
+        </svg>
+        <div class="tip" id="archTip"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 — CORE UX SHIFT -->
+<section class="shift">
+  <div class="container">
+    <div class="sec-num">02 — CORE UX SHIFT</div>
+    <div class="label">Reframing the problem</div>
+    <div class="from">CRUD administration</div>
+    <div class="arrow">the breakthrough</div>
+    <div class="to">Metadata <span class="accent">governance</span><br>and <span class="accent">observability</span>.</div>
+    <p class="lead" style="margin-top:48px">
+      Users weren't managing values. They were managing operational risk.
+      Once we treated the console as an observability surface — not a database UI —
+      every screen could carry runtime context: lifecycle, dependencies, propagation, blast radius.
+    </p>
+  </div>
+</section>
+
+<!-- 03b — CORE UX DECISION: SEPARATING GOVERNANCE FROM TARGETING -->
+<section class="screen" id="separation" style="border-top:1px solid var(--line)">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">03 — CORE UX DECISION</div>
+      <h2>Separating <em class="serif-em">governance</em> from <em class="serif-em">targeting.</em></h2>
+      <p>One workflow. Two completely different operational mental models. Combining them created cognitive overload, operational risk, and permission complexity. Splitting them created safer, faster work — for both teams.</p>
+    </div>
+
+    <!-- Governance vs Targeting layers -->
+    <div class="layers">
+      <div class="layer governance">
+        <div class="layer-head">
+          <div class="layer-tag">Governance Layer</div>
+          <h3>Taxonomy ownership</h3>
+          <p>Yield ops curates the metadata fabric — what values exist, how they propagate, what depends on them.</p>
+        </div>
+        <ul class="layer-traits">
+          <li><span class="t">Owners</span><span class="v">Yield ops · Engineering</span></li>
+          <li><span class="t">Cadence</span><span class="v">Weekly · governance-led</span></li>
+          <li><span class="t">Concerns</span><span class="v">Validation · propagation · safety</span></li>
+          <li><span class="t">Mental model</span><span class="v">Infrastructure consistency</span></li>
+        </ul>
+      </div>
+
+      <div class="layer-divider">
+        <div class="div-label">vs</div>
+      </div>
+
+      <div class="layer targeting">
+        <div class="layer-head">
+          <div class="layer-tag accent">Targeting Layer</div>
+          <h3>Campaign execution</h3>
+          <p>Sales and trafficking pick from the curated fabric — composing deals, applying business logic, launching fast.</p>
+        </div>
+        <ul class="layer-traits">
+          <li><span class="t">Owners</span><span class="v">AdOps · Sales engineers</span></li>
+          <li><span class="t">Cadence</span><span class="v">Daily · campaign-driven</span></li>
+          <li><span class="t">Concerns</span><span class="v">Deal setup · business logic · speed</span></li>
+          <li><span class="t">Mental model</span><span class="v">Campaign delivery</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Comparison cost line -->
+    <div class="combine-cost">
+      <div class="cost-h">Combining them created</div>
+      <div class="cost-row">
+        <div class="cost-cell">
+          <div class="eyebrow"><span class="idx">01</span><span class="cat">Cost</span></div>
+          <div class="cost-n">×</div>
+          <div class="cost-l">Cognitive overload</div>
+          <div class="cost-d">Operators thought in two modes simultaneously.</div>
+          <div class="cost-tag">Mode switching · per edit</div>
+        </div>
+        <div class="cost-cell">
+          <div class="eyebrow"><span class="idx">02</span><span class="cat">Cost</span></div>
+          <div class="cost-n">×</div>
+          <div class="cost-l">Operational risk</div>
+          <div class="cost-d">Targeting edits silently mutated taxonomy.</div>
+          <div class="cost-tag">Side-effects · uncaught</div>
+        </div>
+        <div class="cost-cell">
+          <div class="eyebrow"><span class="idx">03</span><span class="cat">Cost</span></div>
+          <div class="cost-n">×</div>
+          <div class="cost-l">Permission complexity</div>
+          <div class="cost-d">No clean role boundary to scope access against.</div>
+          <div class="cost-tag">Roles · overlap</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Targeting widget — interactive demo -->
+    <div class="screen-head" style="margin-top:96px;margin-bottom:32px">
+      <div class="num">Artifact · Targeting layer</div>
+      <h2>What the <em class="serif-em">targeting</em> surface became.</h2>
+      <p>A focused composition tool. No taxonomy editing. No propagation visibility. Just the curated fabric, presented as a fast, observable picker.</p>
+    </div>
+
+    <div class="device dark">
+      <div class="chrome dark">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">nexxen.app/deals/edit · custom-targeting</div>
+        <div class="live">Live demo</div>
+      </div>
+      <div class="targeting-shell">
+        <header class="ts-h" id="ctToggle">
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 6 6 6-6 6"/></svg>
+          <h4>Custom Targeting</h4>
+          <span class="ct-count" id="ctCount">4 keys configured</span>
+          <span class="ts-spacer"></span>
+          <button class="ts-gear" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+        </header>
+
+        <div class="ts-body" id="ctBody">
+          <div class="ct-grid" id="ctGrid"></div>
+          <button class="ct-add" id="ctAdd">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Add another key
+          </button>
+        </div>
+      </div>
+
+      <div class="targeting-foot">
+        <div class="tf-l">
+          <span class="tf-dot"></span>
+          Sourcing values from <b>governance taxonomy v42</b> · last published 14:32 UTC
+        </div>
+        <div class="tf-r">
+          <button class="tf-btn">Cancel</button>
+          <button class="tf-btn primary">Save targeting</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="caption">↑ Try clicking the dropdowns, toggling include/exclude, removing chips, or adding a new key.</p>
+  </div>
+</section>
+
+<style>
+  /* ===== Layers comparison ===== */
+  .serif-em { font-style: normal; font-weight: inherit; color: var(--accent); }
+
+  .layers {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin-bottom: 64px;
+  }
+  .layer {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .layer:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -16px rgba(0,0,0,0.10); }
+  .layer.governance::before, .layer.targeting::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 3px;
+    background: var(--ink);
+  }
+  .layer.targeting::before { background: var(--accent); }
+  .layer-head .layer-tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--subtle);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+  .layer-head .layer-tag.accent { color: var(--accent); border-color: rgba(20,184,138,0.3); background: var(--accent-soft); }
+  .layer-head h3 { font-size: 28px; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .layer-head p { font-size: 14.5px; color: var(--ink-2); margin: 0 0 24px; line-height: 1.55; max-width: 38ch; }
+  .layer-traits { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--hairline); }
+  .layer-traits li {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 13.5px;
+    align-items: baseline;
+  }
+  .layer-traits li:last-child { border-bottom: 0; }
+  .layer-traits .t {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: var(--subtle);
+    text-transform: uppercase;
+  }
+  .layer-traits .v { color: var(--ink); font-weight: 500; }
+
+  .layer-divider {
+    display: grid; place-items: center;
+    position: relative;
+  }
+  .layer-divider::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
+  }
+  .layer-divider .div-label {
+    background: var(--bg);
+    padding: 8px 0;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 26px;
+    color: var(--subtle);
+    z-index: 1;
+  }
+
+  /* combine cost */
+  .combine-cost { margin-bottom: 64px; }
+  .combine-cost .cost-h {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--danger);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .combine-cost .cost-h::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--danger);
+  }
+  .combine-cost .cost-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  .combine-cost .cost-cell {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 26px 26px 24px;
+    display: flex; flex-direction: column;
+    min-height: 240px;
+  }
+  .combine-cost .cost-cell .eyebrow {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--subtle);
+    margin-bottom: 18px;
+  }
+  .combine-cost .cost-cell .eyebrow .idx { color: var(--ink); font-weight: 600; }
+  .combine-cost .cost-cell .eyebrow .cat { display: inline-flex; align-items: center; gap: 6px; }
+  .combine-cost .cost-cell .eyebrow .cat::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--danger);
+  }
+  .combine-cost .cost-cell .cost-n {
+    font-family: var(--mono);
+    color: var(--danger);
+    font-size: 68px;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    font-weight: 500;
+  }
+  .combine-cost .cost-cell .cost-l {
+    margin-top: 16px;
+    font-size: 16px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.012em;
+  }
+  .combine-cost .cost-cell .cost-d {
+    margin-top: 6px;
+    font-size: 13.5px; color: var(--ink-2); line-height: 1.5;
+    flex: 1;
+  }
+  .combine-cost .cost-cell .cost-tag {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: var(--subtle);
+    text-transform: uppercase;
+  }
+
+  /* ===== Dark device variant ===== */
+  .device.dark {
+    background: #0E1424;
+    border-color: #1E2740;
+    box-shadow: 0 30px 80px -24px rgba(14,20,36,0.4), 0 4px 12px rgba(14,20,36,0.06);
+  }
+  .device .chrome.dark {
+    background: #0E1424;
+    border-bottom-color: #1E2740;
+  }
+  .device .chrome.dark .url {
+    background: #131A2E;
+    border-color: #1E2740;
+    color: #6E7794;
+  }
+
+  .targeting-shell {
+    background: #0E1424;
+    color: #D9DDEC;
+    font-family: var(--font);
+    padding: 0;
+  }
+  .ts-h {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 24px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color .25s;
+  }
+  .ts-h .chev {
+    width: 16px; height: 16px;
+    color: #6FE9A4;
+    transform: rotate(90deg);
+    transition: transform .3s ease;
+  }
+  .ts-h.collapsed .chev { transform: rotate(0); }
+  .ts-h.collapsed { border-bottom-color: transparent; }
+  .ts-h h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ECEFF8;
+    letter-spacing: -0.01em;
+  }
+  .ts-h .ct-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #6FE9A4;
+    background: rgba(111,233,164,0.10);
+    border: 1px solid rgba(111,233,164,0.22);
+    border-radius: 999px;
+    padding: 3px 10px;
+    letter-spacing: 0.04em;
+  }
+  .ts-h .ts-spacer { flex: 1; }
+  .ts-h .ts-gear {
+    background: #131A2E;
+    border: 1px solid #232C49;
+    color: #6E7794;
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+  }
+  .ts-h .ts-gear:hover { color: #D9DDEC; border-color: #2D375A; }
+  .ts-h .ts-gear svg { width: 15px; height: 15px; }
+
+  .ts-body {
+    padding: 18px 24px 28px;
+    overflow: hidden;
+    transition: max-height .35s cubic-bezier(.5,.05,.2,1), opacity .25s, padding .35s;
+    max-height: 1600px;
+  }
+  .ts-body.collapsed { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+
+  .ct-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 22px;
+  }
+  .ct-row {
+    background: #131A2E;
+    border: 1px solid #1F2845;
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+    transition: border-color .2s, box-shadow .2s, transform .25s, opacity .25s;
+    animation: rowFade .35s ease;
+    position: relative;
+  }
+  @keyframes rowFade {
+    from { opacity: 0; transform: translateY(-4px); }
+  }
+  .ct-row:hover { border-color: #2D375A; }
+  .ct-row.removing { opacity: 0; transform: translateX(-8px); }
+  .ct-row-h {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .ct-row-h .key-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #ECEFF8;
+    letter-spacing: -0.005em;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ct-row-h .key-name.placeholder {
+    color: #6E7794;
+    font-style: italic;
+    font-family: var(--serif);
+    font-weight: 400;
+  }
+  .ct-row-h .ie-toggle {
+    display: inline-flex;
+    background: #0E1424;
+    border: 1px solid #232C49;
+    border-radius: 999px;
+    padding: 2px;
+    flex-shrink: 0;
+  }
+  .ct-row-h .ie-toggle button {
+    background: transparent;
+    border: 0;
+    padding: 4px 11px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6E7794;
+    border-radius: 999px;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: background .2s, color .2s;
+  }
+  .ct-row-h .ie-toggle button.on.include { background: rgba(111,233,164,0.18); color: #6FE9A4; }
+  .ct-row-h .ie-toggle button.on.exclude { background: rgba(229,72,77,0.18); color: #FF7A7E; }
+  .ct-row-h .x-row {
+    background: transparent;
+    border: 0;
+    color: #525B7B;
+    cursor: pointer;
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .ct-row-h .x-row:hover { color: #FF7A7E; background: rgba(229,72,77,0.08); }
+  .ct-row-h .x-row svg { width: 12px; height: 12px; }
+
+  .ct-input {
+    background: #0A0F1E;
+    border: 1px solid #1F2845;
+    border-radius: 8px;
+    min-height: 38px;
+    padding: 5px 8px 5px 10px;
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+    position: relative;
+  }
+  .ct-input:hover { border-color: #2D375A; }
+  .ct-input.open {
+    border-color: #6FE9A4;
+    box-shadow: 0 0 0 3px rgba(111,233,164,0.12);
+  }
+  .ct-input .placeholder-txt {
+    color: #525B7B;
+    font-size: 13px;
+    flex: 1;
+    font-style: italic;
+    font-family: var(--serif);
+  }
+  .ct-input .caret {
+    margin-left: auto;
+    color: #525B7B;
+    transition: transform .25s;
+  }
+  .ct-input.open .caret { transform: rotate(180deg); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(111,233,164,0.14);
+    border: 1px solid rgba(111,233,164,0.30);
+    color: #B6F1CE;
+    padding: 3px 4px 3px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    animation: chipIn .22s ease;
+    transform-origin: left center;
+    line-height: 1.2;
+  }
+  .ct-row.exclude .chip { background: rgba(229,72,77,0.10); border-color: rgba(229,72,77,0.28); color: #FFB6B8; }
+  @keyframes chipIn {
+    from { opacity: 0; transform: scale(0.86); }
+  }
+  .chip.removing { animation: chipOut .18s ease forwards; }
+  @keyframes chipOut {
+    to { opacity: 0; transform: scale(0.7); }
+  }
+  .chip .x {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    opacity: 0.55;
+    cursor: pointer;
+    width: 16px; height: 16px;
+    border-radius: 3px;
+    display: grid; place-items: center;
+    padding: 0;
+  }
+  .chip .x:hover { opacity: 1; background: rgba(0,0,0,0.2); }
+  .chip .x svg { width: 9px; height: 9px; }
+
+  .ct-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #131A2E;
+    border: 1px solid #2D375A;
+    border-radius: 8px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+    z-index: 20;
+    overflow: hidden;
+    animation: popIn .18s ease;
+    transform-origin: top center;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scaleY(0.9) translateY(-2px); }
+  }
+  .ct-popover .search {
+    border-bottom: 1px solid #1F2845;
+    padding: 0;
+  }
+  .ct-popover .search input {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    color: #ECEFF8;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 10px 14px;
+    outline: none;
+  }
+  .ct-popover .search input::placeholder { color: #525B7B; font-style: italic; font-family: var(--serif); }
+  .ct-popover .opts { max-height: 220px; overflow-y: auto; padding: 4px; }
+  .ct-popover .opts::-webkit-scrollbar { width: 6px; }
+  .ct-popover .opts::-webkit-scrollbar-thumb { background: #2D375A; border-radius: 3px; }
+  .ct-popover .opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    color: #D9DDEC;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .ct-popover .opt:hover { background: #1F2845; }
+  .ct-popover .opt .check {
+    width: 14px; height: 14px;
+    border: 1.5px solid #2D375A;
+    border-radius: 3px;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    color: transparent;
+    transition: background .15s, border-color .15s;
+  }
+  .ct-popover .opt.on .check { background: #6FE9A4; border-color: #6FE9A4; color: #0E1424; }
+  .ct-popover .opt.on .check svg { width: 9px; height: 9px; }
+  .ct-popover .opt .name { flex: 1; }
+  .ct-popover .empty { padding: 20px; text-align: center; color: #525B7B; font-size: 12px; font-style: italic; font-family: var(--serif); }
+
+  .ct-add {
+    margin-top: 14px;
+    background: transparent;
+    border: 1px dashed #2D375A;
+    border-radius: 8px;
+    color: #6FE9A4;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11px 18px;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+  }
+  .ct-add:hover { background: rgba(111,233,164,0.06); border-color: #6FE9A4; }
+  .ct-add svg { width: 14px; height: 14px; }
+
+  .targeting-foot {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    background: #0A0F1E;
+    border-top: 1px solid #1F2845;
+    color: #6E7794;
+    font-size: 12px;
+  }
+  .targeting-foot .tf-l { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .targeting-foot .tf-l b { color: #ECEFF8; font-weight: 500; }
+  .targeting-foot .tf-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #6FE9A4;
+    box-shadow: 0 0 6px #6FE9A4;
+    animation: dotpulse 1.6s ease-in-out infinite;
+  }
+  .targeting-foot .tf-r { display: flex; gap: 8px; }
+  .targeting-foot .tf-btn {
+    background: transparent;
+    border: 1px solid #232C49;
+    color: #D9DDEC;
+    font-family: inherit;
+    font-size: 12.5px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .targeting-foot .tf-btn:hover { background: #131A2E; }
+  .targeting-foot .tf-btn.primary { background: #6FE9A4; border-color: #6FE9A4; color: #0E1424; font-weight: 600; }
+  .targeting-foot .tf-btn.primary:hover { background: #8AF0B5; }
+
+  .caption {
+    margin-top: 16px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ===== UNIFIED DARK DEMO STYLING (matches Custom Targeting widget) ===== */
+  .demo-card { background: #0E1424; border-color: #1F2845; color: #D9DDEC; box-shadow: 0 24px 60px -28px rgba(14,20,36,0.4); }
+  .demo-card .demo-h { color: #6E7794; border-bottom-color: #1F2845; }
+  .demo-card .demo-h .play-btn { background: rgba(111,233,164,0.10); color: #6FE9A4; border-color: rgba(111,233,164,0.25); }
+  .demo-card .demo-h .play-btn:hover { background: #6FE9A4; color: #0E1424; border-color: #6FE9A4; }
+
+  /* Lifecycle */
+  .lifecycle { background: #0E1326; border-color: #1F2845; }
+  .lifecycle .lf-step { color: #525B7B; }
+  .lifecycle .lf-step .lf-label { color: #ECEFF8; }
+  .lifecycle .lf-step .lf-sub { color: #6E7794; }
+  .lifecycle .lf-step.validating  { color: #6FE9A4; }
+  .lifecycle .lf-step.syncing     { color: #6FE9A4; }
+  .lifecycle .lf-step.delayed     { color: #E3A21A; }
+  .lifecycle .lf-step.deprecated  { color: #FF7A7E; }
+  .lifecycle .lf-conn.c-validating  { color: #6FE9A4; }
+  .lifecycle .lf-conn.c-syncing     { color: #6FE9A4; }
+  .lifecycle .lf-conn.c-delayed     { color: #E3A21A; }
+  .lifecycle .lf-conn.c-deprecated  { color: #FF7A7E; }
+  .lifecycle-detail { background: #131A2E; color: #D9DDEC; }
+  .lifecycle-detail b { color: #ECEFF8; }
+
+  /* Dependency graph readout */
+  .depgraph { background: #0E1424; border-radius: 10px; padding: 16px; }
+  .blast-meter { background: #0A0F1E; border: 1px solid #1F2845; border-radius: 10px; }
+  .blast-meter .lab { color: #6E7794; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .blast-meter .v { color: #6FE9A4; font-family: var(--mono); font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .blast-meter .sub { color: #8E97B5; font-size: 11.5px; }
+
+  /* Validation demo */
+  .val-row { background: #131A2E; border-color: #1F2845; }
+  .val-row .lab { color: #525B7B; }
+  .val-row .input-shell { background: #0A0F1E; border-color: #1F2845; color: #ECEFF8; }
+  .val-row .input-shell.ok { background: rgba(111,233,164,0.10); border-color: rgba(111,233,164,0.4); }
+  .val-row .input-shell.err { background: rgba(255,122,126,0.08); border-color: rgba(255,122,126,0.4); }
+  .val-row .input-shell.warn { background: rgba(227,162,26,0.08); border-color: rgba(227,162,26,0.4); }
+  .val-row .check.ok { background: #6FE9A4; color: #0E1424; }
+  .val-row .check.err { background: #FF7A7E; }
+  .val-row .check.warn { background: #E3A21A; }
+  .val-row .msg { color: #6E7794; }
+  .val-row .msg.ok { color: #6FE9A4; }
+  .val-row .msg.err { color: #FF7A7E; }
+  .val-row .msg.warn { color: #E3A21A; }
+  .val-row .caret { background: #6FE9A4; }
+  /* tile cluster under val-demo */
+  .demo-card .demo-body > div[style*="grid-template-columns:1fr 1fr 1fr"] > div { background: #131A2E !important; color: #D9DDEC; }
+  .demo-card .demo-body > div[style*="grid-template-columns:1fr 1fr 1fr"] > div > div:first-child { color: #525B7B !important; }
+
+  /* Bulk paste */
+  .bulk { border-color: #1F2845; }
+  .bulk .pane.left { background: #0A0F1E; border-right-color: #1F2845; }
+  .bulk .pane.right { background: #131A2E; }
+  .bulk .pane h5 { color: #525B7B; }
+  .bulk pre { color: #D9DDEC; }
+  .bulk .preview-row { border-bottom-color: #1F2845; }
+  .bulk .preview-row .v { color: #ECEFF8; }
+  .bulk .preview-row .b.new { background: rgba(111,233,164,0.16); color: #6FE9A4; }
+  .bulk .preview-row .b.dup { background: rgba(227,162,26,0.16); color: #E3A21A; }
+  .bulk .preview-row .b.err { background: rgba(255,122,126,0.16); color: #FF7A7E; }
+  .bulk .summary { border-top-color: #1F2845; }
+  .bulk .summary span { color: #6E7794; }
+  .bulk .summary span b { color: #ECEFF8; }
+
+  /* CSV mapping */
+  .csv-col { background: #131A2E; border-color: #1F2845; }
+  .csv-col .nm { color: #ECEFF8; }
+  .csv-col .sub { color: #6E7794; }
+  .csv-col .sub b { color: #D9DDEC; }
+  .csv-col.matched { background: rgba(111,233,164,0.12); border-color: rgba(111,233,164,0.35); }
+  .csv-arrow { color: #525B7B; }
+  .csv-arrow.matched { color: #6FE9A4; }
+  #csvStatus { background: #131A2E !important; color: #D9DDEC !important; }
+
+  /* Safe deletion */
+  .delete-card { background: #0E1424; border-color: #1F2845; color: #D9DDEC; }
+  .delete-card::before { background: #FF7A7E; }
+  .delete-target { border-bottom-color: #1F2845; }
+  .delete-target .ic { background: rgba(255,122,126,0.14); color: #FF7A7E; }
+  .delete-target .v { color: #ECEFF8; }
+  .delete-target .v .strk { color: #6E7794; }
+  .delete-target .sub { color: #6E7794; }
+  .blast-item { background: #131A2E; }
+  .blast-item .lab { color: #525B7B; }
+  .blast-item .v { color: #ECEFF8; }
+  .blast-item.revenue .v { color: #FF7A7E; }
+  .blast-item .sub { color: #6E7794; }
+  .delete-card h3 { color: #525B7B; }
+  .btn { background: #131A2E; border-color: #1F2845; color: #ECEFF8; }
+  .btn:hover { background: #1F2845; }
+  .btn.primary { background: #6FE9A4; border-color: #6FE9A4; color: #0E1424; }
+  .btn.primary:hover { background: #8AF0B5; }
+  .btn.danger { background: #FF7A7E; border-color: #FF7A7E; color: #0E1424; }
+  .btn.ghost { background: transparent; }
+  .btn.ghost:hover { background: #131A2E; }
+  #delStatus { color: #6E7794 !important; }
+
+  /* Hero/h1 weight modernization (match attached) */
+  .hero h1 { font-weight: 600; letter-spacing: -0.04em; }
+  h2 { font-weight: 600; letter-spacing: -0.03em; }
+
+  @media (max-width: 980px) {
+    .layers { grid-template-columns: 1fr; }
+    .layer-divider { padding: 16px 0; }
+    .layer-divider::before { left: 0; right: 0; top: 50%; bottom: auto; height: 1px; width: auto; background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent); }
+    .combine-cost .cost-row { grid-template-columns: 1fr; gap: 18px; }
+    .ct-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+/* ============== TARGETING WIDGET ============== */
+const KEY_CATALOG = {
+  'Broadcast Network 2022': ['ABC','CBS','CNN','ESPN','FOX','FX','HBO','NBC','TBS','TNT'],
+  'Fold': ['Above the Fold', 'Under the Fold', 'Below the Fold'],
+  'Government': ['Civil Service', 'Federal', 'Government', 'Military', 'State'],
+  'Content Genre': ['News', 'Sports', 'Entertainment', 'Music', 'Lifestyle', 'Technology'],
+  'Day Part': ['Morning', 'Daytime', 'Primetime', 'Late Night', 'Overnight'],
+  'Device Type': ['CTV', 'Mobile Web', 'Desktop', 'Mobile App', 'Tablet'],
+  'Slot Position': ['header_l', 'header_r', 'sidebar_top', 'footer_main', 'inline_video', 'pip_corner'],
+};
+const ALL_KEYS = Object.keys(KEY_CATALOG);
+
+let ctRows = [
+  { id: ctId(), key: 'Broadcast Network 2022', mode: 'include', values: ['FOX','NBC'] },
+  { id: ctId(), key: 'Fold',                   mode: 'include', values: ['Above the Fold','Under the Fold'] },
+  { id: ctId(), key: 'Government',             mode: 'exclude', values: ['Federal','State'] },
+  { id: ctId(), key: 'Day Part',               mode: 'include', values: ['Primetime','Late Night'] },
+];
+let openPopover = null;
+function ctId() { return 'r' + Math.random().toString(36).slice(2, 9); }
+
+const ctGrid = document.getElementById('ctGrid');
+const ctCount = document.getElementById('ctCount');
+const ctAdd = document.getElementById('ctAdd');
+const ctToggle = document.getElementById('ctToggle');
+const ctBody = document.getElementById('ctBody');
+
+function renderCT() {
+  const configured = ctRows.filter(r => r.values.length > 0).length;
+  ctCount.textContent = `${configured} of ${ctRows.length} configured`;
+  ctGrid.innerHTML = '';
+  ctRows.forEach(row => ctGrid.appendChild(buildRow(row)));
+}
+
+function buildRow(row) {
+  const wrap = document.createElement('div');
+  wrap.className = 'ct-row ' + row.mode;
+  wrap.dataset.id = row.id;
+
+  const head = document.createElement('div');
+  head.className = 'ct-row-h';
+  const opts = KEY_CATALOG[row.key];
+  const keyClass = opts ? '' : ' placeholder';
+  head.innerHTML = `
+    <span class="key-name${keyClass}">${row.key}</span>
+    <span class="ie-toggle">
+      <button class="${row.mode==='include'?'on include':''}" data-mode="include">Include</button>
+      <button class="${row.mode==='exclude'?'on exclude':''}" data-mode="exclude">Exclude</button>
+    </span>
+    <button class="x-row" title="Remove key">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  `;
+  head.querySelectorAll('.ie-toggle button').forEach(b => {
+    b.addEventListener('click', () => {
+      row.mode = b.dataset.mode;
+      renderCT();
+    });
+  });
+  head.querySelector('.x-row').addEventListener('click', () => {
+    wrap.classList.add('removing');
+    setTimeout(() => {
+      ctRows = ctRows.filter(r => r.id !== row.id);
+      renderCT();
+    }, 220);
+  });
+
+  const input = document.createElement('div');
+  input.className = 'ct-input';
+  input.setAttribute('tabindex', '0');
+  if (row.values.length === 0) {
+    input.innerHTML = `<span class="placeholder-txt">Select value…</span>`;
+  } else {
+    row.values.forEach(v => {
+      const c = document.createElement('span');
+      c.className = 'chip';
+      c.innerHTML = `<span>${v}</span><button class="x" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
+      c.querySelector('.x').addEventListener('click', e => {
+        e.stopPropagation();
+        c.classList.add('removing');
+        setTimeout(() => {
+          row.values = row.values.filter(x => x !== v);
+          renderCT();
+        }, 170);
+      });
+      input.appendChild(c);
+    });
+  }
+  input.insertAdjacentHTML('beforeend', `<svg class="caret" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>`);
+  input.addEventListener('click', e => {
+    e.stopPropagation();
+    if (input.classList.contains('open')) { closePopover(); return; }
+    openPopoverFor(row, input);
+  });
+
+  wrap.appendChild(head);
+  wrap.appendChild(input);
+  return wrap;
+}
+
+function closePopover() {
+  if (openPopover) {
+    openPopover.input.classList.remove('open');
+    openPopover.el.remove();
+    openPopover = null;
+  }
+}
+
+function openPopoverFor(row, inputEl) {
+  closePopover();
+  inputEl.classList.add('open');
+  const pop = document.createElement('div');
+  pop.className = 'ct-popover';
+  pop.innerHTML = `
+    <div class="search"><input placeholder="Search values…" autofocus/></div>
+    <div class="opts"></div>
+  `;
+  inputEl.appendChild(pop);
+  const opts = KEY_CATALOG[row.key] || [];
+  const optsEl = pop.querySelector('.opts');
+  const search = pop.querySelector('input');
+  function renderOpts(q='') {
+    const filtered = opts.filter(o => o.toLowerCase().includes(q.toLowerCase()));
+    optsEl.innerHTML = '';
+    if (filtered.length === 0) {
+      optsEl.innerHTML = `<div class="empty">No values match "${q}"</div>`;
+      return;
+    }
+    filtered.forEach(o => {
+      const isOn = row.values.includes(o);
+      const item = document.createElement('div');
+      item.className = 'opt' + (isOn ? ' on' : '');
+      item.innerHTML = `<span class="check">${isOn ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>' : ''}</span><span class="name">${o}</span>`;
+      item.addEventListener('click', () => {
+        if (isOn) row.values = row.values.filter(x => x !== o);
+        else row.values = [...row.values, o];
+        renderCT();
+        // re-open the popover so the user can keep selecting
+        const newRow = document.querySelector(`.ct-row[data-id="${row.id}"] .ct-input`);
+        if (newRow) openPopoverFor(row, newRow);
+      });
+      optsEl.appendChild(item);
+    });
+  }
+  search.addEventListener('input', () => renderOpts(search.value));
+  search.addEventListener('keydown', e => { if (e.key === 'Escape') closePopover(); });
+  setTimeout(() => search.focus(), 30);
+  renderOpts();
+  openPopover = { el: pop, input: inputEl, row };
+}
+
+document.addEventListener('click', e => {
+  if (openPopover && !openPopover.el.contains(e.target) && !openPopover.input.contains(e.target)) {
+    closePopover();
+  }
+});
+
+ctAdd.addEventListener('click', () => {
+  const used = ctRows.map(r => r.key);
+  const next = ALL_KEYS.find(k => !used.includes(k)) || `Custom Key ${ctRows.length + 1}`;
+  ctRows.push({ id: ctId(), key: next, mode: 'include', values: [] });
+  renderCT();
+  // scroll new row into view within container
+  setTimeout(() => {
+    const last = ctGrid.lastElementChild;
+    if (last) last.style.borderColor = '#6FE9A4';
+    setTimeout(() => { if (last) last.style.borderColor = ''; }, 800);
+  }, 30);
+});
+
+ctToggle.addEventListener('click', () => {
+  ctToggle.classList.toggle('collapsed');
+  ctBody.classList.toggle('collapsed');
+});
+
+renderCT();
+</script>
+
+<!-- ============== INTERACTIVE SOLUTIONS ============== -->
+
+<!-- SCREEN 1 — OPERATIONAL VISIBILITY -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">04 — Screen 01 · Operational Visibility</div>
+      <h2>The table became a <span class="accent">live status surface.</span></h2>
+      <p>Every row carries lifecycle state, propagation health, dependency count, and rollback safety — visible at a glance, before any action.</p>
+    </div>
+
+    <!-- Real product embedded as iframe with hotspot pins -->
+    <div class="device">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">nexxen.app/metadata/slot_position</div>
+        <div class="live">Live demo</div>
+      </div>
+      <div class="frame-wrap">
+        <iframe src="kvp-pro.html" title="KVP Console" loading="lazy"></iframe>
+        <div class="hotspots">
+          <div class="hotspot" style="left:14%; top:30%" data-target="hs-prop">
+            <div class="pin">1</div>
+            <div class="label">Propagation health</div>
+          </div>
+          <div class="hotspot" style="left:54%; top:48%" data-target="hs-life">
+            <div class="pin">2</div>
+            <div class="label">Lifecycle states</div>
+          </div>
+          <div class="hotspot" style="left:78%; top:62%" data-target="hs-dep">
+            <div class="pin">3</div>
+            <div class="label">Dependency awareness</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOTSPOT 2: LIFECYCLE STATES -->
+    <div class="hotspot-row" id="hs-life">
+      <div class="h-num">Hotspot 02 — Lifecycle Modeling</div>
+      <div class="body">
+        <h3>Five states instead of two.</h3>
+        <p>Binary active/inactive hid critical operational nuance. Lifecycle-aware states expose runtime behavior directly inside the workflow.</p>
+
+        <div class="demo-card">
+          <div class="demo-h">Click a state · See what it means</div>
+          <div class="demo-body">
+            <div class="lifecycle" id="lifecycle">
+              <div class="lf-step draft active" data-state="draft">
+                <div class="lf-label">Draft</div>
+                <div class="lf-icon"><span class="lf-ring"></span><span class="lf-sat"></span></div>
+                <div class="lf-sub">unpublished</div>
+              </div>
+              <span class="lf-conn c-validating"></span>
+              <div class="lf-step validating" data-state="validating">
+                <div class="lf-label">Validating</div>
+                <div class="lf-icon"><span class="lf-ring"></span><span class="lf-sat"></span></div>
+                <div class="lf-sub">~12s checks</div>
+              </div>
+              <span class="lf-conn c-syncing"></span>
+              <div class="lf-step syncing" data-state="syncing">
+                <div class="lf-label">Syncing</div>
+                <div class="lf-icon"><span class="lf-ring"></span><span class="lf-sat"></span></div>
+                <div class="lf-sub">12 SSPs</div>
+              </div>
+              <span class="lf-conn c-delayed"></span>
+              <div class="lf-step delayed" data-state="delayed">
+                <div class="lf-label">Delayed</div>
+                <div class="lf-icon"><span class="lf-ring"></span><span class="lf-sat"></span></div>
+                <div class="lf-sub">OpenX · retry 2/3</div>
+              </div>
+              <span class="lf-conn c-deprecated"></span>
+              <div class="lf-step deprecated" data-state="deprecated">
+                <div class="lf-label">Deprecated</div>
+                <div class="lf-icon"><span class="lf-ring"></span><span class="lf-sat"></span></div>
+                <div class="lf-sub">grace · 30d</div>
+              </div>
+            </div>
+            <div class="lifecycle-detail" id="lifecycleDetail"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOTSPOT 3: DEPENDENCY AWARENESS -->
+    <div class="hotspot-row" id="hs-dep">
+      <div class="h-num">Hotspot 03 — Dependency Intelligence</div>
+      <div class="body">
+        <h3>Blast radius, before the click.</h3>
+        <p>Changing one value can affect live deals and forecasting pipelines. The UI exposes downstream systems and revenue exposure — before changes are published.</p>
+
+        <div class="demo-card">
+          <div class="demo-h">Hover any leaf · Trace the chain</div>
+          <div class="demo-body" style="padding:0">
+            <div class="depgraph">
+              <svg viewBox="0 0 640 320" id="depSvg" style="width:100%;height:100%"></svg>
+              <div class="blast-meter">
+                <div class="lab">Blast radius</div>
+                <div class="v" id="blastVal">128 deals</div>
+                <div class="sub" id="blastSub">$847K monthly revenue</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 2 — INLINE VALIDATION -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">05 — Screen 02 · Manual Entry</div>
+      <h2>Validation that <span class="accent">happens while you type.</span></h2>
+      <p>Instead of failing after publish, the system validates metadata during creation — catching duplicates, taxonomy drift, and propagation conflicts before values enter production.</p>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-h">
+        Try editing the value field
+        <button class="play-btn" id="replayVal">↻ Replay typing</button>
+      </div>
+      <div class="demo-body">
+        <div class="val-demo">
+          <div class="val-row">
+            <div class="lab">Value · slot_position</div>
+            <div class="input-shell" id="valShell1">
+              <span id="valTxt1"></span>
+              <span class="caret"></span>
+              <span class="check ok" id="valCheck1" style="display:none">✓</span>
+            </div>
+            <div class="msg" id="valMsg1">Lowercase, numbers, underscores only · 1–64 chars</div>
+          </div>
+          <div class="val-row">
+            <div class="lab">Display name</div>
+            <div class="input-shell" id="valShell2">
+              <span id="valTxt2"></span>
+              <span class="caret" id="caret2" style="display:none"></span>
+              <span class="check ok" id="valCheck2" style="display:none">✓</span>
+            </div>
+            <div class="msg" id="valMsg2">Human-readable label shown in reports</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px">
+          <div style="padding:14px 16px;background:var(--bg);border-radius:6px">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--subtle);text-transform:uppercase;margin-bottom:6px">Duplicate check</div>
+            <div style="font-size:13px;color:var(--ink-2)" id="dupRes">Cross-referenced against 128 active values</div>
+          </div>
+          <div style="padding:14px 16px;background:var(--bg);border-radius:6px">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--subtle);text-transform:uppercase;margin-bottom:6px">Format</div>
+            <div style="font-size:13px;color:var(--ink-2)" id="fmtRes">snake_case · valid OpenRTB token</div>
+          </div>
+          <div style="padding:14px 16px;background:var(--bg);border-radius:6px">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--subtle);text-transform:uppercase;margin-bottom:6px">Propagation</div>
+            <div style="font-size:13px;color:var(--ink-2)" id="propRes">No conflicts with downstream taxonomy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 3 — BULK PASTE -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">06 — Screen 03 · Bulk Paste</div>
+      <h2>Metadata <span class="accent">at scale.</span></h2>
+      <p>Operational teams managed thousands of targeting values. Bulk workflows were redesigned around conflict detection, normalization, live preview, and validation confidence.</p>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-h">
+        Two ways to ingest metadata at scale
+        <button class="play-btn" id="replayBulk">↻ Reset demo</button>
+      </div>
+      <div class="demo-body" style="padding:18px;background:#070B1C">
+    <div class="bulk2" id="bulk2">
+      <!-- LEFT: CSV Import wizard -->
+      <div class="card">
+        <p class="card-title">CSV Import</p>
+        <div class="b2-stepper" id="b2Stepper">
+          <button class="b2-step on"   data-step="1"><span class="n">1</span>Upload</button>
+          <button class="b2-step"      data-step="2"><span class="n">2</span>Map</button>
+          <button class="b2-step"      data-step="3"><span class="n">3</span>Validate</button>
+          <button class="b2-step"      data-step="4"><span class="n">4</span>Diff</button>
+          <button class="b2-step"      data-step="5"><span class="n">5</span>Publish</button>
+        </div>
+
+        <div class="b2-csv-body" id="b2CsvBody"></div>
+
+        <div class="b2-foot">
+          <span class="count" id="b2CsvCount">Select a file to begin</span>
+          <button class="b2-btn" id="b2CsvBack" style="display:none">← Back</button>
+          <button class="b2-btn" id="b2CsvCancel">Cancel</button>
+          <button class="b2-btn primary" id="b2CsvContinue" disabled>Continue →</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Bulk Paste -->
+      <div class="card">
+        <div class="b2-paste-h">Paste one value per line <span class="hint">tab-separated for value + display</span></div>
+        <textarea class="b2-textarea" id="b2Paste" spellcheck="false">overlay_u	Overlay (Upper)
+sticky_bottom	Sticky Bottom
+abovefold	Above the Fold
+breakroll	Break-roll
+homepagehero	Homepage Hero
+PIP CORNER	PiP Corner
+inline_native	Inline Native
+splash	Splash Screen</textarea>
+
+        <div class="b2-sum" id="b2Sum">
+          <span class="chip new"><span class="sigil">+</span> <b id="b2NewN">0</b> new</span>
+          <span class="chip dup"><span class="sigil">~</span> <b id="b2DupN">0</b> duplicates</span>
+          <span class="chip err"><span class="sigil">!</span> <b id="b2ErrN">0</b> invalid</span>
+          <span class="lp"><span class="ldot"></span>Live preview</span>
+        </div>
+
+        <div class="b2-rows" id="b2Rows"></div>
+
+        <div class="b2-foot">
+          <span class="count"><b id="b2SaveN">0</b> will be saved</span>
+          <button class="b2-btn" id="b2PasteCancel">Cancel</button>
+          <button class="b2-btn primary" id="b2PasteSave">Save &amp; publish</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 4 — CSV MAPPING -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">07 — Screen 04 · CSV Mapping</div>
+      <h2>Imports become <span class="accent">guided workflows.</span></h2>
+      <p>The system auto-maps fields, previews structure, validates schemas, and surfaces conflicts — before publishing to production systems.</p>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-h">
+        Auto-mapping in progress
+        <button class="play-btn" id="replayCsv">↻ Replay mapping</button>
+      </div>
+      <div class="demo-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--subtle);text-transform:uppercase">
+          <div>CSV header</div>
+          <div style="padding-left:72px">→ Schema field</div>
+        </div>
+        <div class="csv-map" id="csvMap">
+          <div class="csv-col" data-col="0"><div class="nm">Position</div><div class="sub">str · 128 rows</div></div>
+          <div class="csv-arrow" data-col="0">···</div>
+          <div class="csv-col" data-col="0"><div class="nm">value</div><div class="sub"><b>required</b> · snake_case</div></div>
+
+          <div class="csv-col" data-col="1"><div class="nm">Description</div><div class="sub">str · 124 non-null</div></div>
+          <div class="csv-arrow" data-col="1">···</div>
+          <div class="csv-col" data-col="1"><div class="nm">display_name</div><div class="sub"><b>required</b> · human-readable</div></div>
+
+          <div class="csv-col" data-col="2"><div class="nm">Status</div><div class="sub">enum · 4 distinct</div></div>
+          <div class="csv-arrow" data-col="2">···</div>
+          <div class="csv-col" data-col="2"><div class="nm">lifecycle_state</div><div class="sub">enum · draft/active/...</div></div>
+
+          <div class="csv-col" data-col="3"><div class="nm">Notes</div><div class="sub">str · 12 non-null</div></div>
+          <div class="csv-arrow" data-col="3">···</div>
+          <div class="csv-col" data-col="3"><div class="nm">notes</div><div class="sub">optional</div></div>
+        </div>
+
+        <div style="margin-top:24px;padding:14px 16px;background:var(--bg);border-radius:6px;font-size:13px;color:var(--ink-2)" id="csvStatus">
+          Awaiting upload…
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 5 — SAFE DELETION -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">08 — Screen 05 · Safe Deletion</div>
+      <h2><span class="accent">Blast radius</span> before the click.</h2>
+      <p>Deleting a metadata value can silently impact active PMP deals, audience segments, forecasting templates, and revenue delivery. The redesigned workflow exposes operational risk before destructive actions.</p>
+    </div>
+
+    <div class="dep-grid">
+      <aside class="dep-aside">
+        <div class="dep-note">
+          <div class="dep-note-h"><span class="i">01</span>Revenue at risk</div>
+          <p>Surface the dollar blast radius <i>before</i> the confirm. $847K of delivered PMP revenue routes through this single value — refusing to delete it without showing that number is the entire point.</p>
+        </div>
+        <div class="dep-note">
+          <div class="dep-note-h"><span class="i">02</span>Rollback safety net</div>
+          <p>Pick a reversibility window at delete-time, not after something breaks. Default to 7 days for any value with active dependencies; permanent requires an explicit second pick.</p>
+        </div>
+        <div class="dep-note">
+          <div class="dep-note-h"><span class="i">03</span>Audit log entry · preview</div>
+          <p>Every force-delete is signed, sourced, and IP-stamped before it commits — so the rollback window has a paper trail and an actor, not just a TTL.</p>
+        </div>
+      </aside>
+
+      <div class="dep-demo" id="depDemo">
+        <div class="dep-h">
+          <h3>Cannot delete · <span class="chip">abovefold</span></h3>
+          <button class="x" id="depX" aria-label="Close">×</button>
+        </div>
+        <div class="dep-body">
+          <div class="dep-warn">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+            <div class="tx"><b>This value has 18 active dependencies</b><p>Removing it will affect targeting on 12 PMP deals, 4 audience segments, and 2 forecasting templates. Unlink dependencies before deleting.</p></div>
+          </div>
+
+          <div class="rev-risk">
+            <div class="amt-col"><div class="amt">$847K</div><span class="amt-lbl">Revenue at risk · 30d</span></div>
+            <div class="bd">
+              <div class="bd-row"><span>PMP deals (12)</span><span class="v">$612,400</span></div>
+              <div class="bd-row"><span>Audience extensions (4)</span><span class="v">$184,200</span></div>
+              <div class="bd-row"><span>Forecast bookings (2)</span><span class="v">$50,800</span></div>
+              <span class="bd-foot">Based on trailing 30d delivered revenue from deals targeting <code>pos=abovefold</code>. Source: Yield Reporter.</span>
+            </div>
+          </div>
+
+          <div class="perm-ok">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div>
+            <div class="tx"><b>You have permission to force-delete</b><span>Requires <code>metadata.kvp.force_delete</code> · granted via role <code>Yield Ops Admin</code>.</span></div>
+          </div>
+
+          <div class="dep-section">
+            <h5>Active PMP Deals <span class="ct">12</span></h5>
+            <div class="dep-list">
+              <div class="dep-row"><span class="nm">UMB-TD-FBC4-5A4F438</span><span class="ms">Paramount-CTV-CBS-Sports</span></div>
+              <div class="dep-row"><span class="nm">UMB-DV-A12C-1188901</span><span class="ms">Disney-CTV-Hulu-Bundle</span></div>
+              <div class="dep-row"><span class="nm">UMB-AM-7A3F-9023115</span><span class="ms">Roku-Open-OTT-Music</span></div>
+              <div class="dep-row"><span class="nm">UMB-TD-9981-7700121</span><span class="ms">NBC-MNF-Direct-Demand</span></div>
+              <div class="dep-row"><span class="nm">UMB-TR-66BB-3340092</span><span class="ms">Pluto-VOD-Sports-MidRoll</span></div>
+            </div>
+          </div>
+
+          <div class="dep-section">
+            <h5>Audience Segments <span class="ct">4</span></h5>
+            <div class="dep-list">
+              <div class="dep-row"><span class="nm">aud_seg_ctv_premium</span><span class="ms">CTV Premium Viewers</span></div>
+              <div class="dep-row"><span class="nm">aud_seg_sports_fans</span><span class="ms">Sports Enthusiasts (US)</span></div>
+              <div class="dep-row"><span class="nm">aud_seg_hh_size_4plus</span><span class="ms">Households 4+</span></div>
+              <div class="dep-row"><span class="nm">aud_seg_news_pm</span><span class="ms">PM News Audience</span></div>
+            </div>
+          </div>
+
+          <div class="dep-section">
+            <h5>Forecasting Templates <span class="ct">2</span></h5>
+            <div class="dep-list">
+              <div class="dep-row"><span class="nm">fcst_ctv_q2_2026</span><span class="ms">Q2 2026 CTV avails</span></div>
+              <div class="dep-row"><span class="nm">fcst_video_holiday</span><span class="ms">Holiday Video forecast</span></div>
+            </div>
+          </div>
+
+          <div class="rollback">
+            <h5><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg> Rollback safety net</h5>
+            <p>If something breaks downstream, you can restore this value within the chosen window. After expiry, the deletion is permanent.</p>
+            <div class="opts" id="rbOpts">
+              <label class="opt"><input type="radio" name="rb" value="1h"/><span class="lbl"><b>1 hour</b><span class="sub">Quick rollback for low-risk deletes</span></span><span class="ttl">TTL 1h</span></label>
+              <label class="opt on"><input type="radio" name="rb" value="7d" checked/><span class="lbl"><b>7 days</b> · recommended<span class="sub">Default for values with active deal dependencies</span></span><span class="ttl">TTL 7d</span></label>
+              <label class="opt"><input type="radio" name="rb" value="30d"/><span class="lbl"><b>30 days</b><span class="sub">Maximum window — requires approval from a second admin</span></span><span class="ttl">TTL 30d</span></label>
+              <label class="opt"><input type="radio" name="rb" value="permanent"/><span class="lbl"><b>Permanent</b><span class="sub danger">No rollback — cannot be undone</span></span><span class="ttl">No TTL</span></label>
+            </div>
+          </div>
+
+          <div class="audit-prev">
+            <h5><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Audit log entry · preview</h5>
+            <div class="entry"><span class="k">action:</span>     <span class="vd">metadata.kvp.force_delete</span>
+<span class="k">value:</span>      <span class="vv">abovefold</span>
+<span class="k">key:</span>        <span class="vv">pos</span>
+<span class="k">actor:</span>      <span class="vv">elena.marx@nexxen.io</span>
+<span class="k">role:</span>       <span class="vv">yield_ops_admin</span>
+<span class="k">cascade:</span>    <span class="vv">12 deals · 4 segments · 2 forecasts</span>
+<span class="k">revenue_30d:</span><span class="vd">$847,400</span>
+<span class="k">rollback:</span>   <span class="vi" id="rbAudit">7d window · expires Jun 14, 2026</span>
+<span class="k">ip:</span>         <span class="vv">10.42.7.118</span>
+<span class="k">ts:</span>         <span class="vv">2026-06-07T14:32:08Z</span></div>
+            <a class="lnk" href="#">View full history →</a>
+          </div>
+
+          <div class="confirm-inp">
+            <p>To force-delete and detach all dependencies, type <code>abovefold</code> below:</p>
+            <input class="cf-input" id="depConfirm" placeholder="Type value name to confirm"/>
+          </div>
+        </div>
+        <div class="dep-foot">
+          <button class="db-btn" id="depAudit">View audit log</button>
+          <span class="grow"></span>
+          <button class="db-btn" id="depCancel">Cancel</button>
+          <button class="db-btn danger" id="depForce" disabled>Force delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 — FINAL SHIFT -->
+<section class="shift" style="border-top:1px solid var(--line)">
+  <div class="container">
+    <div class="sec-num">09 — Outcome shape</div>
+    <div class="label">The platform transformed</div>
+    <div class="from">Metadata administration</div>
+    <div class="arrow">into</div>
+    <div class="to">Distributed metadata <span class="accent">governance.</span></div>
+    <p class="lead" style="margin-top:48px">
+      Combining observability, operational trust, dependency intelligence,
+      propagation awareness, and scalable taxonomy workflows — inside a single
+      operational system.
+    </p>
+  </div>
+</section>
+
+<!-- 10 — OUTCOMES -->
+<section class="screen" style="padding-top:72px">
+  <div class="container">
+    <div class="sec-num">10 — Results that moved the operational needle</div>
+    <h2>Measured impact across <span class="accent">trust, scale, and speed.</span></h2>
+    <div class="outcomes" style="margin-top:40px">
+      <div class="outc">
+        <div class="eyebrow"><span class="idx">01</span><span class="cat">Trust</span></div>
+        <div class="v"><span class="arr">↓</span>92%</div>
+        <div class="lab">Reduction in post-publish incidents traced to metadata</div>
+        <div class="outc-viz">
+          <div class="row before"><span class="lbl">Before</span><span class="bar"><span class="fill" style="width:100%"></span></span><span class="num">47 / q</span></div>
+          <div class="row"><span class="lbl">After</span><span class="bar"><span class="fill" style="width:8%"></span></span><span class="num">4 / q</span></div>
+        </div>
+        <div class="sub">Q1 vs Q3 — same publish volume</div>
+      </div>
+      <div class="outc">
+        <div class="eyebrow"><span class="idx">02</span><span class="cat">Speed</span></div>
+        <div class="v">~30s</div>
+        <div class="lab">Publish-to-bidstream propagation, observable end-to-end</div>
+        <div class="outc-viz timeline">
+          <div class="track"><div class="now"></div></div>
+          <div class="legend"><span class="here">~30s · now</span><span>~5 min</span><span>~15 min · was</span></div>
+        </div>
+        <div class="sub">Was: silent · variable · 2–15 min</div>
+      </div>
+      <div class="outc">
+        <div class="eyebrow"><span class="idx">03</span><span class="cat">Scale</span></div>
+        <div class="v">$847K</div>
+        <div class="lab">Monthly revenue protected by blast-radius preview on a single near-deletion</div>
+        <div class="outc-viz stack">
+          <div class="seg-row">
+            <div class="seg" style="flex:612;background:var(--accent)"></div>
+            <div class="seg" style="flex:184;background:#0FA378"></div>
+            <div class="seg" style="flex:51;background:#0A8260"></div>
+          </div>
+          <div class="leg">
+            <div class="li"><span class="sw" style="background:var(--accent)"></span><span>PMP deals · 12</span><span class="v2">$612K</span></div>
+            <div class="li"><span class="sw" style="background:#0FA378"></span><span>Audience ext · 4</span><span class="v2">$184K</span></div>
+            <div class="li"><span class="sw" style="background:#0A8260"></span><span>Forecast bookings · 2</span><span class="v2">$51K</span></div>
+          </div>
+        </div>
+        <div class="sub">Yield ops, March 2026</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OTHER WORKS -->
+<section class="screen" style="background:#fff">
+  <div class="container">
+    <h2 style="font-size:36px;margin-bottom:32px">Other works</h2>
+    <div class="others">
+      <a class="other c1" href="https://liyabell.com/Industrial-Dashboards-1" target="_blank" rel="noopener">
+        <img src="assets/bh_logo.png" alt="Telemetry Studio" />
+      </a>
+      <a class="other c2" href="https://liyabell.com/Smartgreen-1" target="_blank" rel="noopener">
+        <img src="assets/sg_logo.png" alt="Smartgreen" />
+      </a>
+      <a class="other c3" href="https://liyabell.com/Walletallin" target="_blank" rel="noopener">
+        <img src="assets/wai_logo.png" alt="Wallet All-In" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="row">
+      <div>
+        <div class="nm">Nexxen <span class="accent">KVP</span></div>
+        <div class="meta-line">Lead Product Designer — End-to-end UX</div>
+      </div>
+      <div class="right">
+        <div>SSP Metadata Governance Platform</div>
+        <div class="small">Product Design Case Study · 2024</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============== TOPBAR & PROGRESS ============== */
+const topbar = document.getElementById('topbar');
+const progressBar = document.getElementById('progressBar');
+window.addEventListener('scroll', () => {
+  topbar.classList.toggle('scrolled', window.scrollY > 8);
+  const h = document.body.scrollHeight - window.innerHeight;
+  progressBar.style.width = (window.scrollY / h * 100) + '%';
+});
+
+/* ============== MARQUEE ============== */
+const marqueeWords = ['Propagation Replay', 'Lifecycle States', 'Dependency Graph', 'Blast Radius', 'Bulk Paste', 'CSV Mapping', 'Inline Validation', 'Audit Trail', 'Rollback Safety', 'Sync Awareness'];
+const tk = document.getElementById('marqueeTrack');
+function buildMarquee() {
+  let html = '';
+  const inner = marqueeWords.map(w => `${w}<span class="dot"></span>`).join('');
+  html = `<span>${inner}</span><span>${inner}</span>`;
+  tk.innerHTML = html;
+}
+buildMarquee();
+
+/* ============== ARCH MAP ============== */
+const archNodes = [
+  { id:'kvp',      x: 70,  y: 160, label:'KVP',         desc:'The metadata source — what you publish.' },
+  { id:'deals',    x: 230, y: 60,  label:'PMP Deals',   desc:'128 active deals reference this value as targeting.' },
+  { id:'fcst',     x: 230, y: 160, label:'Forecasting', desc:'Inventory plans recompute when taxonomy changes.' },
+  { id:'rep',      x: 230, y: 260, label:'Reporting',   desc:'Dashboards and BI pipelines re-aggregate.' },
+  { id:'bid',      x: 420, y: 60,  label:'Bidstream',   desc:'OpenRTB enrichment for live bid requests.' },
+  { id:'ssp',      x: 420, y: 160, label:'SSP partners',desc:'12 SSP connectors — ack on different clocks.' },
+  { id:'audit',    x: 420, y: 260, label:'Audit Log',   desc:'Compliance trail · BigQuery sink.' },
+];
+const archEdges = [
+  ['kvp','deals'],['kvp','fcst'],['kvp','rep'],
+  ['deals','bid'],['fcst','ssp'],['rep','audit'],
+  ['deals','ssp'],['fcst','bid']
+];
+const edgesG = document.getElementById('edges');
+const nodesG = document.getElementById('nodes');
+const tip = document.getElementById('archTip');
+const archMap = document.getElementById('archMap');
+
+function drawArch(highlight = null) {
+  const get = id => archNodes.find(n => n.id === id);
+  const litEdges = new Set();
+  if (highlight) {
+    archEdges.forEach(([a,b]) => {
+      if (a === highlight || b === highlight) litEdges.add(a + '→' + b);
+    });
+  }
+  edgesG.innerHTML = archEdges.map(([a,b]) => {
+    const A = get(a); const B = get(b);
+    const lit = litEdges.has(a + '→' + b);
+    const stroke = lit ? '#14B88A' : '#D8DBDF';
+    const sw = lit ? 2.4 : 1.2;
+    return `<path d="M${A.x} ${A.y} C ${A.x + 60} ${A.y}, ${B.x - 60} ${B.y}, ${B.x} ${B.y}" fill="none" stroke="${stroke}" stroke-width="${sw}" ${lit ? 'class="lit-edge"' : ''} />`;
+  }).join('');
+
+  nodesG.innerHTML = archNodes.map(n => {
+    const isHi = highlight === n.id;
+    const litChain = highlight && (highlight === n.id || archEdges.some(([a,b]) => (a===highlight&&b===n.id) || (b===highlight&&a===n.id)));
+    const fill = litChain ? '#14B88A' : '#fff';
+    const text = litChain ? '#fff' : '#1A1D21';
+    const stroke = litChain ? '#14B88A' : '#D8DBDF';
+    return `<g data-id="${n.id}" style="cursor:pointer">
+      <rect x="${n.x - 56}" y="${n.y - 18}" width="112" height="36" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="${isHi ? 2 : 1}" />
+      <text x="${n.x}" y="${n.y + 4}" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="500" fill="${text}">${n.label}</text>
+    </g>`;
+  }).join('');
+
+  // attach hover
+  nodesG.querySelectorAll('g').forEach(g => {
+    const id = g.dataset.id;
+    g.addEventListener('mouseenter', e => {
+      const n = get(id);
+      drawArch(id);
+      tip.innerHTML = `<b>${n.label.toUpperCase()}</b>${n.desc}`;
+      const rect = archMap.getBoundingClientRect();
+      const svg = document.getElementById('archSvg').getBoundingClientRect();
+      // position tip near node
+      tip.style.left = ((n.x / 540) * svg.width + svg.left - rect.left + 16) + 'px';
+      tip.style.top = ((n.y / 320) * svg.height + svg.top - rect.top - 20) + 'px';
+      tip.style.opacity = 1;
+    });
+    g.addEventListener('mouseleave', () => {
+      drawArch(null);
+      tip.style.opacity = 0;
+    });
+  });
+}
+drawArch();
+
+/* ============== HOTSPOT SCROLL ============== */
+document.querySelectorAll('.hotspot').forEach(h => {
+  h.addEventListener('click', () => {
+    const target = document.getElementById(h.dataset.target);
+    if (target) {
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+      document.querySelectorAll('.hotspot').forEach(x => x.classList.remove('active'));
+      h.classList.add('active');
+    }
+  });
+});
+
+/* ============== MINI PROPAGATION TIMELINE ============== */
+function drawPropTimeline() {
+  const el = document.getElementById('propTimeline');
+  if (!el) return;
+  el.innerHTML = '';
+
+  // build a 30s timeline of "deals synced" curve + retry markers
+  const w = el.clientWidth;
+  const h = 180;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.style.width = '100%'; svg.style.height = '100%';
+
+  // axis
+  const axis = `<line x1="0" y1="${h - 24}" x2="${w}" y2="${h - 24}" stroke="#E2E5E8" />`;
+
+  // labels every 5s
+  let labels = '';
+  for (let s = 0; s <= 30; s += 5) {
+    const x = s / 30 * w;
+    labels += `<line x1="${x}" y1="${h-24}" x2="${x}" y2="${h-20}" stroke="#9AA0A6" />
+      <text x="${x}" y="${h-8}" font-family="JetBrains Mono" font-size="10" fill="#9AA0A6" text-anchor="middle">${s}s</text>`;
+  }
+
+  // curve: synced deals over 30s
+  const points = [];
+  for (let i = 0; i <= 60; i++) {
+    const t = i / 60 * 30;
+    const pct = Math.min(1, 1 - Math.exp(-t / 4) - (t > 8 && t < 13 ? 0.04 : 0));
+    const x = i / 60 * w;
+    const y = (h - 30) - pct * (h - 50);
+    points.push([x, y]);
+  }
+  const path = points.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const fill = path + ` L ${w} ${h-24} L 0 ${h-24} Z`;
+
+  svg.innerHTML = axis + labels +
+    `<path d="${fill}" fill="rgba(20,184,138,0.10)"/>
+     <path d="${path}" stroke="#14B88A" stroke-width="2" fill="none"/>
+     <circle cx="${5/30*w}" cy="${h-30 - 0.7*(h-50)}" r="4" fill="#4A6BFF"/>
+     <text x="${5/30*w + 8}" y="${h-30 - 0.7*(h-50) - 4}" font-family="JetBrains Mono" font-size="10" fill="#4A6BFF">hubs ack</text>
+     <circle cx="${10/30*w}" cy="${h-30 - 0.85*(h-50)}" r="4" fill="#E3A21A"/>
+     <text x="${10/30*w + 8}" y="${h-30 - 0.85*(h-50) - 4}" font-family="JetBrains Mono" font-size="10" fill="#E3A21A">retry · OpenX</text>
+     <circle cx="${20/30*w}" cy="${h-30 - 0.97*(h-50)}" r="4" fill="#14B88A"/>
+     <text x="${20/30*w + 8}" y="${h-30 - 0.97*(h-50) - 4}" font-family="JetBrains Mono" font-size="10" fill="#14B88A">128/128 synced</text>`;
+  el.appendChild(svg);
+}
+setTimeout(drawPropTimeline, 100);
+window.addEventListener('resize', drawPropTimeline);
+
+/* ============== LIFECYCLE DEMO ============== */
+const lifecycleData = {
+  draft:       { t:'Draft',       d:'Saved by an editor but not yet published. No bid requests reference it. No risk.' },
+  validating:  { t:'Validating',  d:'Running OpenRTB 2.7 conformance and taxonomy collision checks. Typical duration 8–14s.' },
+  syncing:     { t:'Syncing',     d:'Propagating across 12 SSP partners and edge caches. You can see exactly which arrived and which haven\'t.' },
+  delayed:     { t:'Delayed',     d:'A subset of partners hasn\'t acknowledged within SLA. Retry visibility surfaces which ones and why.' },
+  deprecated:  { t:'Deprecated',  d:'Hidden from new campaigns but still honored on legacy deals for a configurable grace window.' },
+};
+const lifecycleSteps = document.querySelectorAll('#lifecycle .lf-step');
+const lifecycleDetail = document.getElementById('lifecycleDetail');
+function renderLifecycle(state) {
+  lifecycleSteps.forEach(s => s.classList.toggle('active', s.dataset.state === state));
+  const d = lifecycleData[state];
+  lifecycleDetail.innerHTML = `<b>${d.t}</b>${d.d}`;
+}
+lifecycleSteps.forEach(s => s.addEventListener('click', () => renderLifecycle(s.dataset.state)));
+renderLifecycle('draft');
+
+/* ============== DEPENDENCY GRAPH ============== */
+const depSvg = document.getElementById('depSvg');
+const depNodes = [
+  { id:'src', x:60, y:160, label:'slot_position', kind:'src' },
+  { id:'l1', x:300, y:50, label:'PMP — Disney CTV',    revenue:280, deals:42 },
+  { id:'l2', x:300, y:110, label:'PMP — Magnite Video', revenue:190, deals:31 },
+  { id:'l3', x:300, y:170, label:'PMP — PubMatic Display', revenue:140, deals:24 },
+  { id:'l4', x:300, y:230, label:'PMP — Index EU',       revenue:160, deals:21 },
+  { id:'l5', x:300, y:290, label:'PMP — OpenX MX',       revenue:77,  deals:10 },
+  { id:'fr', x:540, y:80,  label:'Forecast templates · 7' },
+  { id:'au', x:540, y:160, label:'Audience segments · 34' },
+  { id:'bi', x:540, y:240, label:'BI / Reporting' },
+];
+const depEdges = [
+  ['src','l1'],['src','l2'],['src','l3'],['src','l4'],['src','l5'],
+  ['l1','fr'],['l2','fr'],['l3','au'],['l4','au'],['l5','bi'],['l1','bi']
+];
+function drawDep(highlight = null) {
+  const get = id => depNodes.find(n => n.id === id);
+  const lit = new Set();
+  if (highlight) {
+    lit.add(highlight);
+    depEdges.forEach(([a,b]) => {
+      if (a === highlight) lit.add(b);
+      if (b === highlight) lit.add(a);
+    });
+  }
+  let edges = depEdges.map(([a,b]) => {
+    const A = get(a), B = get(b);
+    const isLit = highlight && (lit.has(a) && lit.has(b));
+    return `<path d="M${A.x} ${A.y} C ${A.x + 80} ${A.y}, ${B.x - 80} ${B.y}, ${B.x} ${B.y}" fill="none" stroke="${isLit ? '#6FE9A4' : '#1F2845'}" stroke-width="1" stroke-opacity="${isLit ? 0.85 : 1}" />`;
+  }).join('');
+
+  let nodes = depNodes.map(n => {
+    const isLit = !highlight || lit.has(n.id);
+    const isSrc = n.kind === 'src';
+    const isHover = highlight === n.id;
+    const fill = isSrc ? '#0A0F1E' : '#131A2E';
+    const stroke = isHover ? '#6FE9A4' : (isLit && highlight ? '#2D375A' : '#1F2845');
+    const text = isSrc ? '#6FE9A4' : (isLit ? '#D9DDEC' : '#525B7B');
+    const w = isSrc ? 130 : 180;
+    const h = 34;
+    return `<g data-id="${n.id}" style="cursor:pointer">
+      <rect x="${n.x - w/2}" y="${n.y - h/2}" width="${w}" height="${h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="1"/>
+      <text x="${n.x}" y="${n.y + 4}" text-anchor="middle" font-family="Geist, Inter, sans-serif" font-size="12" font-weight="500" letter-spacing="-0.005em" fill="${text}">${n.label}</text>
+    </g>`;
+  }).join('');
+  depSvg.innerHTML = edges + nodes;
+  depSvg.querySelectorAll('g').forEach(g => {
+    const id = g.dataset.id;
+    g.addEventListener('mouseenter', () => {
+      drawDep(id);
+      const n = depNodes.find(x => x.id === id);
+      if (n.revenue) {
+        document.getElementById('blastVal').textContent = `${n.deals} deals`;
+        document.getElementById('blastSub').textContent = `$${n.revenue}K monthly · ${n.label}`;
+      } else if (id === 'src') {
+        document.getElementById('blastVal').textContent = '128 deals';
+        document.getElementById('blastSub').textContent = '$847K monthly revenue';
+      } else {
+        document.getElementById('blastVal').textContent = n.label;
+        document.getElementById('blastSub').textContent = 'Downstream system';
+      }
+    });
+    g.addEventListener('mouseleave', () => {
+      drawDep(null);
+      document.getElementById('blastVal').textContent = '128 deals';
+      document.getElementById('blastSub').textContent = '$847K monthly revenue';
+    });
+  });
+}
+drawDep();
+
+/* ============== TYPING VALIDATION ============== */
+const valScript = [
+  { txt: 'h',                 state:'typing',  msg:'Lowercase, numbers, underscores only · 1–64 chars' },
+  { txt: 'header',            state:'typing',  msg:'Lowercase, numbers, underscores only · 1–64 chars' },
+  { txt: 'header-l',          state:'err',     msg:'✗ Hyphens not allowed — try underscore' },
+  { txt: 'header_l',          state:'warn',    msg:'⚠ Already exists in `slot_position` (active, 128 deals)' },
+  { txt: 'header_left',       state:'ok',      msg:'✓ Valid · no conflicts · safe to publish' },
+];
+function playValidation() {
+  const shell = document.getElementById('valShell1');
+  const txt = document.getElementById('valTxt1');
+  const check = document.getElementById('valCheck1');
+  const msg = document.getElementById('valMsg1');
+  const dupRes = document.getElementById('dupRes');
+  const fmtRes = document.getElementById('fmtRes');
+  const propRes = document.getElementById('propRes');
+
+  shell.classList.remove('ok','err','warn');
+  check.style.display = 'none';
+  txt.textContent = '';
+  msg.className = 'msg';
+  msg.textContent = valScript[0].msg;
+
+  let i = 0;
+  function step() {
+    if (i >= valScript.length) {
+      // type display name
+      typeDisplayName();
+      return;
+    }
+    const s = valScript[i];
+    typeText(txt, s.txt, () => {
+      shell.classList.remove('ok','err','warn');
+      check.classList.remove('ok','err','warn');
+      msg.className = 'msg';
+      if (s.state === 'ok') {
+        shell.classList.add('ok'); check.style.display = 'grid'; check.className = 'check ok'; check.textContent = '✓';
+        msg.classList.add('ok');
+        dupRes.innerHTML = '<span style="color:var(--accent-2)">✓ No duplicates</span>';
+        fmtRes.innerHTML = '<span style="color:var(--accent-2)">✓ snake_case · valid OpenRTB</span>';
+        propRes.innerHTML = '<span style="color:var(--accent-2)">✓ No downstream conflicts</span>';
+      } else if (s.state === 'err') {
+        shell.classList.add('err'); check.style.display = 'grid'; check.className = 'check err'; check.textContent = '✗';
+        msg.classList.add('err');
+        fmtRes.innerHTML = '<span style="color:var(--danger)">✗ Hyphens disallowed</span>';
+      } else if (s.state === 'warn') {
+        shell.classList.add('warn'); check.style.display = 'grid'; check.className = 'check warn'; check.textContent = '!';
+        msg.classList.add('warn');
+        dupRes.innerHTML = '<span style="color:var(--warn)">⚠ Conflicts with existing value</span>';
+      } else {
+        check.style.display = 'none';
+      }
+      msg.textContent = s.msg;
+      i++;
+      setTimeout(step, s.state === 'typing' ? 250 : 1100);
+    });
+  }
+  step();
+}
+function typeText(el, target, done) {
+  let cur = el.textContent;
+  // delete excess if shorter
+  function next() {
+    if (cur === target) { done && done(); return; }
+    if (target.startsWith(cur)) {
+      cur += target[cur.length];
+    } else {
+      cur = cur.slice(0, -1);
+    }
+    el.textContent = cur;
+    setTimeout(next, 60);
+  }
+  next();
+}
+function typeDisplayName() {
+  const txt = document.getElementById('valTxt2');
+  const caret = document.getElementById('caret2');
+  const check = document.getElementById('valCheck2');
+  const shell = document.getElementById('valShell2');
+  const msg = document.getElementById('valMsg2');
+  caret.style.display = 'inline-block';
+  txt.textContent = '';
+  shell.classList.remove('ok');
+  check.style.display = 'none';
+  setTimeout(() => {
+    typeText(txt, 'Header (Left)', () => {
+      shell.classList.add('ok');
+      caret.style.display = 'none';
+      check.style.display = 'grid';
+      msg.classList.add('ok');
+      msg.textContent = '✓ Looks good — used in reporting and partner exports';
+    });
+  }, 600);
+}
+setTimeout(playValidation, 400);
+document.getElementById('replayVal').addEventListener('click', playValidation);
+
+/* ============== BULK PASTE PARSE (Screen 03) ============== */
+(function bulk2(){
+  const existing = new Set(['abovefold','breakroll','homepagehero','header_l','footer_main']);
+  const slug = s => s.trim().toLowerCase().replace(/[^a-z0-9_]+/g,'_').replace(/^_+|_+$/g,'');
+  const isValid = s => /^[a-z][a-z0-9_]*$/.test(s);
+
+  const $paste = document.getElementById('b2Paste');
+  const $rows  = document.getElementById('b2Rows');
+  const $newN  = document.getElementById('b2NewN');
+  const $dupN  = document.getElementById('b2DupN');
+  const $errN  = document.getElementById('b2ErrN');
+  const $saveN = document.getElementById('b2SaveN');
+
+  function parse() {
+    const seen = new Set();
+    const out = [];
+    $paste.value.split(/\n/).forEach(line => {
+      if (!line.trim()) return;
+      const parts = line.split(/\t+|\s{2,}/);
+      let raw = parts[0] || '';
+      let disp = (parts.slice(1).join(' ') || '').trim();
+      const valSlug = slug(raw);
+      const needsNormalize = raw !== valSlug;
+      const valid = isValid(valSlug);
+      let kind = 'new';
+      let note = disp || pretty(valSlug);
+      if (!valid) { kind = 'err'; note = '→ ' + (valSlug || 'invalid') + ' · auto-normalize?'; }
+      else if (existing.has(valSlug)) { kind = 'dup'; note = (disp || pretty(valSlug)) + ' <em>· already exists</em>'; }
+      else if (seen.has(valSlug)) { kind = 'dup'; note = (disp || pretty(valSlug)) + ' <em>· duplicate in paste</em>'; }
+      else { seen.add(valSlug); }
+      out.push({ raw: needsNormalize && !valid ? raw : (valid ? valSlug : raw), disp: note, kind });
+    });
+    return out;
+  }
+  function pretty(s){ return s.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase()); }
+
+  function render() {
+    const items = parse();
+    $rows.innerHTML = '';
+    let n=0,d=0,e=0;
+    items.forEach((it, i) => {
+      if (it.kind==='new') n++; else if (it.kind==='dup') d++; else e++;
+      const row = document.createElement('div');
+      row.className = 'b2-row ' + it.kind;
+      const badge = it.kind==='new' ? 'NEW' : it.kind==='dup' ? 'DUP' : 'INVALID';
+      row.innerHTML = `<span class="b2-badge">${badge}</span><span class="b2-val">${escape(it.raw)}</span><span class="b2-disp">${it.disp}</span>`;
+      if (it.kind==='err') {
+        const fix = document.createElement('span');
+        fix.className = 'fix';
+        fix.textContent = slug(it.raw) || 'fix';
+        fix.title = 'Apply auto-normalize';
+        fix.onclick = () => {
+          const lines = $paste.value.split('\n');
+          lines[i] = (slug(it.raw)) + (lines[i].includes('\t') ? '\t'+lines[i].split(/\t+/).slice(1).join('\t') : '');
+          $paste.value = lines.join('\n');
+          render();
+        };
+        row.querySelector('.b2-disp').prepend(fix, document.createTextNode(' '));
+      }
+      $rows.appendChild(row);
+    });
+    $newN.textContent = n; $dupN.textContent = d; $errN.textContent = e;
+    $saveN.textContent = n;
+    document.getElementById('b2PasteSave').disabled = n === 0;
+  }
+  function escape(s){ return s.replace(/[&<>]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c])); }
+
+  $paste.addEventListener('input', render);
+  document.getElementById('b2PasteCancel').onclick = () => { $paste.value=''; render(); };
+  document.getElementById('b2PasteSave').onclick = () => {
+    const items = parse().filter(x=>x.kind==='new');
+    items.forEach(x => existing.add(slug(x.raw)));
+    $paste.value = '';
+    render();
+    flash('Saved & published · ' + items.length + ' new values');
+  };
+
+  /* Stepper clicks */
+  const steps = [...document.querySelectorAll('#b2Stepper .b2-step')];
+  let csvStep = 1;
+  function setStep(n) {
+    csvStep = Math.max(1, Math.min(5, n));
+    steps.forEach((b,i) => {
+      b.classList.toggle('on', i+1===csvStep);
+      b.classList.toggle('done', i+1<csvStep);
+    });
+    renderCsv();
+  }
+  steps.forEach((btn,i) => btn.onclick = () => setStep(i+1));
+
+  function wireB2Selects(scope) {
+    scope.querySelectorAll('.b2-select').forEach(sel => {
+      sel.addEventListener('click', e => {
+        e.stopPropagation();
+        // close others
+        document.querySelectorAll('.b2-select.open').forEach(o => {
+          if (o !== sel) { o.classList.remove('open'); const p = o.querySelector('.b2-popover'); if (p) p.remove(); }
+        });
+        if (sel.classList.contains('open')) {
+          sel.classList.remove('open');
+          const p = sel.querySelector('.b2-popover');
+          if (p) p.remove();
+          return;
+        }
+        sel.classList.add('open');
+        const opts = JSON.parse(sel.dataset.options || '[]');
+        const val = sel.dataset.value;
+        const pop = document.createElement('div');
+        pop.className = 'b2-popover';
+        pop.innerHTML = opts.map(o => `<div class="opt${o === val ? ' sel' : ''}" data-v="${o.replace(/"/g,'&quot;')}"><span class="chk"></span><span>${o}</span></div>`).join('');
+        pop.addEventListener('click', e => {
+          const opt = e.target.closest('.opt');
+          if (!opt) return;
+          e.stopPropagation();
+          const v = opt.dataset.v;
+          sel.dataset.value = v;
+          sel.childNodes.forEach(n => { if (n.nodeType === 3) n.remove(); });
+          sel.insertBefore(document.createTextNode(v), sel.firstChild);
+          sel.classList.remove('open');
+          pop.remove();
+        });
+        sel.appendChild(pop);
+      });
+    });
+  }
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.b2-select.open').forEach(o => {
+      o.classList.remove('open');
+      const p = o.querySelector('.b2-popover');
+      if (p) p.remove();
+    });
+  });
+
+  function renderCsv() {
+    const body = document.getElementById('b2CsvBody');
+    const back = document.getElementById('b2CsvBack');
+    const cont = document.getElementById('b2CsvContinue');
+    const count= document.getElementById('b2CsvCount');
+    back.style.display = csvStep > 1 && csvStep < 5 ? '' : 'none';
+    cont.disabled = false;
+
+    if (csvStep === 1) {
+      body.innerHTML = `
+        <div class="b2-drop" id="b2Drop" tabindex="0">
+          <div class="upico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></svg></div>
+          <div class="lead">Drop CSV file here</div>
+          <div class="sub">or <a id="b2Browse">browse files</a> · max 1,000 rows · 2 columns</div>
+        </div>
+        <div class="b2-fmt">
+          <h6>Expected format</h6>
+<pre><span class="k">value,display_name</span>
+abovefold,Above the Fold
+belowfold,Below the Fold</pre>
+        </div>`;
+      count.innerHTML = '<b style="color:var(--b2-mint)">✓ Sample CSV ready</b> · 52 rows · 2 columns';
+      cont.textContent = 'Continue →';
+      const drop = document.getElementById('b2Drop');
+      drop.onclick = () => setStep(2);
+      drop.ondragover = e => { e.preventDefault(); drop.classList.add('dragover'); };
+      drop.ondragleave = () => drop.classList.remove('dragover');
+      drop.ondrop = e => { e.preventDefault(); setStep(2); };
+    } else if (csvStep === 2) {
+      body.innerHTML = `
+        <div class="b2-file">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+          <div class="nm"><b>page_positions_q2_2026.csv</b><span>52 rows · 2 columns · 4.3 KB</span></div>
+          <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></div>
+        </div>
+        <div class="b2-section-h">Column mapping</div>
+        <div class="b2-map-row"><div class="col">slot_key</div><div class="arr">→</div><div class="b2-select" data-options='["Value (system key)","Display Name","— skip —"]' data-value="Value (system key)">Value (system key)</div></div>
+        <div class="b2-map-row"><div class="col">human_label</div><div class="arr">→</div><div class="b2-select" data-options='["Display Name","Value (system key)","— skip —"]' data-value="Display Name">Display Name</div></div>
+        <div class="b2-map-row"><div class="col">notes</div><div class="arr">→</div><div class="b2-select" data-options='["— skip —","Description (custom)"]' data-value="— skip —">— skip —</div></div>
+        <div class="b2-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><div>CSV columns auto-detected. Adjust mappings before continuing.</div></div>`;
+      count.textContent = '3 columns · 2 mapped · 1 skipped';
+      cont.textContent = 'Validate →';
+      wireB2Selects(body);
+    } else if (csvStep === 3) {
+      body.innerHTML = `
+        <div class="b2-loader-row"><div class="ld"></div><div class="tx"><b>Scanning 52 rows…</b><span>Detecting duplicates, invalid characters, conflicts</span></div><span class="pct" id="b2Pct">12%</span></div>
+        <div class="b2-sum" style="margin-top:0;padding:6px 0">
+          <span class="chip new"><span class="sigil">+</span> <b>42</b> valid</span>
+          <span class="chip dup"><span class="sigil">~</span> <b>8</b> duplicates</span>
+          <span class="chip err"><span class="sigil">!</span> <b>2</b> invalid</span>
+        </div>
+        <div class="b2-validation">
+          <div class="b2-row err"><span class="b2-badge">INVALID</span><span class="b2-val">Above Fold</span><span class="b2-disp">Row 17 · contains spaces</span></div>
+          <div class="b2-row err"><span class="b2-badge">INVALID</span><span class="b2-val">UPPERCASE_VAL</span><span class="b2-disp">Row 31 · uppercase</span></div>
+          <div class="b2-row dup"><span class="b2-badge">DUP</span><span class="b2-val">abovefold</span><span class="b2-disp">Row 4 · already exists</span></div>
+          <div class="b2-row dup"><span class="b2-badge">DUP</span><span class="b2-val">midroll</span><span class="b2-disp">Row 12 · already exists</span></div>
+          <div class="b2-row new"><span class="b2-badge">NEW</span><span class="b2-val">overlay_u</span><span class="b2-disp">Row 22</span></div>
+          <div class="b2-row new"><span class="b2-badge">NEW</span><span class="b2-val">sticky_top</span><span class="b2-disp">Row 28</span></div>
+          <div class="b2-row new"><span class="b2-badge">NEW</span><span class="b2-val">interstitial</span><span class="b2-disp">Row 35</span></div>
+        </div>
+        <div style="display:flex;gap:14px;font-size:12px;color:var(--b2-text-muted)">
+          <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" checked/> Auto-fix uppercase</label>
+          <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" checked/> Skip duplicates</label>
+        </div>`;
+      let p = 12;
+      const pct = document.getElementById('b2Pct');
+      const tick = setInterval(() => {
+        p = Math.min(100, p + 7);
+        if (pct) pct.textContent = p + '%';
+        if (p >= 100 || csvStep !== 3) clearInterval(tick);
+      }, 220);
+      count.textContent = '52 rows scanned · 50 actionable';
+      cont.textContent = 'Review diff →';
+    } else if (csvStep === 4) {
+      body.innerHTML = `
+        <div class="b2-diff-stats">
+          <div class="b2-diff-stat add"><div class="l">Added</div><div class="v"><span class="sym">+</span>42</div></div>
+          <div class="b2-diff-stat upd"><div class="l">Updated</div><div class="v"><span class="sym">~</span>8</div></div>
+          <div class="b2-diff-stat skip"><div class="l">Skipped</div><div class="v"><span class="sym">−</span>2</div></div>
+        </div>
+        <div class="b2-section-h">Changeset preview</div>
+        <div class="b2-diff-list">
+          <div class="b2-diff-row add"><span class="sym">+</span><span class="v">overlay_u</span><span class="reason">Overlay (Upper)</span></div>
+          <div class="b2-diff-row add"><span class="sym">+</span><span class="v">sticky_top</span><span class="reason">Sticky Top</span></div>
+          <div class="b2-diff-row add"><span class="sym">+</span><span class="v">interstitial</span><span class="reason">Interstitial</span></div>
+          <div class="b2-diff-row add"><span class="sym">+</span><span class="v">native_inread</span><span class="reason">Native In-Read</span></div>
+          <div class="b2-diff-row upd"><span class="sym">~</span><span class="v">midroll</span><span class="reason">display → "Mid-Roll Break"</span></div>
+          <div class="b2-diff-row upd"><span class="sym">~</span><span class="v">preroll</span><span class="reason">display → "Pre-Roll Spot"</span></div>
+          <div class="b2-diff-row skip"><span class="sym">−</span><span class="v">Above Fold</span><span class="reason">invalid · contains spaces</span></div>
+          <div class="b2-diff-row skip"><span class="sym">−</span><span class="v">UPPERCASE_VAL</span><span class="reason">uppercase not allowed</span></div>
+        </div>
+        <div class="b2-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div><b>Ready to publish</b>Changes will propagate to 128 active deals within ~30 seconds. Audit log entry will be created.</div></div>`;
+      count.textContent = '50 changes ready';
+      cont.textContent = 'Publish 50 changes →';
+    } else if (csvStep === 5) {
+      body.innerHTML = `
+        <div class="b2-success">
+          <div class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <h4>Published 50 changes</h4>
+          <p>Propagating to 128 active deals · audit entry created</p>
+        </div>
+        <div class="b2-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg><div><b>Rollback window: 7 days</b>Revert this batch from the audit log if downstream systems flag issues.</div></div>`;
+      count.textContent = 'Done · ' + new Date().toLocaleTimeString();
+      cont.textContent = 'Import another →';
+    }
+  }
+
+  document.getElementById('b2CsvBack').onclick = () => setStep(csvStep - 1);
+  document.getElementById('b2CsvCancel').onclick = () => setStep(1);
+  document.getElementById('b2CsvContinue').onclick = () => setStep(csvStep === 5 ? 1 : csvStep + 1);
+  setStep(1);
+
+  /* Reset */
+  document.getElementById('replayBulk').onclick = () => {
+    setStep(1);
+    $paste.value = `overlay_u\tOverlay (Upper)
+sticky_bottom\tSticky Bottom
+abovefold\tAbove the Fold
+breakroll\tBreak-roll
+homepagehero\tHomepage Hero
+PIP CORNER\tPiP Corner
+inline_native\tInline Native
+splash\tSplash Screen`;
+    render();
+  };
+
+  function flash(msg){
+    const f = document.createElement('div');
+    f.textContent = msg;
+    f.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0E1326;color:#5FE3A0;border:1px solid rgba(95,227,160,0.4);padding:9px 16px;border-radius:8px;font-family:var(--font);font-size:13px;z-index:9999;box-shadow:0 12px 32px rgba(0,0,0,0.5);';
+    document.body.appendChild(f);
+    setTimeout(()=>{ f.style.transition='opacity .25s'; f.style.opacity='0'; }, 1800);
+    setTimeout(()=>f.remove(), 2200);
+  }
+
+  render();
+})();
+
+/* ============== CSV MAPPING ============== */
+function playCsv() {
+  const status = document.getElementById('csvStatus');
+  const cols = document.querySelectorAll('#csvMap .csv-col, #csvMap .csv-arrow');
+  cols.forEach(c => c.classList.remove('matched'));
+  status.textContent = 'Awaiting upload…';
+  setTimeout(() => {
+    status.innerHTML = '<b>Reading</b> · slot_positions_q1.csv · 128 rows, 4 columns detected';
+    [0,1,2,3].forEach((c, i) => {
+      setTimeout(() => {
+        document.querySelectorAll(`#csvMap [data-col="${c}"]`).forEach(el => el.classList.add('matched'));
+        if (i === 3) {
+          setTimeout(() => {
+            status.innerHTML = '<b style="color:var(--accent-2)">✓ Auto-mapped 4/4 fields</b> · 128 rows ready · 0 conflicts · ready to publish';
+          }, 400);
+        }
+      }, 600 + i * 500);
+    });
+  }, 700);
+}
+setTimeout(playCsv, 1200);
+document.getElementById('replayCsv').addEventListener('click', playCsv);
+
+/* ============== SAFE DELETION ============== */
+const depForce = document.getElementById('depForce');
+const depConfirm = document.getElementById('depConfirm');
+const rbAudit = document.getElementById('rbAudit');
+const rbLabels = {
+  '1h':   '1h window · expires Jun 7, 2026 15:32',
+  '7d':   '7d window · expires Jun 14, 2026',
+  '30d':  '30d window · expires Jul 7, 2026 · second-admin approval',
+  'permanent': 'Permanent · no rollback'
+};
+document.querySelectorAll('#rbOpts .opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('#rbOpts .opt').forEach(o => o.classList.remove('on'));
+    opt.classList.add('on');
+    const r = opt.querySelector('input');
+    r.checked = true;
+    rbAudit.textContent = rbLabels[r.value];
+    rbAudit.style.color = r.value === 'permanent' ? '#FF7A7E' : '#6E8BFF';
+  });
+});
+depConfirm.addEventListener('input', () => {
+  const ok = depConfirm.value.trim() === 'abovefold';
+  depForce.disabled = !ok;
+  depConfirm.classList.toggle('match', ok);
+});
+depForce.addEventListener('click', () => {
+  depForce.textContent = '✓ Queued · rollback window armed';
+  depForce.style.background = '#14B88A';
+  depForce.style.borderColor = '#14B88A';
+});
+document.getElementById('depCancel').addEventListener('click', () => {
+  depConfirm.value = '';
+  depConfirm.classList.remove('match');
+  depForce.disabled = true;
+  depForce.textContent = 'Force delete';
+  depForce.style.background = '';
+  depForce.style.borderColor = '';
+});
+document.getElementById('depAudit').addEventListener('click', () => {
+  document.querySelector('.audit-prev').scrollIntoView({block:'nearest', behavior:'smooth'});
+});
+document.getElementById('depX').addEventListener('click', () => {
+  document.getElementById('depCancel').click();
+});
+
+</script>
+</body>
+</html>

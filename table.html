@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nexxen — Reports</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .filters-bar {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+      background: var(--surface);
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      margin-bottom: 14px;
+    }
+    .filters-bar .input-icon { width: 240px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--bg-alt);
+      padding: 5px 10px;
+      border-radius: var(--r-md);
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .chip svg { width: 12px; height: 12px; opacity: 0.6; }
+    .chip.adv { color: var(--accent-700); background: var(--accent-50); }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .sm-tile { background: var(--surface); padding: 14px 18px; }
+    .sm-tile .l { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .sm-tile .v { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .sm-tile .delta { font-size: 11px; }
+    .spark { width: 80px; height: 22px; }
+
+    .row-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .row-head h3 { margin: 0; font-size: 13px; font-weight: 600; }
+
+    /* status dot column */
+    .stat-col { width: 1px; }
+    .stat-cell {
+      width: 4px; height: 22px;
+      background: var(--success);
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .stat-cell.warn { background: var(--warning); }
+    .stat-cell.dang { background: var(--danger); }
+    .stat-cell.idle { background: var(--navy-200); }
+
+    .pace { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+    .pace-bg { width: 64px; height: 6px; background: var(--viz-track); border-radius: 2px; overflow: hidden; }
+    .pace-fl { height: 100%; background: var(--success); border-radius: 2px; }
+    .pace-fl.warn { background: var(--warning); }
+    .pace-fl.dang { background: var(--danger); }
+
+    .pager {
+      display: flex; align-items: center; gap: 6px; padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      font-size: 12px; color: var(--text-muted);
+    }
+    .pager .pgs { margin-left: auto; display: flex; gap: 2px; }
+    .pager button {
+      width: 26px; height: 26px;
+      border-radius: var(--r-sm);
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .pager button:hover { background: var(--bg-alt); }
+    .pager button.on { background: var(--navy-800); color:#fff; }
+
+    .ck { width: 14px; height: 14px; appearance: none; border: 1.5px solid var(--navy-300); border-radius: 3px; cursor: pointer; }
+    .ck:checked { background: var(--accent-500); border-color: var(--accent-500); position: relative; }
+    .ck:checked::after { content: ""; position: absolute; left:3px; top:0; width:4px; height:8px; border:solid var(--navy-900); border-width:0 2px 2px 0; transform:rotate(45deg); }
+
+    .deal-name { display: flex; flex-direction: column; gap: 2px; }
+    .deal-name b { font-weight: 500; font-size: 13px; }
+    .deal-name span { font-family: var(--font-mono); font-size: 10px; color: var(--text-subtle); }
+  </style>
+</head>
+<body data-route="table">
+  <div class="app">
+    <div id="nav-slot"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="crumbs">Reports <span style="color:var(--text-subtle)">/</span> <span>Active deals</span></div>
+        <div class="right">
+          <div class="page-tabs">
+            <a href="design-system.html">System</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="form.html">Deal Form</a>
+            <a href="table.html" class="on">Reports</a>
+          </div>
+          <button class="btn btn-secondary btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+            Export CSV
+          </button>
+          <button class="btn btn-primary btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            New deal
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- Summary -->
+        <div class="summary">
+          <div class="sm-tile">
+            <div class="l">Active deals <span class="delta delta-up">▲ 4</span></div>
+            <div class="v">128</div>
+            <svg class="spark" viewBox="0 0 80 22" style="margin-top:2px"><polyline fill="none" stroke="#00E676" stroke-width="1.5" points="0,16 10,12 20,14 30,10 40,11 50,7 60,8 70,4 80,6"/></svg>
+          </div>
+          <div class="sm-tile">
+            <div class="l">Pacing on target</div>
+            <div class="v">86<span class="muted" style="font-size:14px;font-weight:400">%</span></div>
+            <div class="muted" style="font-size:11px">110 of 128 deals</div>
+          </div>
+          <div class="sm-tile">
+            <div class="l">Spend (MTD) <span class="delta delta-up">▲ 8.2%</span></div>
+            <div class="v">$4.21M</div>
+            <div class="muted" style="font-size:11px">Target $5.00M</div>
+          </div>
+          <div class="sm-tile">
+            <div class="l">Avg eCPM <span class="delta delta-down">▼ 1.7%</span></div>
+            <div class="v">$12.43</div>
+            <svg class="spark" viewBox="0 0 80 22" style="margin-top:2px"><polyline fill="none" stroke="#9B9EC5" stroke-width="1.5" points="0,8 10,10 20,9 30,12 40,10 50,13 60,11 70,14 80,12"/></svg>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input class="input" placeholder="Search deals, advertisers, IDs…" />
+          </div>
+          <span class="chip">Status: Active <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="chip">DSP: All <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="chip">Device: CTV, Mobile <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="chip">Last 7 days <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="chip adv">+ Add filter</span>
+          <div class="spacer"></div>
+          <div class="seg"><button class="on">Table</button><button>Pivot</button><button>Cards</button></div>
+        </div>
+
+        <!-- Table -->
+        <div class="card" style="padding:0">
+          <div class="row-head">
+            <h3>Active deals <span class="muted" style="font-weight:400;margin-left:6px;font-size:12px">128</span></h3>
+            <div class="spacer"></div>
+            <span class="muted" style="font-size:12px">Sorted by Spend (desc)</span>
+            <button class="btn btn-ghost btn-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+              Columns
+            </button>
+          </div>
+          <div class="scroll" style="max-height:560px">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="stat-col"></th>
+                  <th style="width:30px"><input type="checkbox" class="ck"/></th>
+                  <th>Deal</th>
+                  <th>Advertiser</th>
+                  <th>DSP</th>
+                  <th>Device</th>
+                  <th>Pacing</th>
+                  <th class="num">Spend</th>
+                  <th class="num">Impr.</th>
+                  <th class="num">eCPM</th>
+                  <th class="num">VCR</th>
+                  <th class="num">Fill</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <span>Showing 1–12 of 128</span>
+            <div class="pgs">
+              <button>‹</button>
+              <button class="on">1</button>
+              <button>2</button>
+              <button>3</button>
+              <button>4</button>
+              <button>…</button>
+              <button>11</button>
+              <button>›</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    const rows = [
+      { st:'live',  name:'Paramount-CTV-CBS-Sports', id:'UMB-TD-FBC4-5A4F438', adv:'1337 UGC GmbH', dsp:'TTD', dev:'CTV', pace:[94,'on'], sp:'$248.4K', im:'8.2M', ec:'$12.40', vcr:'82%', fl:'94.1%', sb:'success', sl:'Live' },
+      { st:'live',  name:'Disney-CTV-Hulu-Bundle',   id:'UMB-DV-A12C-1188901', adv:'Mediavest North',  dsp:'DV360', dev:'CTV', pace:[88,'on'], sp:'$214.0K', im:'7.4M', ec:'$13.10', vcr:'79%', fl:'92.8%', sb:'success', sl:'Live' },
+      { st:'warn',  name:'Roku-Open-OTT-Music',      id:'UMB-AM-7A3F-9023115', adv:'Acme Media',       dsp:'Amobee', dev:'CTV', pace:[62,'warn'], sp:'$178.6K', im:'6.1M', ec:'$11.80', vcr:'74%', fl:'88.1%', sb:'warning', sl:'Underpacing' },
+      { st:'live',  name:'NBC-MNF-Direct-Demand',    id:'UMB-TD-9981-7700121', adv:'Forest Brands',    dsp:'TTD', dev:'CTV', pace:[101,'on'], sp:'$160.2K', im:'5.7M', ec:'$12.92', vcr:'81%', fl:'95.0%', sb:'success', sl:'Live' },
+      { st:'live',  name:'Pluto-VOD-Sports-MidRoll', id:'UMB-TR-66BB-3340092', adv:'Halo Holdings',    dsp:'Tremor', dev:'Mobile', pace:[95,'on'], sp:'$132.7K', im:'10.9M', ec:'$8.21', vcr:'68%', fl:'90.4%', sb:'success', sl:'Live' },
+      { st:'idle',  name:'Samsung-AdsTV-Bundled',    id:'UMB-DV-2245-1112005', adv:'Northwind Media',  dsp:'DV360', dev:'CTV', pace:[24,'dang'], sp:'$98.4K',  im:'3.1M', ec:'$10.50', vcr:'72%', fl:'80.2%', sb:'danger', sl:'Paused' },
+      { st:'live',  name:'Vizio-CTV-Genre-Drama',    id:'UMB-AM-3214-7720115', adv:'Latitude Group',   dsp:'Amobee', dev:'CTV', pace:[89,'on'], sp:'$92.3K',  im:'2.8M', ec:'$13.74', vcr:'77%', fl:'91.5%', sb:'success', sl:'Live' },
+      { st:'live',  name:'Tubi-AVOD-Comedy-Pack',    id:'UMB-TD-FB22-3340999', adv:'Crescent Studios', dsp:'TTD', dev:'Mobile', pace:[103,'on'], sp:'$84.9K', im:'9.2M', ec:'$7.10', vcr:'63%', fl:'88.0%', sb:'success', sl:'Live' },
+      { st:'warn',  name:'Peacock-Live-News-Banner', id:'UMB-WF-0099-2200017', adv:'Beacon Media',     dsp:'Forest', dev:'Desktop', pace:[58,'warn'], sp:'$73.2K', im:'4.7M', ec:'$9.40', vcr:'—', fl:'85.6%', sb:'warning', sl:'Underpacing' },
+      { st:'live',  name:'Sling-CTV-EsT-Family',     id:'UMB-DV-7771-9920040', adv:'Pivotal Brands',   dsp:'DV360', dev:'CTV', pace:[92,'on'], sp:'$66.5K', im:'2.1M', ec:'$13.05', vcr:'80%', fl:'93.2%', sb:'success', sl:'Live' },
+      { st:'idle',  name:'Discovery+-Doc-Block',     id:'UMB-AM-5510-4490093', adv:'Quantum Media',    dsp:'Amobee', dev:'CTV', pace:[12,'dang'], sp:'$54.2K', im:'1.3M', ec:'$11.70', vcr:'69%', fl:'74.4%', sb:'danger', sl:'Paused' },
+      { st:'live',  name:'PBS-Kids-AVOD-Animation',  id:'UMB-TD-3300-1200881', adv:'Bright Lab',       dsp:'TTD', dev:'Mobile', pace:[97,'on'], sp:'$48.0K', im:'6.6M', ec:'$5.90', vcr:'58%', fl:'89.7%', sb:'success', sl:'Live' },
+    ];
+
+    const dot = (k) => `<span class="stat-cell ${k==='warn'?'warn':k==='dang'?'dang':k==='idle'?'idle':''}"></span>`;
+    const html = rows.map(r => `
+      <tr>
+        <td class="stat-col">${dot(r.st)}</td>
+        <td><input type="checkbox" class="ck"/></td>
+        <td><div class="deal-name"><b>${r.name}</b><span>${r.id}</span></div></td>
+        <td>${r.adv}</td>
+        <td>${r.dsp}</td>
+        <td>${r.dev}</td>
+        <td><div class="pace"><div class="pace-bg"><div class="pace-fl ${r.pace[1]==='warn'?'warn':r.pace[1]==='dang'?'dang':''}" style="width:${Math.min(r.pace[0],100)}%"></div></div>${r.pace[0]}%</div></td>
+        <td class="num">${r.sp}</td>
+        <td class="num">${r.im}</td>
+        <td class="num">${r.ec}</td>
+        <td class="num">${r.vcr}</td>
+        <td class="num">${r.fl}</td>
+        <td><span class="pill pill-${r.sb}"><span class="dot dot-${r.sb}"></span> ${r.sl}</span></td>
+        <td><button class="btn btn-ghost btn-sm"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button></td>
+      </tr>
+    `).join('');
+    document.getElementById('rows').innerHTML = html;
+  </script>
+</body>
+</html>
