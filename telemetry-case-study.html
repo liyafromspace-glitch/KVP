@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Telemetry Studio — Industrial Observability · Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #F3F3F1;
+    --bg-card:   #FFFFFF;
+    --bg-soft:   #E9ECEF;
+    --line:      #E2E5E8;
+    --hairline:  #EBEDF0;
+    --ink:       #0A0A0A;
+    --ink-2:     #2A2A28;
+    --muted:     #6B6B68;
+    --subtle:    #9A9A96;
+    --accent:    #3FB68B;
+    --accent-2:  #2FA07A;
+    --accent-soft: rgba(63,182,139,0.10);
+    --warn:  #E3A21A;
+    --danger: #E5484D;
+    --info:  #4A6BFF;
+    --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 24px;
+    --font: 'Geist', -apple-system, 'Helvetica Neue', system-ui, sans-serif;
+    --mono: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+    --serif: 'Instrument Serif', Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15.5px; line-height: 1.55; letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  ::selection { background: var(--accent); color: #fff; }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+
+  /* TOP BAR */
+  .topbar { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(12px); background: rgba(243,243,241,0.88); border-bottom: 1px solid transparent; transition: border-color .2s; }
+  .topbar.scrolled { border-bottom-color: var(--line); }
+  .topbar .row { display: flex; align-items: center; gap: 22px; padding: 16px 0; font-size: 13px; }
+  .topbar .name { font-weight: 600; color: var(--ink); }
+  .topbar .name:hover { color: var(--accent); }
+  .topbar .sep { color: var(--subtle); margin: 0 4px; }
+  .topbar .role { color: var(--muted); }
+  .topbar .right { margin-left: auto; display: flex; gap: 22px; color: var(--muted); }
+  .topbar .right a:hover { color: var(--ink); }
+  .topbar .progress { position: absolute; left: 0; top: 0; right: 0; height: 2px; background: transparent; }
+  .topbar .progress .bar { height: 100%; background: var(--accent); width: 0%; transition: width .12s linear; }
+
+  /* HERO */
+  .hero { padding: 120px 0 80px; position: relative; }
+  .hero h1 { margin: 0; font-size: clamp(60px, 9vw, 128px); font-weight: 600; line-height: 0.94; letter-spacing: -0.045em; color: var(--ink); }
+  .hero h1 .accent { color: var(--accent); font-style: italic; font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em; }
+  .hero .lede { margin-top: 40px; max-width: 580px; font-size: 17px; color: var(--ink-2); line-height: 1.6; letter-spacing: -0.012em; }
+  .hero .tags { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .tag { display: inline-flex; align-items: center; padding: 8px 16px; background: var(--bg-card); border-radius: 999px; font-family: var(--mono); font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); }
+  .hero .scroll-cue { margin-top: 80px; display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--subtle); text-transform: uppercase; }
+  .hero .scroll-cue::before { content: ""; width: 40px; height: 1px; background: var(--subtle); }
+
+  /* MARQUEE */
+  .marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); overflow: hidden; padding: 18px 0; margin-top: 80px; }
+  .marquee .track { display: inline-flex; gap: 48px; animation: mscroll 44s linear infinite; white-space: nowrap; font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; color: var(--subtle); text-transform: uppercase; }
+  .marquee .track span { display: inline-flex; align-items: center; gap: 48px; }
+  .marquee .track .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  @keyframes mscroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* META BAND */
+  .meta-band { background: #fff; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
+  .meta { padding: 36px 0; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 32px; }
+  .meta .item .lab { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--subtle); text-transform: uppercase; margin-bottom: 8px; }
+  .meta .item .val { font-size: 18px; font-weight: 500; color: var(--ink); letter-spacing: -0.018em; line-height: 1.3; }
+
+  /* SECTIONS */
+  section { padding: 96px 0; position: relative; }
+  .sec-num { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--subtle); text-transform: uppercase; margin-bottom: 28px; display: flex; align-items: center; gap: 10px; }
+  .sec-num::after { content: ""; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: inline-block; }
+  h2 { margin: 0 0 32px; font-size: clamp(38px, 5.4vw, 68px); font-weight: 600; line-height: 1.02; letter-spacing: -0.035em; color: var(--ink); max-width: 920px; }
+  h2 .accent { color: var(--accent); font-style: italic; font-family: var(--serif); font-weight: 400; }
+  h3 { margin: 0 0 14px; font-size: 24px; font-weight: 500; letter-spacing: -0.022em; line-height: 1.2; color: var(--ink); }
+  p.lead { font-size: 18px; color: var(--ink-2); max-width: 640px; line-height: 1.55; letter-spacing: -0.012em; }
+  p.body { font-size: 15.5px; color: var(--ink-2); max-width: 580px; line-height: 1.6; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--hairline); }
+
+  /* PROBLEM GRID */
+  .problem-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 64px; align-items: start; }
+  .symptoms { display: flex; flex-direction: column; }
+  .symptom { display: grid; grid-template-columns: 18px 1fr; gap: 14px; padding: 18px 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .symptom:last-child { border-bottom: 1px solid var(--line); }
+  .symptom .num { font-family: var(--mono); font-size: 11px; color: var(--subtle); padding-top: 4px; }
+  .symptom .body b { display: block; font-size: 16px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+  .symptom .body span { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+
+  /* ARCH / SVG CARD */
+  .arch { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px; position: relative; overflow: hidden; }
+  .arch .arch-h { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--subtle); text-transform: uppercase; margin-bottom: 6px; }
+  .arch .arch-h .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.6s ease-out infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(63,182,139,0.4); } 80% { box-shadow: 0 0 0 7px rgba(63,182,139,0); } 100% { box-shadow: 0 0 0 0 rgba(63,182,139,0); } }
+  .arch .hint { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+
+  /* SHIFT */
+  .shift { padding: 96px 0; }
+  .shift .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--subtle); text-transform: uppercase; margin-bottom: 24px; }
+  .shift .from { font-size: clamp(32px, 4.4vw, 52px); font-weight: 400; color: var(--subtle); line-height: 1.1; text-decoration: line-through; text-decoration-color: rgba(229,72,77,0.4); text-decoration-thickness: 2px; margin-bottom: 8px; letter-spacing: -0.025em; }
+  .shift .arrow { font-family: var(--mono); font-size: 13px; color: var(--accent); margin: 14px 0; display: inline-flex; align-items: center; gap: 8px; }
+  .shift .arrow::before { content: "↓"; font-size: 16px; }
+  .shift .to { font-size: clamp(44px, 6.4vw, 80px); font-weight: 600; color: var(--ink); line-height: 1.0; letter-spacing: -0.04em; }
+  .shift .to .accent { color: var(--accent); }
+
+  /* SCREEN BLOCK */
+  .screen { padding: 96px 0; border-top: 1px solid var(--line); }
+  .screen-head { display: flex; flex-direction: column; gap: 20px; margin-bottom: 56px; max-width: 920px; }
+  .screen-head .num { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--accent); text-transform: uppercase; }
+  .screen-head h2 { margin: 0; max-width: 18ch; }
+  .screen-head p { font-size: 17px; line-height: 1.55; margin: 0; max-width: 460px; color: var(--ink-2); }
+
+  /* DEVICE CHROME */
+  .device { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; position: relative; box-shadow: 0 24px 60px -28px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.04); }
+  .device .chrome { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--bg-card); border-bottom: 1px solid var(--line); }
+  .device .chrome .lights { display: flex; gap: 6px; }
+  .device .chrome .lights span { width: 11px; height: 11px; border-radius: 50%; }
+  .device .chrome .lights span:nth-child(1) { background: #FF5F57; opacity: 0.55; }
+  .device .chrome .lights span:nth-child(2) { background: #FEBC2E; opacity: 0.55; }
+  .device .chrome .lights span:nth-child(3) { background: #28C840; opacity: 0.55; }
+  .device .chrome .url { margin-left: 14px; flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 4px 10px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); text-align: center; max-width: 360px; }
+  .device .chrome .live { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; color: var(--accent); text-transform: uppercase; padding: 3px 8px; background: var(--accent-soft); border-radius: 999px; }
+  .device .chrome .live::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: dotpulse 1.4s ease-in-out infinite; }
+  @keyframes dotpulse { 50% { opacity: 0.4 } }
+  .device .demo-inner { padding: 0; }
+
+  /* DARK DEMO SHELL */
+  .dark-shell {
+    background: #0E1311;
+    color: #E8EDEB;
+    font-family: var(--mono);
+  }
+  .dark-shell .ds-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #1B2220;
+    font-size: 11px; letter-spacing: 0.12em; color: #7C8C87;
+  }
+  .dark-shell .ds-bar .ds-live {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(63,182,139,0.12); color: var(--accent);
+    font-size: 10px; letter-spacing: 0.12em;
+  }
+  .dark-shell .ds-bar .ds-live::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: dotpulse 1.4s ease-in-out infinite; }
+  .ds-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 999px;
+    border: 1px solid var(--accent); color: var(--accent);
+    background: transparent; font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.1em; cursor: pointer;
+    text-transform: uppercase; transition: background .15s;
+  }
+  .ds-btn:hover { background: rgba(63,182,139,0.12); }
+
+  /* HOTSPOTS */
+  .hotspots { position: absolute; inset: 0; pointer-events: none; }
+  .hotspot { position: absolute; pointer-events: auto; cursor: pointer; }
+  .hotspot .pin { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(63,182,139,0.55), 0 4px 12px rgba(63,182,139,0.4); animation: pulsePin 2s ease-out infinite; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; font-family: var(--mono); }
+  @keyframes pulsePin { 0% { box-shadow: 0 0 0 0 rgba(63,182,139,0.55), 0 4px 12px rgba(63,182,139,0.4); } 70% { box-shadow: 0 0 0 14px rgba(63,182,139,0), 0 4px 12px rgba(63,182,139,0.4); } 100% { box-shadow: 0 0 0 0 rgba(63,182,139,0), 0 4px 12px rgba(63,182,139,0.4); } }
+  .hotspot .label { position: absolute; top: 38px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,0.18); opacity: 0; transition: opacity .15s, transform .15s; pointer-events: none; }
+  .hotspot:hover .label { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  /* IMPACT CARDS */
+  .impact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 64px; }
+  .impact-card { background: var(--bg-card); border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 36px 32px; }
+  .impact-card .big { font-size: 56px; font-weight: 600; letter-spacing: -0.04em; color: var(--accent); line-height: 1; }
+  .impact-card .desc { margin-top: 20px; font-size: 14px; line-height: 1.5; color: var(--ink); }
+  .impact-card .note { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--hairline); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--subtle); text-transform: uppercase; }
+
+  /* MODEL CARDS */
+  .models-grid { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 0; margin-top: 64px; align-items: stretch; }
+  .model-card { background: var(--bg-card); border: 1px solid var(--hairline); border-radius: var(--r-lg); padding: 36px; }
+  .model-card .m-tag { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 20px; }
+  .model-card h3 { font-size: 22px; margin-bottom: 10px; }
+  .model-card p { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+  .model-card .m-rows { margin-top: 24px; }
+  .model-card .m-row { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--hairline); font-size: 13.5px; }
+  .model-card .m-row .k { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--subtle); text-transform: uppercase; padding-top: 2px; }
+  .models-vs { display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 22px; }
+
+  /* SYSTEMS LIST */
+  .systems-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 56px; }
+  .sys-row { display: grid; grid-template-columns: 40px 1fr; gap: 20px; padding: 16px 0; border-top: 1px solid var(--hairline); font-size: 15px; color: var(--ink); align-items: center; }
+  .sys-row .n { font-family: var(--mono); font-size: 11px; color: var(--subtle); }
+
+  /* OTHER WORK */
+  .other-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 48px; }
+  .other { display: block; background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; transition: border-color .2s, box-shadow .2s; }
+  .other:hover { border-color: var(--accent); box-shadow: 0 8px 24px -8px rgba(63,182,139,0.18); }
+  .other img { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; margin-bottom: 14px; }
+  .other .o-title { font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+  .other .o-sub { font-size: 12.5px; color: var(--muted); }
+
+  /* FOOTER */
+  .footer-inner { padding: 72px 0; display: flex; align-items: flex-end; justify-content: space-between; }
+  .footer-inner .f-name { font-size: 28px; font-weight: 600; letter-spacing: -0.025em; }
+  .footer-inner .f-name .accent { color: var(--accent); }
+  .footer-inner .f-sub { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--subtle); text-transform: uppercase; margin-top: 8px; }
+  .footer-inner .f-right { text-align: right; }
+  .footer-inner .f-right .f-cat { font-size: 13px; color: var(--ink); }
+  .footer-inner .f-right .f-year { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--subtle); margin-top: 4px; }
+
+  @media (max-width: 900px) {
+    .problem-grid, .models-grid { grid-template-columns: 1fr; }
+    .models-vs { display: none; }
+    .impact-grid, .other-grid { grid-template-columns: 1fr; }
+    .meta { grid-template-columns: 1fr 1fr; }
+    .systems-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar" id="topbar">
+  <div class="progress"><div class="bar" id="progressBar"></div></div>
+  <div class="container">
+    <div class="row">
+      <a href="https://liyabell.com" target="_blank" rel="noopener" class="name">Liya Bell</a>
+      <span class="sep">|</span>
+      <span class="role">Technical Workflows &amp; Design Systems</span>
+      <div class="right">
+        <a href="https://www.linkedin.com/in/liya-b-352565143/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="mailto:liyafromspace@gmail.com">liyafromspace@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <h1>Operational trust<br>for industrial<br><span class="accent">telemetry.</span></h1>
+    <p class="lede">How I redesigned telemetry monitoring, incident coordination, and operational workflows inside a localized GE industrial environment — turning fragmented infrastructure signals into observable, state-aware systems.</p>
+    <div class="tags">
+      <span class="tag">Product Design</span>
+      <span class="tag">Observability Systems</span>
+      <span class="tag">Incident Operations</span>
+      <span class="tag">Industrial Infrastructure</span>
+      <span class="tag">ERP Workflows</span>
+      <span class="tag">Systems Design</span>
+    </div>
+    <div class="scroll-cue">Scroll to explore</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="track">
+    <span>Runtime Visibility <span class="dot"></span> Escalation Chains <span class="dot"></span> Dependency Graph <span class="dot"></span> Lifecycle States <span class="dot"></span> Deployment Safety <span class="dot"></span> Blast Radius <span class="dot"></span> Signal Propagation <span class="dot"></span> Incident Timeline <span class="dot"></span> Operational Observability <span class="dot"></span> SLA Awareness <span class="dot"></span> State Architecture <span class="dot"></span> Validation Before Production <span class="dot"></span></span>
+    <span>Runtime Visibility <span class="dot"></span> Escalation Chains <span class="dot"></span> Dependency Graph <span class="dot"></span> Lifecycle States <span class="dot"></span> Deployment Safety <span class="dot"></span> Blast Radius <span class="dot"></span> Signal Propagation <span class="dot"></span> Incident Timeline <span class="dot"></span> Operational Observability <span class="dot"></span> SLA Awareness <span class="dot"></span> State Architecture <span class="dot"></span> Validation Before Production <span class="dot"></span></span>
+  </div>
+</div>
+
+<!-- META -->
+<div class="meta-band">
+  <div class="container">
+    <div class="meta">
+      <div class="item"><div class="lab">Role</div><div class="val">Lead Product Designer</div></div>
+      <div class="item"><div class="lab">Scope</div><div class="val">End-to-end UX + operational workflows</div></div>
+      <div class="item"><div class="lab">Domain</div><div class="val">Industrial telemetry / ERP operations</div></div>
+      <div class="item"><div class="lab">Platform</div><div class="val">GE localized infrastructure</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SECTION 01: PROBLEM -->
+<section>
+  <div class="container">
+    <div class="sec-num">01 — The Reality</div>
+    <h2>Incidents moved faster than <span class="accent">understanding.</span></h2>
+    <div class="problem-grid" style="margin-top:48px">
+      <div>
+        <p class="lead">Industrial operators were reacting to failures across distributed facilities using fragmented tools — Outlook threads, spreadsheets, verbal escalation, disconnected dashboards.</p>
+        <p class="body" style="margin-top:20px">Telemetry existed. Operational visibility did not. Operators could see alerts — but not propagation, causality, escalation ownership, downstream impact, or runtime state.</p>
+        <div class="symptoms" style="margin-top:40px">
+          <div class="symptom">
+            <div class="num">01</div>
+            <div class="body"><b>A pressure spike triggered three conflicting escalations.</b><span>Across maintenance, control room, and field ops — no single source of truth.</span></div>
+          </div>
+          <div class="symptom">
+            <div class="num">02</div>
+            <div class="body"><b>A telemetry sync failure silently invalidated reporting.</b><span>Discovered four hours later, after a shift handover.</span></div>
+          </div>
+          <div class="symptom">
+            <div class="num">03</div>
+            <div class="body"><b>Maintenance teams received incidents without operational context.</b><span>No history, no dependencies, no acknowledgment trail.</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="arch">
+          <div class="arch-h"><div class="pulse"></div>Dependency Topology</div>
+          <div class="hint">Hover any node to trace downstream impact.</div>
+          <svg viewBox="0 0 420 320" style="width:100%;display:block" id="depSvg">
+            <defs>
+              <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#9A9A96" opacity="0.6"/>
+              </marker>
+            </defs>
+            <!-- edges -->
+            <line x1="110" y1="80"  x2="255" y2="60"  stroke="#D0D4D8" stroke-width="1" class="dep-edge" data-to="Reactor-12"/>
+            <line x1="110" y1="80"  x2="255" y2="130" stroke="#D0D4D8" stroke-width="1" class="dep-edge" data-to="Reporting"/>
+            <line x1="110" y1="160" x2="255" y2="130" stroke="#D0D4D8" stroke-width="1" class="dep-edge" data-to="Reporting"/>
+            <line x1="110" y1="160" x2="255" y2="200" stroke="#D0D4D8" stroke-width="1" class="dep-edge" data-to="Maintenance"/>
+            <line x1="110" y1="240" x2="255" y2="200" stroke="#D0D4D8" stroke-width="1" class="dep-edge" data-to="Maintenance"/>
+            <line x1="110" y1="240" x2="255" y2="270" stroke="#D0D4D8" stroke-width="1" class="dep-edge" data-to="Automations"/>
+            <!-- source nodes -->
+            <g class="dep-node" data-id="TI-R12" style="cursor:pointer">
+              <rect x="30" y="66" width="110" height="28" rx="5" fill="white" stroke="#E2E5E8" stroke-width="1.2"/>
+              <text x="85" y="84" text-anchor="middle" font-size="11.5" fill="#0A0A0A" font-family="Geist Mono, monospace">TI-R12-01</text>
+            </g>
+            <g class="dep-node" data-id="PI-R12" style="cursor:pointer">
+              <rect x="30" y="146" width="110" height="28" rx="5" fill="white" stroke="#E2E5E8" stroke-width="1.2"/>
+              <text x="85" y="164" text-anchor="middle" font-size="11.5" fill="#0A0A0A" font-family="Geist Mono, monospace">PI-R12-01</text>
+            </g>
+            <g class="dep-node" data-id="XV-R12" style="cursor:pointer">
+              <rect x="30" y="226" width="110" height="28" rx="5" fill="white" stroke="#E2E5E8" stroke-width="1.2"/>
+              <text x="85" y="244" text-anchor="middle" font-size="11.5" fill="#0A0A0A" font-family="Geist Mono, monospace">XV-R12-01</text>
+            </g>
+            <!-- target nodes -->
+            <g class="dep-target" data-id="Reactor-12">
+              <rect x="255" y="46" width="130" height="28" rx="5" fill="white" stroke="#E2E5E8" stroke-width="1.2"/>
+              <text x="320" y="64" text-anchor="middle" font-size="11.5" fill="#6B6B68" font-family="Geist Mono, monospace">Reactor-12</text>
+            </g>
+            <g class="dep-target" data-id="Reporting">
+              <rect x="255" y="116" width="130" height="28" rx="5" fill="white" stroke="#E2E5E8" stroke-width="1.2"/>
+              <text x="320" y="134" text-anchor="middle" font-size="11.5" fill="#6B6B68" font-family="Geist Mono, monospace">Reporting</text>
+            </g>
+            <g class="dep-target" data-id="Maintenance">
+              <rect x="255" y="186" width="130" height="28" rx="5" fill="white" stroke="#E2E5E8" stroke-width="1.2"/>
+              <text x="320" y="204" text-anchor="middle" font-size="11.5" fill="#6B6B68" font-family="Geist Mono, monospace">Maintenance</text>
+            </g>
+            <g class="dep-target" data-id="Automations">
+              <rect x="255" y="256" width="130" height="28" rx="5" fill="white" stroke="#E2E5E8" stroke-width="1.2"/>
+              <text x="320" y="274" text-anchor="middle" font-size="11.5" fill="#6B6B68" font-family="Geist Mono, monospace">Automations</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 02: UX SHIFT -->
+<section class="shift">
+  <div class="container">
+    <div class="sec-num">02 — Core UX Shift</div>
+    <div class="label" style="font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--subtle);text-transform:uppercase;margin-bottom:24px">Before</div>
+    <div class="from">Dashboard administration</div>
+    <div class="arrow">the breakthrough</div>
+    <div class="to"><span class="accent">Operational</span><br>observability.</div>
+    <p class="body" style="margin-top:48px;max-width:660px">The system stopped behaving like a monitoring interface and started behaving like operational infrastructure. Every screen became state-aware: lifecycle, propagation, ownership, dependency chains, operational safety, escalation history.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION 03: MENTAL MODELS -->
+<section>
+  <div class="container">
+    <div class="sec-num">03 — Core UX Decision</div>
+    <h2>Separating infrastructure governance from <span class="accent">operations.</span></h2>
+    <p class="lead" style="margin-top:0">One platform. Two completely different operational mental models. Combining them created cognitive overload, operational risk, and permission complexity.</p>
+    <div class="models-grid">
+      <div class="model-card">
+        <div class="m-tag">Governance Layer</div>
+        <h3>Infrastructure Governance</h3>
+        <p>Engineering and operational leads maintain telemetry structures, escalation matrices, lifecycle rules, and deployment safety.</p>
+        <div class="m-rows">
+          <div class="m-row"><span class="k">Owners</span><span>Engineering · Ops leads</span></div>
+          <div class="m-row"><span class="k">Cadence</span><span>Weekly · governance-led</span></div>
+          <div class="m-row"><span class="k">Concerns</span><span>Propagation · stability · rollback safety</span></div>
+          <div class="m-row"><span class="k">Mental model</span><span>Infrastructure consistency</span></div>
+        </div>
+      </div>
+      <div class="models-vs">vs</div>
+      <div class="model-card">
+        <div class="m-tag">Operations Layer</div>
+        <h3>Operational Execution</h3>
+        <p>Operators investigate incidents, acknowledge escalations, monitor runtime health, and resolve failures under time pressure.</p>
+        <div class="m-rows">
+          <div class="m-row"><span class="k">Owners</span><span>Control room · Field ops · Maintenance</span></div>
+          <div class="m-row"><span class="k">Cadence</span><span>Continuous · incident-driven</span></div>
+          <div class="m-row"><span class="k">Concerns</span><span>Speed · clarity · escalation coordination</span></div>
+          <div class="m-row"><span class="k">Mental model</span><span>Operational visibility</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREEN 01: INCIDENT TIMELINE -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">Artifact · Incident Timeline</div>
+      <h2>What the incident <span class="accent">timeline</span> became.</h2>
+      <p>Operators reconstructed failures manually — Outlook escalations, telemetry logs, maintenance updates, all stitched together by memory. The redesign introduced a replayable operational timeline with every signal, rule activation, escalation, and resolution step.</p>
+    </div>
+    <div class="device" style="position:relative">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">telemetry.studio/incidents/INC-4201/timeline</div>
+        <div class="live">Live Demo</div>
+      </div>
+      <div class="dark-shell">
+        <div class="ds-bar">
+          <span>INC-4201 · REACTOR-12 OVERHEAT</span>
+          <button class="ds-btn" id="replayBtn" onclick="replayTimeline()">↻ Replay</button>
+        </div>
+        <div style="padding:24px">
+          <div style="font-size:18px;font-weight:600;color:white;margin-bottom:24px">Escalation chain · replay mode</div>
+          <div id="timelineRows">
+            <!-- rows injected by JS -->
+          </div>
+        </div>
+      </div>
+      <div class="hotspots">
+        <div class="hotspot" style="top:38%;left:4%"><div class="pin">1</div><div class="label">Expand escalation</div></div>
+        <div class="hotspot" style="top:54%;left:4%"><div class="pin">2</div><div class="label">Open maintenance owner</div></div>
+        <div class="hotspot" style="top:22%;left:4%"><div class="pin">3</div><div class="label">Jump to telemetry spike</div></div>
+        <div class="hotspot" style="top:70%;left:4%"><div class="pin">4</div><div class="label">Outlook history</div></div>
+      </div>
+    </div>
+    <p style="margin-top:20px;text-align:center;font-size:12.5px;font-style:italic;color:var(--muted);font-family:var(--serif)">↑ Click Replay to walk through the full escalation chain step by step.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREEN 02: LIVE OPERATIONAL DASHBOARD -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">Screen 01 · Operational Visibility</div>
+      <h2>The dashboard became a <span class="accent">live operational surface.</span></h2>
+      <p>Every row exposes lifecycle state, escalation status, telemetry health, propagation, ownership, and sync confidence. Instead of passive monitoring, operators can instantly understand what is happening, who owns it, and what is blocked.</p>
+    </div>
+    <div class="device" style="position:relative">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">telemetry.studio/live/reactor-12</div>
+        <div class="live">Live Demo</div>
+      </div>
+      <div class="dark-shell">
+        <div class="ds-bar"><span>REACTOR-12 · FACILITY RUNTIME VIEW</span></div>
+        <div style="padding:20px;display:grid;grid-template-columns:160px 1fr;gap:20px">
+          <div>
+            <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:10px">FACILITIES</div>
+            <div style="font-size:12.5px;color:white;padding:8px 0;border-bottom:1px solid #1B2220">Северное / R-12</div>
+            <div style="font-size:12.5px;color:#4A5850;padding:8px 0;border-bottom:1px solid #1B2220">Северное / R-08</div>
+            <div style="font-size:12.5px;color:#4A5850;padding:8px 0;border-bottom:1px solid #1B2220">Южное / R-04</div>
+            <div style="font-size:12.5px;color:#4A5850;padding:8px 0">Compressor stations</div>
+          </div>
+          <div>
+            <div style="display:grid;grid-template-columns:110px 1fr 90px 110px 110px 110px 60px;gap:10px;padding:8px 0;border-bottom:1px solid #1B2220;font-size:10px;letter-spacing:0.1em;color:#7C8C87">
+              <span>SIGNAL</span><span>NAME</span><span>VALUE</span><span>HEALTH</span><span>LIFECYCLE</span><span>OWNER</span><span>SYNC</span>
+            </div>
+            <div id="liveRows"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hotspots">
+        <div class="hotspot" style="top:30%;left:76%"><div class="pin">1</div><div class="label">Incident owner</div></div>
+        <div class="hotspot" style="top:45%;left:60%"><div class="pin">2</div><div class="label">Delayed propagation</div></div>
+        <div class="hotspot" style="top:58%;left:72%"><div class="pin">3</div><div class="label">Escalation queue</div></div>
+      </div>
+    </div>
+    <p style="margin-top:20px;text-align:center;font-size:12.5px;font-style:italic;color:var(--muted);font-family:var(--serif)">↑ Hover a row to inspect escalation state and ownership.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREEN 03: LIFECYCLE STATES -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">Hotspot 01 · Lifecycle Modeling</div>
+      <h2>Operational nuance needed more than <span class="accent">active / inactive.</span></h2>
+      <p>Industrial incidents move through monitoring, maintenance, engineering, and field operations. The lifecycle model carries ownership, SLA visibility, escalation behavior, and Outlook notifications inside each state.</p>
+    </div>
+    <div class="device">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">telemetry.studio/incidents/lifecycle</div>
+        <div class="live">Live Demo</div>
+      </div>
+      <div class="dark-shell">
+        <div class="ds-bar"><span>CLICK A STATE · SEE WHAT IT MEANS</span></div>
+        <div style="padding:24px" id="lifecycleWrap">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="lifecycleStates"></div>
+          <div id="lifecycleDetail" style="background:#0A1110;border-left:2px solid #3FB68B;padding:20px;border-radius:6px"></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:20px;text-align:center;font-size:12.5px;font-style:italic;color:var(--muted);font-family:var(--serif)">↑ Click a lifecycle state to inspect its SLA, escalation behavior, and ownership.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREEN 04: BLAST RADIUS -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">Hotspot 02 · Dependency Intelligence</div>
+      <h2><span class="accent">Blast radius,</span> before deployment.</h2>
+      <p>Changing telemetry thresholds or escalation logic can affect facilities, reporting, operational load, maintenance scheduling, and runtime automations. The system exposes dependency chains before any change is published.</p>
+    </div>
+    <div class="device">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">telemetry.studio/rules/overheat-control/impact</div>
+        <div class="live">Live Demo</div>
+      </div>
+      <div class="dark-shell">
+        <div class="ds-bar"><span>HOVER ANY NODE · TRACE THE CHAIN</span></div>
+        <div style="padding:24px;display:grid;grid-template-columns:1fr 200px;gap:20px;align-items:start">
+          <svg viewBox="0 0 500 300" style="width:100%">
+            <line x1="130" y1="150" x2="300" y2="70"  stroke="#3FB68B" stroke-width="0.7" opacity="0.5"/>
+            <line x1="130" y1="150" x2="300" y2="130" stroke="#3FB68B" stroke-width="0.7" opacity="0.5"/>
+            <line x1="130" y1="150" x2="300" y2="190" stroke="#3FB68B" stroke-width="0.7" opacity="0.5"/>
+            <line x1="130" y1="150" x2="300" y2="250" stroke="#3FB68B" stroke-width="0.7" opacity="0.5"/>
+            <line x1="360" y1="70"  x2="420" y2="90"  stroke="#3FB68B" stroke-width="0.7" opacity="0.4"/>
+            <line x1="360" y1="190" x2="420" y2="195" stroke="#3FB68B" stroke-width="0.7" opacity="0.4"/>
+            <g>
+              <rect x="60" y="136" width="140" height="28" rx="4" fill="#0A1110" stroke="#3FB68B" stroke-width="1"/>
+              <text x="130" y="154" text-anchor="middle" font-size="11" fill="#3FB68B" font-family="Geist Mono, monospace">overheat-control</text>
+            </g>
+            <g class="br-node" style="cursor:pointer" onmouseenter="highlightBlast(this,'Reactor-12 PMP')" onmouseleave="clearBlast()">
+              <rect x="255" y="56" width="130" height="28" rx="4" fill="#0A1110" stroke="#1B2220" stroke-width="1"/>
+              <text x="320" y="74" text-anchor="middle" font-size="11" fill="white" font-family="Geist Mono, monospace">Reactor-12 PMP</text>
+            </g>
+            <g class="br-node" style="cursor:pointer" onmouseenter="highlightBlast(this,'Reactor-08 PMP')" onmouseleave="clearBlast()">
+              <rect x="255" y="116" width="130" height="28" rx="4" fill="#0A1110" stroke="#1B2220" stroke-width="1"/>
+              <text x="320" y="134" text-anchor="middle" font-size="11" fill="white" font-family="Geist Mono, monospace">Reactor-08 PMP</text>
+            </g>
+            <g class="br-node" style="cursor:pointer" onmouseenter="highlightBlast(this,'Compressor-3')" onmouseleave="clearBlast()">
+              <rect x="255" y="176" width="130" height="28" rx="4" fill="#0A1110" stroke="#1B2220" stroke-width="1"/>
+              <text x="320" y="194" text-anchor="middle" font-size="11" fill="white" font-family="Geist Mono, monospace">Compressor-3</text>
+            </g>
+            <g class="br-node" style="cursor:pointer" onmouseenter="highlightBlast(this,'Coolant-loop-A')" onmouseleave="clearBlast()">
+              <rect x="255" y="236" width="130" height="28" rx="4" fill="#0A1110" stroke="#1B2220" stroke-width="1"/>
+              <text x="320" y="254" text-anchor="middle" font-size="11" fill="white" font-family="Geist Mono, monospace">Coolant-loop-A</text>
+            </g>
+            <g>
+              <rect x="400" y="76" width="90" height="28" rx="4" fill="#0A1110" stroke="#1B2220" stroke-width="1"/>
+              <text x="445" y="94" text-anchor="middle" font-size="10" fill="#7C8C87" font-family="Geist Mono, monospace">Reporting Q</text>
+            </g>
+            <g>
+              <rect x="400" y="181" width="90" height="28" rx="4" fill="#0A1110" stroke="#1B2220" stroke-width="1"/>
+              <text x="445" y="199" text-anchor="middle" font-size="10" fill="#7C8C87" font-family="Geist Mono, monospace">Maint. sched.</text>
+            </g>
+          </svg>
+          <div style="background:#0A1110;border:1px solid #1B2220;border-radius:8px;padding:16px">
+            <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:8px">BLAST RADIUS</div>
+            <div id="blastCount" style="font-size:28px;font-weight:600;color:#3FB68B;font-family:Geist Mono,monospace">4 facilities</div>
+            <div id="blastSub" style="font-size:11.5px;color:#A8B5B0;margin-top:4px;line-height:1.5">2 reporting pipelines · 1 maintenance schedule · 6 runtime automations</div>
+            <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;font-size:10.5px;color:#7C8C87">
+              <div>● Facility dependencies</div>
+              <div>● Escalation consumers</div>
+              <div>● Runtime automations</div>
+              <div>● Reporting pipelines</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:20px;text-align:center;font-size:12.5px;font-style:italic;color:var(--muted);font-family:var(--serif)">↑ Hover any facility node to trace what a rule change touches downstream.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREEN 05: VALIDATION -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">Screen 02 · Validation</div>
+      <h2>Validation that happens <span class="accent">before production.</span></h2>
+      <p>Instead of discovering operational failures after deployment, the system validates propagation conflicts, escalation inconsistencies, telemetry schema problems, and duplicate operational logic in real time.</p>
+    </div>
+    <div class="device">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">telemetry.studio/rules/overheat-control · edit</div>
+        <div class="live">Live Demo</div>
+      </div>
+      <div class="dark-shell">
+        <div class="ds-bar"><span>EDIT THE THRESHOLD BELOW TO SEE LIVE VALIDATION</span><button class="ds-btn" onclick="resetVal()">↻ Reset</button></div>
+        <div style="padding:24px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:8px;padding:16px">
+              <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:12px">THRESHOLD · TI-R12-01</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input id="threshInput" value="90" oninput="validateThresh(this.value)"
+                  style="flex:1;background:transparent;border:1px solid #1B2220;border-radius:6px;padding:10px 12px;font-family:Geist Mono,monospace;font-size:18px;color:white;outline:none;transition:border-color .2s"/>
+                <span style="color:rgba(255,255,255,0.5)">°C</span>
+              </div>
+              <div id="threshMsg" style="margin-top:10px;font-size:11.5px;color:#3FB68B;font-family:Geist Mono,monospace">✓ Valid · no propagation conflicts · safe to publish</div>
+            </div>
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:8px;padding:16px">
+              <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:8px">DOWNSTREAM IMPACT</div>
+              <div style="font-size:18px;color:white;font-family:Geist Mono,monospace">4 facilities · 6 automations</div>
+              <div style="font-size:12px;color:#A8B5B0;margin-top:6px">Propagation window ~30s. Reporting will re-baseline within one cycle.</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:6px;padding:12px">
+              <div style="font-size:10px;letter-spacing:0.12em;color:#7C8C87;margin-bottom:6px">DUPLICATE CHECK</div>
+              <div style="font-size:12.5px;color:#3FB68B;font-family:Geist Mono,monospace">✓ No duplicate rules</div>
+            </div>
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:6px;padding:12px">
+              <div style="font-size:10px;letter-spacing:0.12em;color:#7C8C87;margin-bottom:6px">FORMAT</div>
+              <div style="font-size:12.5px;color:#3FB68B;font-family:Geist Mono,monospace">✓ snake_case · valid</div>
+            </div>
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:6px;padding:12px">
+              <div style="font-size:10px;letter-spacing:0.12em;color:#7C8C87;margin-bottom:6px">PROPAGATION</div>
+              <div id="propMsg" style="font-size:12.5px;color:#3FB68B;font-family:Geist Mono,monospace">✓ No conflicts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:20px;text-align:center;font-size:12.5px;font-style:italic;color:var(--muted);font-family:var(--serif)">↑ Try editing the temperature threshold — watch validation fire in real time.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREEN 06: BULK OPERATIONS -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">Screen 03 · Bulk Operations</div>
+      <h2>Operational metadata at <span class="accent">industrial scale.</span></h2>
+      <p>Teams managed thousands of telemetry rules and escalation mappings across facilities. Bulk tooling introduced normalization, duplicate detection, propagation preview, and runtime validation — operational confidence at paste-speed.</p>
+    </div>
+    <div class="device">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">telemetry.studio/rules/bulk-import</div>
+        <div class="live">Live Demo</div>
+      </div>
+      <div class="dark-shell">
+        <div class="ds-bar"><span>PASTE SIGNAL NAMES · WATCH LIVE PARSING</span><button class="ds-btn" onclick="replayBulk()">↻ Replay Parse</button></div>
+        <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:12px">PASTE</div>
+            <div id="bulkPaste" style="font-family:Geist Mono,monospace;font-size:12.5px;line-height:2;color:rgba(255,255,255,0.7)"></div>
+          </div>
+          <div>
+            <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:12px">LIVE PREVIEW</div>
+            <div id="bulkPreview"></div>
+            <div id="bulkSummary" style="margin-top:12px;padding-top:12px;border-top:1px solid #1B2220;font-size:11px;font-family:Geist Mono,monospace;color:#7C8C87"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:20px;text-align:center;font-size:12.5px;font-style:italic;color:var(--muted);font-family:var(--serif)">↑ Watch raw operational data become validated, normalized infrastructure rules.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SCREEN 07: REPORTING -->
+<section class="screen">
+  <div class="container">
+    <div class="screen-head">
+      <div class="num">Screen 04 · Reporting</div>
+      <h2>Reporting became <span class="accent">operational intelligence.</span></h2>
+      <p>Admins configured templates, telemetry mappings, KPIs, and escalation summaries. Operators consumed simplified runtime tables that linked incidents, telemetry, maintenance, and operational health in one trace.</p>
+    </div>
+    <div class="device">
+      <div class="chrome">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <div class="url">telemetry.studio/reports/Q1-operations</div>
+        <div class="live">Live Demo</div>
+      </div>
+      <div class="dark-shell">
+        <div class="ds-bar"><span>Q1 OPERATIONS SUMMARY · REACTOR ZONE</span></div>
+        <div style="padding:24px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:8px;padding:16px">
+              <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:6px">INCIDENTS</div>
+              <div style="font-size:28px;font-weight:600;color:white;font-family:Geist Mono,monospace">124</div>
+              <div style="font-size:11px;color:#3FB68B;font-family:Geist Mono,monospace">↓ 18%</div>
+            </div>
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:8px;padding:16px">
+              <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:6px">AVG. UNDERSTAND</div>
+              <div style="font-size:28px;font-weight:600;color:white;font-family:Geist Mono,monospace">41s</div>
+              <div style="font-size:11px;color:#3FB68B;font-family:Geist Mono,monospace">↓ 62% vs baseline</div>
+            </div>
+            <div style="background:#0A1110;border:1px solid #1B2220;border-radius:8px;padding:16px">
+              <div style="font-size:10px;letter-spacing:0.14em;color:#7C8C87;margin-bottom:6px">UNRESOLVED ESC.</div>
+              <div style="font-size:28px;font-weight:600;color:white;font-family:Geist Mono,monospace">6</div>
+              <div style="font-size:11px;color:#3FB68B;font-family:Geist Mono,monospace">↓ 78%</div>
+            </div>
+          </div>
+          <div style="background:#0A1110;border:1px solid #1B2220;border-radius:8px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:110px 1fr 110px 120px 80px;gap:10px;padding:10px 16px;font-size:10px;letter-spacing:0.1em;color:#7C8C87;border-bottom:1px solid #1B2220">
+              <span>INCIDENT</span><span>FACILITY</span><span>OWNER</span><span>RESOLUTION</span><span>TRACE</span>
+            </div>
+            <div style="display:grid;grid-template-columns:110px 1fr 110px 120px 80px;gap:10px;padding:10px 16px;font-size:12.5px;border-bottom:1px solid #11171533">
+              <span style="color:white;font-family:Geist Mono,monospace">INC-4201</span><span style="color:rgba(255,255,255,0.7)">Северное / R-12</span><span style="color:rgba(255,255,255,0.6)">E. Marx</span><span style="color:rgba(255,255,255,0.6);font-family:Geist Mono,monospace">14m 22s</span><span style="color:#3FB68B;font-family:Geist Mono,monospace">→ open</span>
+            </div>
+            <div style="display:grid;grid-template-columns:110px 1fr 110px 120px 80px;gap:10px;padding:10px 16px;font-size:12.5px;border-bottom:1px solid #11171533">
+              <span style="color:white;font-family:Geist Mono,monospace">INC-4198</span><span style="color:rgba(255,255,255,0.7)">Северное / R-08</span><span style="color:rgba(255,255,255,0.6)">Auto</span><span style="color:rgba(255,255,255,0.6);font-family:Geist Mono,monospace">2m 04s</span><span style="color:#3FB68B;font-family:Geist Mono,monospace">→ open</span>
+            </div>
+            <div style="display:grid;grid-template-columns:110px 1fr 110px 120px 80px;gap:10px;padding:10px 16px;font-size:12.5px;border-bottom:1px solid #11171533">
+              <span style="color:white;font-family:Geist Mono,monospace">INC-4191</span><span style="color:rgba(255,255,255,0.7)">Южное / R-04</span><span style="color:rgba(255,255,255,0.6)">V. Petrov</span><span style="color:rgba(255,255,255,0.6);font-family:Geist Mono,monospace">41m 10s</span><span style="color:#3FB68B;font-family:Geist Mono,monospace">→ open</span>
+            </div>
+            <div style="display:grid;grid-template-columns:110px 1fr 110px 120px 80px;gap:10px;padding:10px 16px;font-size:12.5px">
+              <span style="color:white;font-family:Geist Mono,monospace">INC-4187</span><span style="color:rgba(255,255,255,0.7)">Compressor-3</span><span style="color:rgba(255,255,255,0.6)">M. Kowal</span><span style="color:rgba(255,255,255,0.6);font-family:Geist Mono,monospace">8m 51s</span><span style="color:#3FB68B;font-family:Geist Mono,monospace">→ open</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: SYSTEMS THINKING -->
+<section>
+  <div class="container">
+    <div class="sec-num">13 — Design System Thinking</div>
+    <h2>Systems thinking inside <span class="accent">every screen.</span></h2>
+    <p class="lead" style="margin-top:0">This project was not only interface design. Some workflows were designed completely from scratch to support localized industrial operations inside the GE ecosystem.</p>
+    <div class="systems-grid">
+      <div class="sys-row"><span class="n">01</span><span>Operational workflows</span></div>
+      <div class="sys-row"><span class="n">02</span><span>Lifecycle modeling</span></div>
+      <div class="sys-row"><span class="n">03</span><span>Escalation systems</span></div>
+      <div class="sys-row"><span class="n">04</span><span>Dependency mapping</span></div>
+      <div class="sys-row"><span class="n">05</span><span>State architecture</span></div>
+      <div class="sys-row"><span class="n">06</span><span>Reporting infrastructure</span></div>
+      <div class="sys-row"><span class="n">07</span><span>ERP adaptation</span></div>
+      <div class="sys-row"><span class="n">08</span><span>Implementation alignment</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: OUTCOME -->
+<section class="shift">
+  <div class="container">
+    <div class="sec-num">14 — Outcome Shape</div>
+    <div class="from" style="font-size:clamp(28px,3.8vw,48px)">Monitoring dashboards</div>
+    <div class="arrow">into</div>
+    <div class="to"><span class="accent">Operational</span><br>infrastructure.</div>
+    <p class="body" style="margin-top:48px;max-width:660px">The redesign transformed fragmented telemetry tooling into a unified operational system — observable, explainable, state-aware, escalation-aware, deployment-safe.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SECTION: IMPACT -->
+<section>
+  <div class="container">
+    <div class="sec-num">15 — Results</div>
+    <h2>Measured impact across trust, coordination, and <span class="accent">operational speed.</span></h2>
+    <div class="impact-grid">
+      <div class="impact-card">
+        <div class="big">↓78%</div>
+        <div class="desc">Reduction in unresolved escalation loops</div>
+        <div class="note">Q1 vs Q3 — same incident volume</div>
+      </div>
+      <div class="impact-card">
+        <div class="big">~40s</div>
+        <div class="desc">Average incident understanding time</div>
+        <div class="note">Was: 6–18 min · context-dependent</div>
+      </div>
+      <div class="impact-card">
+        <div class="big">$1.2M</div>
+        <div class="desc">Estimated operational downtime risk prevented annually</div>
+        <div class="note">Field ops, March 2026</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- OTHER WORK -->
+<section>
+  <div class="container">
+    <div class="sec-num">More Work</div>
+    <h2>Other <span class="accent">case studies.</span></h2>
+    <div class="other-grid">
+      <a class="other" href="https://liyabell.com/Industrial-Dashboards-1" target="_blank" rel="noopener">
+        <img src="assets/bh_logo.png" alt="Telemetry Studio" />
+        <div class="o-title">Industrial Dashboards</div>
+        <div class="o-sub">Telemetry Studio · BH</div>
+      </a>
+      <a class="other" href="https://liyabell.com/Smartgreen-1" target="_blank" rel="noopener">
+        <img src="assets/sg_logo.png" alt="Smartgreen" />
+        <div class="o-title">Smartgreen</div>
+        <div class="o-sub">Agriculture Intelligence Platform</div>
+      </a>
+      <a class="other" href="https://liyabell.com/Walletallin" target="_blank" rel="noopener">
+        <img src="assets/wai_logo.png" alt="Wallet All-In" />
+        <div class="o-title">Wallet All-In</div>
+        <div class="o-sub">Super-app Finance</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <div class="f-name">Telemetry <span class="accent">Studio</span></div>
+        <div class="f-sub">Lead Product Designer — End-to-end UX</div>
+      </div>
+      <div class="f-right">
+        <div class="f-cat">Industrial Observability Platform</div>
+        <div class="f-year">Product Design Case Study · 2026</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---- PROGRESS BAR ---- */
+window.addEventListener('scroll', () => {
+  const el = document.getElementById('progressBar');
+  const topbar = document.getElementById('topbar');
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  el.style.width = (window.scrollY / h * 100) + '%';
+  topbar.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+/* ---- TIMELINE ---- */
+const tlSteps = [
+  { t: '09:33:02', kind: 'SIGNAL',    msg: 'TI-R12-01.PV = 89°C ↑ approaching limit', color: '#7C8C87' },
+  { t: '09:34:00', kind: 'RULE',      msg: 'Overheat-control → ACTIVATED',             color: '#E5A545' },
+  { t: '09:34:01', kind: 'ESCALATION',msg: 'Tier-1 → Control room (auto)',             color: '#E5A545' },
+  { t: '09:34:12', kind: 'ASSIGNED',  msg: 'E. Marx · maintenance lead',               color: '#7C8C87' },
+  { t: '09:36:44', kind: 'ACK',       msg: 'Field crew acknowledged via Outlook',       color: '#3FB68B' },
+  { t: '09:48:10', kind: 'RESOLVED',  msg: 'XV-R12-01 closed · temp 84°C',            color: '#3FB68B' },
+];
+let tlStep = tlSteps.length;
+
+function renderTimeline() {
+  const el = document.getElementById('timelineRows');
+  el.innerHTML = tlSteps.map((s, i) => `
+    <div style="display:grid;grid-template-columns:80px 90px 1fr 100px;gap:12px;padding:12px 0;border-top:1px solid #1B2220;opacity:${i < tlStep ? 1 : 0.28};transition:opacity 400ms">
+      <span style="font-size:11px;color:#7C8C87;font-family:Geist Mono,monospace">${s.t}</span>
+      <span style="font-size:10px;font-weight:700;color:${s.color};font-family:Geist Mono,monospace">${s.kind}</span>
+      <span style="font-size:13px;color:rgba(255,255,255,0.88)">${s.msg}</span>
+      <span style="font-size:10px;color:#7C8C87;font-family:Geist Mono,monospace">${i < tlStep ? '● synced' : 'pending'}</span>
+    </div>
+  `).join('');
+}
+
+function replayTimeline() {
+  tlStep = 0;
+  renderTimeline();
+  const interval = setInterval(() => {
+    tlStep++;
+    renderTimeline();
+    if (tlStep >= tlSteps.length) clearInterval(interval);
+  }, 600);
+}
+renderTimeline();
+
+/* ---- LIVE ROWS ---- */
+const liveData = [
+  ['TI-R12-01','Reactor-12 temp','96°C','● Critical','Escalated','E. Marx','2s','#E55'],
+  ['PI-R12-01','Reactor-12 pressure','12.3 bar','● Warning','Monitoring','Auto','4s','#E5A545'],
+  ['XV-R12-01','Bleed valve','CLOSED','● Synced','Resolved','Control rm','1s','#3FB68B'],
+  ['SI-R12-01','Pump-A speed','1450 RPM','● Synced','Nominal','—','2s','#3FB68B'],
+  ['FI-R12-02','Coolant flow','412 L/m','● Synced','Nominal','—','3s','#3FB68B'],
+];
+document.getElementById('liveRows').innerHTML = liveData.map(r => `
+  <div style="display:grid;grid-template-columns:110px 1fr 90px 110px 110px 110px 60px;gap:10px;padding:10px 0;border-bottom:1px solid #11171533;font-size:12px;cursor:default;transition:background .15s" onmouseenter="this.style.background='rgba(255,255,255,0.02)'" onmouseleave="this.style.background=''">
+    <span style="color:white;font-family:Geist Mono,monospace">${r[0]}</span>
+    <span style="color:rgba(255,255,255,0.75)">${r[1]}</span>
+    <span style="color:white;font-family:Geist Mono,monospace">${r[2]}</span>
+    <span style="color:${r[7]};font-family:Geist Mono,monospace;font-size:10.5px">${r[3]}</span>
+    <span style="color:rgba(255,255,255,0.6);font-size:11px">${r[4]}</span>
+    <span style="color:rgba(255,255,255,0.6);font-size:11px">${r[5]}</span>
+    <span style="color:#7C8C87;font-family:Geist Mono,monospace;font-size:10.5px">${r[6]}</span>
+  </div>
+`).join('');
+
+/* ---- LIFECYCLE ---- */
+const lcStates = [
+  { name:'Draft',        color:'#7C8C87', desc:'Saved by control room. Not yet routed. No SLA timer.', sla:'—', escalates:'—', outlook:'off' },
+  { name:'Assigned',     color:'#7C8C87', desc:'Routed to a named operator. SLA timer started.',       sla:'30m', escalates:'Tier-2', outlook:'auto' },
+  { name:'Investigating',color:'#5DA0E5', desc:'Operator working the incident. Telemetry trace pinned.',sla:'2h', escalates:'Maintenance', outlook:'auto' },
+  { name:'Escalated',    color:'#E5A545', desc:'Crossed Tier-1 SLA. Auto-Outlook to Tier-2 + maintenance lead.',sla:'45m', escalates:'Engineering', outlook:'auto' },
+  { name:'Maintenance',  color:'#E5A545', desc:'Field crew dispatched. Maintenance owns acknowledgment.',sla:'4h', escalates:'Field ops', outlook:'auto' },
+  { name:'Resolved',     color:'#3FB68B', desc:'Closed with telemetry confirmation. Outlook resolution sent.',sla:'—', escalates:'—', outlook:'auto' },
+  { name:'Archived',     color:'#7C8C87', desc:'Sealed for audit. Post-mortem attached.',              sla:'—', escalates:'—', outlook:'off' },
+];
+let lcActive = 3;
+
+function renderLifecycle() {
+  document.getElementById('lifecycleStates').innerHTML = lcStates.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="lcActive=${i};renderLifecycle()" style="display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:6px;font-family:Geist Mono,monospace;font-size:11.5px;cursor:pointer;transition:all .15s;background:${lcActive===i?'#1A2421':'#0A1110'};border:1px solid ${lcActive===i?s.color:'#1B2220'};color:white">
+        <span style="width:6px;height:6px;border-radius:50%;background:${s.color};display:inline-block"></span>${s.name}
+      </button>
+      ${i < lcStates.length-1 ? '<span style="color:#3A4540;font-size:12px">→</span>' : ''}
+    </div>
+  `).join('');
+  const s = lcStates[lcActive];
+  document.getElementById('lifecycleDetail').style.borderLeftColor = s.color;
+  document.getElementById('lifecycleDetail').innerHTML = `
+    <div style="font-size:15px;font-weight:600;color:white;margin-bottom:6px">${s.name}</div>
+    <div style="font-size:13px;color:#A8B5B0;margin-bottom:16px">${s.desc}</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:11px;font-family:Geist Mono,monospace;color:#7C8C87">
+      <div>OWNERSHIP<div style="color:rgba(255,255,255,0.75);margin-top:4px">Tier-${lcActive}</div></div>
+      <div>SLA<div style="color:rgba(255,255,255,0.75);margin-top:4px">${s.sla}</div></div>
+      <div>ESCALATES<div style="color:rgba(255,255,255,0.75);margin-top:4px">${s.escalates}</div></div>
+      <div>OUTLOOK<div style="color:rgba(255,255,255,0.75);margin-top:4px">${s.outlook}</div></div>
+    </div>
+  `;
+}
+renderLifecycle();
+
+/* ---- BLAST RADIUS ---- */
+function highlightBlast(el, name) {
+  document.getElementById('blastCount').textContent = name;
+  document.getElementById('blastSub').textContent = 'Tracing dependency chain for ' + name + '...';
+  el.querySelector('rect').setAttribute('stroke', '#3FB68B');
+}
+function clearBlast() {
+  document.getElementById('blastCount').textContent = '4 facilities';
+  document.getElementById('blastSub').textContent = '2 reporting pipelines · 1 maintenance schedule · 6 runtime automations';
+  document.querySelectorAll('.br-node rect').forEach(r => r.setAttribute('stroke','#1B2220'));
+}
+
+/* ---- VALIDATION ---- */
+function validateThresh(val) {
+  const v = parseInt(val);
+  const inp = document.getElementById('threshInput');
+  const msg = document.getElementById('threshMsg');
+  const prop = document.getElementById('propMsg');
+  if (isNaN(v) || v < 85) {
+    inp.style.borderColor = '#E55';
+    msg.style.color = '#E55';
+    msg.textContent = '✕ Below safety floor (85°C). Conflicts with rule R-019.';
+    prop.style.color = '#E55';
+    prop.textContent = '✕ Conflict with R-019';
+  } else {
+    inp.style.borderColor = '#3FB68B';
+    msg.style.color = '#3FB68B';
+    msg.textContent = '✓ Valid · no propagation conflicts · safe to publish';
+    prop.style.color = '#3FB68B';
+    prop.textContent = '✓ No conflicts';
+  }
+}
+function resetVal() {
+  document.getElementById('threshInput').value = '90';
+  validateThresh('90');
+}
+
+/* ---- BULK ---- */
+const bulkData = [
+  { v:'temp_high',    kind:'new', disp:'' },
+  { v:'temp_high',    kind:'dup', disp:'duplicate within paste' },
+  { v:'TEMP_HIGH',    kind:'dup', disp:'normalized to temp_high' },
+  { v:'press_max',    kind:'new', disp:'' },
+  { v:'flow_min',     kind:'new', disp:'' },
+  { v:'valve—closed', kind:'err', disp:'em-dash invalid' },
+  { v:'pump_rpm',     kind:'new', disp:'' },
+  { v:'cool_low',     kind:'new', disp:'' },
+];
+const badgeColors = { new:['#3FB68B','rgba(63,182,139,0.15)'], dup:['#E5A545','rgba(229,162,26,0.15)'], err:['#E55','rgba(229,72,77,0.15)'] };
+let bulkStep = 0;
+let bulkTimer = null;
+
+function replayBulk() {
+  clearInterval(bulkTimer);
+  bulkStep = 0;
+  document.getElementById('bulkPaste').innerHTML = '';
+  document.getElementById('bulkPreview').innerHTML = '';
+  document.getElementById('bulkSummary').innerHTML = '';
+  bulkTimer = setInterval(() => {
+    if (bulkStep >= bulkData.length) { clearInterval(bulkTimer); return; }
+    const d = bulkData[bulkStep];
+    document.getElementById('bulkPaste').innerHTML += `<div>${d.v}</div>`;
+    const [col, bg] = badgeColors[d.kind];
+    let disp = d.kind === 'err' ? `<span style="color:#E55;text-decoration:line-through">${d.v}</span>` : `<span style="color:rgba(255,255,255,0.8)">${d.v}</span>`;
+    document.getElementById('bulkPreview').innerHTML += `
+      <div style="display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #1B2220;font-size:12px">
+        <span style="background:${bg};color:${col};font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;text-align:center;font-family:Geist Mono,monospace;text-transform:uppercase">${d.kind}</span>
+        ${disp}
+        <span style="font-size:11px;color:#7C8C87;font-style:italic">${d.disp}</span>
+      </div>`;
+    bulkStep++;
+    const newC = bulkData.slice(0,bulkStep).filter(x=>x.kind==='new').length;
+    const dupC = bulkData.slice(0,bulkStep).filter(x=>x.kind==='dup').length;
+    const errC = bulkData.slice(0,bulkStep).filter(x=>x.kind==='err').length;
+    document.getElementById('bulkSummary').innerHTML = `<span style="color:#3FB68B">${newC} new</span> · <span style="color:#E5A545">${dupC} dup</span> · <span style="color:#E55">${errC} invalid</span>`;
+  }, 350);
+}
+replayBulk();
+
+/* ---- DEP GRAPH HOVER ---- */
+document.querySelectorAll('.dep-node').forEach(g => {
+  g.addEventListener('mouseenter', () => {
+    g.querySelector('rect').setAttribute('stroke','#3FB68B');
+    g.querySelector('text').setAttribute('fill','#3FB68B');
+  });
+  g.addEventListener('mouseleave', () => {
+    g.querySelector('rect').setAttribute('stroke','#E2E5E8');
+    g.querySelector('text').setAttribute('fill','#0A0A0A');
+  });
+});
+</script>
+</body>
+</html>
